@@ -257,7 +257,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.4.8'
+currentVersion = '7.4.9'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -4722,481 +4722,568 @@ function updateColors(color,ctype)
 	syncThemeChrome()
 end
 
-local colorpickerOpen = false
+local THEME_EDITOR_W = 438
+local THEME_EDITOR_H = 348
+local themeEditorInst = nil
+local themeEditorOpen = false
+local themeEditorConns = {}
 local activeThemeSlot = nil
+
+local DEFAULT_THEME = {
+	shade1 = Color3.fromRGB(14, 14, 18),
+	shade2 = Color3.fromRGB(18, 18, 24),
+	shade3 = Color3.fromRGB(48, 44, 66),
+	text1 = Color3.new(1, 1, 1),
+	text2 = Color3.new(0, 0, 0),
+	scroll = Color3.fromRGB(90, 84, 120),
+}
+
+local BASIC_THEME_COLORS = {
+	Color3.new(0,0,0),Color3.new(0.66666668653488,0,0),Color3.new(0,0.33333334326744,0),Color3.new(0.66666668653488,0.33333334326744,0),Color3.new(0,0.66666668653488,0),Color3.new(0.66666668653488,0.66666668653488,0),Color3.new(0,1,0),Color3.new(0.66666668653488,1,0),Color3.new(0,0,0.49803924560547),Color3.new(0.66666668653488,0,0.49803924560547),Color3.new(0,0.33333334326744,0.49803924560547),Color3.new(0.66666668653488,0.33333334326744,0.49803924560547),Color3.new(0,0.66666668653488,0.49803924560547),Color3.new(0.66666668653488,0.66666668653488,0.49803924560547),Color3.new(0,1,0.49803924560547),Color3.new(0.66666668653488,1,0.49803924560547),Color3.new(0,0,1),Color3.new(0.66666668653488,0,1),Color3.new(0,0.33333334326744,1),Color3.new(0.66666668653488,0.33333334326744,1),Color3.new(0,0.66666668653488,1),Color3.new(0.66666668653488,0.66666668653488,1),Color3.new(0,1,1),Color3.new(0.66666668653488,1,1),Color3.new(0.33333334326744,0,0),Color3.new(1,0,0),Color3.new(0.33333334326744,0.33333334326744,0),Color3.new(1,0.33333334326744,0),Color3.new(0.33333334326744,0.66666668653488,0),Color3.new(1,0.66666668653488,0),Color3.new(0.33333334326744,1,0),Color3.new(1,1,0),Color3.new(0.33333334326744,0,0.49803924560547),Color3.new(1,0,0.49803924560547),Color3.new(0.33333334326744,0.33333334326744,0.49803924560547),Color3.new(1,0.33333334326744,0.49803924560547),Color3.new(0.33333334326744,0.66666668653488,0.49803924560547),Color3.new(1,0.66666668653488,0.49803924560547),Color3.new(0.33333334326744,1,0.49803924560547),Color3.new(1,1,0.49803924560547),Color3.new(0.33333334326744,0,1),Color3.new(1,0,1),Color3.new(0.33333334326744,0.33333334326744,1),Color3.new(1,0.33333334326744,1),Color3.new(0.33333334326744,0.66666668653488,1),Color3.new(1,0.66666668653488,1),Color3.new(0.33333334326744,1,1),Color3.new(1,1,1)
+}
+
+local function themeTrack(conn)
+	if conn then
+		themeEditorConns[#themeEditorConns + 1] = conn
+	end
+	return conn
+end
+
+local function closeThemeEditor(revert)
+	if revert then
+		updateColors(cache_currentShade1, shade1)
+		updateColors(cache_currentShade2, shade2)
+		updateColors(cache_currentShade3, shade3)
+		updateColors(cache_currentText1, text1)
+		updateColors(cache_currentText2, text2)
+		updateColors(cache_currentScroll, scroll)
+	end
+	for i = #themeEditorConns, 1, -1 do
+		pcall(function() themeEditorConns[i]:Disconnect() end)
+		themeEditorConns[i] = nil
+	end
+	if themeEditorInst then
+		pcall(function() themeEditorInst:Destroy() end)
+		themeEditorInst = nil
+	end
+	themeEditorOpen = false
+	activeThemeSlot = nil
+end
+
+local function makeThemeInput(parent, label, x, y)
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency = 1
+	row.Size = UDim2.new(0, 88, 0, 22)
+	row.Position = UDim2.new(0, x, 0, y)
+	row.ZIndex = 42
+	row.Parent = parent
+	local lbl = Instance.new("TextLabel")
+	lbl.BackgroundTransparency = 1
+	lbl.Size = UDim2.new(0, 28, 1, 0)
+	lbl.Font = UI_FONT
+	lbl.TextSize = 12
+	lbl.Text = label
+	lbl.TextColor3 = Color3.fromRGB(186, 182, 204)
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.ZIndex = 43
+	lbl.Parent = row
+	local box = Instance.new("TextBox")
+	box.Name = "Input"
+	box.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+	box.BorderSizePixel = 0
+	box.Position = UDim2.new(0, 30, 0, 0)
+	box.Size = UDim2.new(0, 52, 0, 22)
+	box.Font = UI_FONT
+	box.TextSize = 12
+	box.TextColor3 = Color3.new(1, 1, 1)
+	box.ClearTextOnFocus = false
+	box.ZIndex = 43
+	uiCorner(box, 4)
+	box.Parent = row
+	return box
+end
+
+local function openThemeEditor()
+	if themeEditorOpen and themeEditorInst then
+		themeEditorInst:TweenPosition(UDim2.new(0.5, -THEME_EDITOR_W / 2, 0, 72), "InOut", "Quart", 0.35, true, nil)
+		return
+	end
+
+	cache_currentShade1 = currentShade1
+	cache_currentShade2 = currentShade2
+	cache_currentShade3 = currentShade3
+	cache_currentText1 = currentText1
+	cache_currentText2 = currentText2
+	cache_currentScroll = currentScroll
+
+	themeEditorOpen = true
+	local hue, sat, val = 0, 0, 1
+	local red, green, blue = 0.07, 0.07, 0.09
+	local slotButtons = {}
+	local customSwatches = {}
+
+	local root = Instance.new("Frame")
+	root.Name = randomString()
+	root.Size = UDim2.new(0, THEME_EDITOR_W, 0, THEME_EDITOR_H)
+	root.Position = UDim2.new(0.5, -THEME_EDITOR_W / 2, 0, -THEME_EDITOR_H - 40)
+	root.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
+	root.BorderSizePixel = 0
+	root.ZIndex = 40
+	root.ClipsDescendants = true
+	root.Parent = ScaledHolder
+	uiCorner(root, 8)
+	uiStroke(root, Color3.fromRGB(255, 255, 255), 1, 0.9)
+	themeEditorInst = root
+
+	local topBar = Instance.new("Frame")
+	topBar.Name = "TopBar"
+	topBar.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+	topBar.BorderSizePixel = 0
+	topBar.Size = UDim2.new(1, 0, 0, 28)
+	topBar.ZIndex = 41
+	topBar.Active = true
+	topBar.Parent = root
+
+	local titleLbl = Instance.new("TextLabel")
+	titleLbl.BackgroundTransparency = 1
+	titleLbl.Size = UDim2.new(1, -36, 1, 0)
+	titleLbl.Font = UI_FONT_MED
+	titleLbl.TextSize = 13
+	titleLbl.Text = uiLang == "ru" and "Редактор темы" or "Theme Editor"
+	titleLbl.TextColor3 = Color3.fromRGB(244, 244, 248)
+	titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+	titleLbl.ZIndex = 42
+	uiPad(titleLbl, 10, 0, 0, 0)
+	titleLbl.Parent = topBar
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.BackgroundTransparency = 1
+	closeBtn.Size = UDim2.new(0, 28, 0, 28)
+	closeBtn.Position = UDim2.new(1, -28, 0, 0)
+	closeBtn.Font = UI_FONT
+	closeBtn.Text = "X"
+	closeBtn.TextSize = 14
+	closeBtn.TextColor3 = Color3.fromRGB(244, 244, 248)
+	closeBtn.AutoButtonColor = false
+	closeBtn.ZIndex = 42
+	closeBtn.Parent = topBar
+
+	local body = Instance.new("Frame")
+	body.BackgroundTransparency = 1
+	body.Size = UDim2.new(1, 0, 1, -28)
+	body.Position = UDim2.new(0, 0, 0, 28)
+	body.ZIndex = 41
+	body.Parent = root
+
+	local basicHdr = Instance.new("TextLabel")
+	basicHdr.BackgroundTransparency = 1
+	basicHdr.Position = UDim2.new(0, 10, 0, 6)
+	basicHdr.Size = UDim2.new(0, 180, 0, 16)
+	basicHdr.Font = UI_FONT
+	basicHdr.TextSize = 12
+	basicHdr.Text = uiLang == "ru" and "Базовые цвета" or "Basic Colors"
+	basicHdr.TextColor3 = Color3.fromRGB(186, 182, 204)
+	basicHdr.TextXAlignment = Enum.TextXAlignment.Left
+	basicHdr.ZIndex = 42
+	basicHdr.Parent = body
+
+	local basicFrame = Instance.new("Frame")
+	basicFrame.BackgroundTransparency = 1
+	basicFrame.Position = UDim2.new(0, 10, 0, 24)
+	basicFrame.Size = UDim2.new(0, 186, 0, 184)
+	basicFrame.ZIndex = 42
+	basicFrame.Parent = body
+
+	local customHdr = Instance.new("TextLabel")
+	customHdr.BackgroundTransparency = 1
+	customHdr.Position = UDim2.new(0, 10, 0, 212)
+	customHdr.Size = UDim2.new(0, 220, 0, 16)
+	customHdr.Font = UI_FONT
+	customHdr.TextSize = 11
+	customHdr.Text = uiLang == "ru" and "Свои (ПКМ — сохранить)" or "Custom (right click to save)"
+	customHdr.TextColor3 = Color3.fromRGB(186, 182, 204)
+	customHdr.TextXAlignment = Enum.TextXAlignment.Left
+	customHdr.ZIndex = 42
+	customHdr.Parent = body
+
+	local customFrame = Instance.new("Frame")
+	customFrame.BackgroundTransparency = 1
+	customFrame.Position = UDim2.new(0, 10, 0, 230)
+	customFrame.Size = UDim2.new(0, 186, 0, 52)
+	customFrame.ZIndex = 42
+	customFrame.Parent = body
+
+	local svArea = Instance.new("Frame")
+	svArea.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
+	svArea.BorderSizePixel = 0
+	svArea.Position = UDim2.new(1, -226, 0, 8)
+	svArea.Size = UDim2.new(0, 200, 0, 180)
+	svArea.Active = true
+	svArea.ZIndex = 42
+	uiCorner(svArea, 4)
+	svArea.Parent = body
+
+	local svBase = Instance.new("Frame")
+	svBase.BorderSizePixel = 0
+	svBase.Size = UDim2.new(1, 0, 1, 0)
+	svBase.ZIndex = 42
+	svBase.Parent = svArea
+
+	local satOverlay = Instance.new("Frame")
+	satOverlay.BackgroundColor3 = Color3.new(1, 1, 1)
+	satOverlay.BorderSizePixel = 0
+	satOverlay.Size = UDim2.new(1, 0, 1, 0)
+	satOverlay.ZIndex = 43
+	satOverlay.Parent = svBase
+	local satGrad = Instance.new("UIGradient")
+	satGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	satGrad.Rotation = 0
+	satGrad.Parent = satOverlay
+
+	local valOverlay = Instance.new("Frame")
+	valOverlay.BackgroundColor3 = Color3.new(0, 0, 0)
+	valOverlay.BorderSizePixel = 0
+	valOverlay.Size = UDim2.new(1, 0, 1, 0)
+	valOverlay.ZIndex = 44
+	valOverlay.Parent = svBase
+	local valGrad = Instance.new("UIGradient")
+	valGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	valGrad.Rotation = 90
+	valGrad.Parent = valOverlay
+
+	local svCursor = Instance.new("Frame")
+	svCursor.BackgroundColor3 = Color3.new(1, 1, 1)
+	svCursor.BorderSizePixel = 0
+	svCursor.Size = UDim2.new(0, 10, 0, 10)
+	svCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+	svCursor.ZIndex = 45
+	uiCorner(svCursor, 5)
+	uiStroke(svCursor, Color3.new(0, 0, 0), 1, 0.3)
+	svCursor.Parent = svArea
+
+	local hueStrip = Instance.new("Frame")
+	hueStrip.BorderSizePixel = 0
+	hueStrip.Position = UDim2.new(1, -218, 0, 8)
+	hueStrip.Size = UDim2.new(0, 14, 0, 180)
+	hueStrip.Active = true
+	hueStrip.ZIndex = 42
+	uiCorner(hueStrip, 3)
+	hueStrip.Parent = body
+	local hueGrad = Instance.new("UIGradient")
+	hueGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+		ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+		ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+		ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+	})
+	hueGrad.Rotation = 90
+	hueGrad.Parent = hueStrip
+
+	local hueCursor = Instance.new("Frame")
+	hueCursor.BackgroundColor3 = Color3.new(1, 1, 1)
+	hueCursor.BorderSizePixel = 0
+	hueCursor.Size = UDim2.new(1, 4, 0, 4)
+	hueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+	hueCursor.ZIndex = 43
+	uiStroke(hueCursor, Color3.new(0, 0, 0), 1, 0.2)
+	hueCursor.Parent = hueStrip
+
+	local preview = Instance.new("Frame")
+	preview.BorderSizePixel = 0
+	preview.Position = UDim2.new(1, -226, 0, 196)
+	preview.Size = UDim2.new(0, 32, 0, 72)
+	preview.ZIndex = 42
+	uiCorner(preview, 4)
+	uiStroke(preview, Color3.fromRGB(255, 255, 255), 1, 0.85)
+	preview.Parent = body
+
+	local inputsPanel = Instance.new("Frame")
+	inputsPanel.BackgroundTransparency = 1
+	inputsPanel.Position = UDim2.new(1, -186, 0, 196)
+	inputsPanel.Size = UDim2.new(0, 160, 0, 72)
+	inputsPanel.ZIndex = 42
+	inputsPanel.Parent = body
+
+	local hueBox = makeThemeInput(inputsPanel, "H", 0, 0)
+	local satBox = makeThemeInput(inputsPanel, "S", 0, 26)
+	local valBox = makeThemeInput(inputsPanel, "V", 0, 52)
+	local rBox = makeThemeInput(inputsPanel, "R", 84, 0)
+	local gBox = makeThemeInput(inputsPanel, "G", 84, 26)
+	local bBox = makeThemeInput(inputsPanel, "B", 84, 52)
+
+	local footer = Instance.new("Frame")
+	footer.BackgroundTransparency = 1
+	footer.Position = UDim2.new(0, 8, 1, -34)
+	footer.Size = UDim2.new(1, -16, 0, 26)
+	footer.ZIndex = 42
+	footer.Parent = body
+
+	local function chosenColor()
+		return Color3.new(red, green, blue)
+	end
+
+	local function applyLive()
+		if activeThemeSlot then
+			updateColors(chosenColor(), activeThemeSlot)
+		end
+	end
+
+	local refreshing = false
+	local function refreshUI(skipInputs)
+		if refreshing then return end
+		refreshing = true
+		local c = Color3.new(red, green, blue)
+		hue, sat, val = Color3.toHSV(c)
+		preview.BackgroundColor3 = c
+		svBase.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+		svCursor.Position = UDim2.new(sat, 0, 1 - val, 0)
+		hueCursor.Position = UDim2.new(0.5, 0, hue, 0)
+		if not skipInputs then
+			hueBox.Text = tostring(math.floor(hue * 359 + 0.5))
+			satBox.Text = tostring(math.floor(sat * 255 + 0.5))
+			valBox.Text = tostring(math.floor(val * 255 + 0.5))
+			rBox.Text = tostring(math.floor(red * 255 + 0.5))
+			gBox.Text = tostring(math.floor(green * 255 + 0.5))
+			bBox.Text = tostring(math.floor(blue * 255 + 0.5))
+		end
+		applyLive()
+		refreshing = false
+	end
+
+	local function setFromColor(color)
+		red, green, blue = color.R, color.G, color.B
+		refreshUI()
+	end
+
+	local function setFromHSV()
+		local c = Color3.fromHSV(hue, sat, val)
+		red, green, blue = c.R, c.G, c.B
+		refreshUI(true)
+	end
+
+	local function bindDragSurface(frame, onMove)
+		themeTrack(frame.InputBegan:Connect(function(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+				return
+			end
+			local moveConn, endConn
+			endConn = themeTrack(UserInputService.InputEnded:Connect(function(inp)
+				if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+					if moveConn then moveConn:Disconnect() end
+					if endConn then endConn:Disconnect() end
+				end
+			end))
+			moveConn = themeTrack(UserInputService.InputChanged:Connect(function(inp)
+				if inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch then
+					onMove(inp)
+				end
+			end))
+			onMove(input)
+		end))
+	end
+
+	bindDragSurface(svArea, function(input)
+		local ap, as = svArea.AbsolutePosition, svArea.AbsoluteSize
+		if as.X <= 0 or as.Y <= 0 then return end
+		sat = math.clamp((input.Position.X - ap.X) / as.X, 0, 1)
+		val = math.clamp(1 - (input.Position.Y - ap.Y) / as.Y, 0, 1)
+		setFromHSV()
+	end)
+
+	bindDragSurface(hueStrip, function(input)
+		local ap, as = hueStrip.AbsolutePosition, hueStrip.AbsoluteSize
+		if as.Y <= 0 then return end
+		hue = math.clamp((input.Position.Y - ap.Y) / as.Y, 0, 1)
+		setFromHSV()
+	end)
+
+	local function bindNumBox(box, applyFn)
+		themeTrack(box.FocusLost:Connect(function()
+			applyFn(box.Text)
+		end))
+	end
+
+	bindNumBox(hueBox, function(str)
+		local n = tonumber(str)
+		if n then hue = math.clamp(n, 0, 359) / 359; setFromHSV() end
+	end)
+	bindNumBox(satBox, function(str)
+		local n = tonumber(str)
+		if n then sat = math.clamp(n, 0, 255) / 255; setFromHSV() end
+	end)
+	bindNumBox(valBox, function(str)
+		local n = tonumber(str)
+		if n then val = math.clamp(n, 0, 255) / 255; setFromHSV() end
+	end)
+	bindNumBox(rBox, function(str)
+		local n = tonumber(str)
+		if n then red = math.clamp(n, 0, 255) / 255; refreshUI() end
+	end)
+	bindNumBox(gBox, function(str)
+		local n = tonumber(str)
+		if n then green = math.clamp(n, 0, 255) / 255; refreshUI() end
+	end)
+	bindNumBox(bBox, function(str)
+		local n = tonumber(str)
+		if n then blue = math.clamp(n, 0, 255) / 255; refreshUI() end
+	end)
+
+	local swatchTpl = Instance.new("TextButton")
+	swatchTpl.AutoButtonColor = false
+	swatchTpl.BorderSizePixel = 0
+	swatchTpl.Size = UDim2.new(0, 28, 0, 20)
+	swatchTpl.Text = ""
+	swatchTpl.ZIndex = 43
+
+	local row, col = 0, 0
+	for _, color in ipairs(BASIC_THEME_COLORS) do
+		local sw = swatchTpl:Clone()
+		sw.BackgroundColor3 = color
+		sw.Position = UDim2.new(0, col * 30, 0, row * 22)
+		uiCorner(sw, 3)
+		themeTrack(sw.MouseButton1Click:Connect(function()
+			setFromColor(color)
+		end))
+		sw.Parent = basicFrame
+		col += 1
+		if col >= 6 then col = 0 row += 1 end
+	end
+
+	row, col = 0, 0
+	for i = 1, 12 do
+		local saved = (themeCustomColors and themeCustomColors[i]) or Color3.new(0, 0, 0)
+		local sw = swatchTpl:Clone()
+		sw.BackgroundColor3 = saved
+		sw.Position = UDim2.new(0, col * 30, 0, row * 22)
+		uiCorner(sw, 3)
+		customSwatches[i] = sw
+		themeTrack(sw.MouseButton1Click:Connect(function()
+			setFromColor(themeCustomColors[i] or Color3.new(0, 0, 0))
+		end))
+		themeTrack(sw.MouseButton2Click:Connect(function()
+			local pick = chosenColor()
+			themeCustomColors[i] = pick
+			sw.BackgroundColor3 = pick
+			updatesaves()
+		end))
+		sw.Parent = customFrame
+		col += 1
+		if col >= 6 then col = 0 row += 1 end
+	end
+
+	local slotDefs = {
+		{name = "Shade1", ctype = shade1, get = function() return currentShade1 end},
+		{name = "Shade2", ctype = shade2, get = function() return currentShade2 end},
+		{name = "Shade3", ctype = shade3, get = function() return currentShade3 end},
+		{name = "Text1", ctype = text1, get = function() return currentText1 end},
+		{name = "Text2", ctype = text2, get = function() return currentText2 end},
+		{name = "Scroll", ctype = scroll, get = function() return currentScroll end},
+	}
+
+	local function highlightSlots(activeBtn)
+		for _, btn in pairs(slotButtons) do
+			btn.BackgroundColor3 = (btn == activeBtn) and ACCENT or Color3.fromRGB(46, 46, 47)
+			btn.TextColor3 = (btn == activeBtn) and Color3.new(1, 1, 1) or Color3.fromRGB(220, 216, 232)
+		end
+	end
+
+	local function selectSlot(entry)
+		activeThemeSlot = entry.ctype
+		highlightSlots(entry.btn)
+		setFromColor(entry.get())
+	end
+
+	local slotX = 0
+	for _, entry in ipairs(slotDefs) do
+		local btn = Instance.new("TextButton")
+		btn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+		btn.BorderSizePixel = 0
+		btn.Size = UDim2.new(0, 52, 0, 24)
+		btn.Position = UDim2.new(0, slotX, 0, 0)
+		btn.Font = UI_FONT
+		btn.TextSize = 11
+		btn.Text = entry.name
+		btn.TextColor3 = Color3.fromRGB(220, 216, 232)
+		btn.AutoButtonColor = false
+		btn.ZIndex = 43
+		uiCorner(btn, 4)
+		btn.Parent = footer
+		entry.btn = btn
+		slotButtons[#slotButtons + 1] = btn
+		themeTrack(btn.MouseButton1Click:Connect(function()
+			selectSlot(entry)
+		end))
+		slotX += 56
+	end
+
+	local defaultsBtn = Instance.new("TextButton")
+	defaultsBtn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+	defaultsBtn.BorderSizePixel = 0
+	defaultsBtn.Size = UDim2.new(0, 58, 0, 24)
+	defaultsBtn.Position = UDim2.new(1, -126, 0, 0)
+	defaultsBtn.Font = UI_FONT
+	defaultsBtn.TextSize = 11
+	defaultsBtn.Text = uiLang == "ru" and "Сброс" or "Defaults"
+	defaultsBtn.TextColor3 = Color3.new(1, 1, 1)
+	defaultsBtn.AutoButtonColor = false
+	defaultsBtn.ZIndex = 43
+	uiCorner(defaultsBtn, 4)
+	defaultsBtn.Parent = footer
+
+	local cancelBtn = Instance.new("TextButton")
+	cancelBtn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+	cancelBtn.BorderSizePixel = 0
+	cancelBtn.Size = UDim2.new(0, 58, 0, 24)
+	cancelBtn.Position = UDim2.new(1, -62, 0, 0)
+	cancelBtn.Font = UI_FONT
+	cancelBtn.TextSize = 11
+	cancelBtn.Text = uiLang == "ru" and "Отмена" or "Cancel"
+	cancelBtn.TextColor3 = Color3.new(1, 1, 1)
+	cancelBtn.AutoButtonColor = false
+	cancelBtn.ZIndex = 43
+	uiCorner(cancelBtn, 4)
+	cancelBtn.Parent = footer
+
+	themeTrack(defaultsBtn.MouseButton1Click:Connect(function()
+		updateColors(DEFAULT_THEME.shade1, shade1)
+		updateColors(DEFAULT_THEME.shade2, shade2)
+		updateColors(DEFAULT_THEME.shade3, shade3)
+		updateColors(DEFAULT_THEME.text1, text1)
+		updateColors(DEFAULT_THEME.text2, text2)
+		updateColors(DEFAULT_THEME.scroll, scroll)
+		updatesaves()
+		selectSlot(slotDefs[2])
+	end))
+
+	themeTrack(cancelBtn.MouseButton1Click:Connect(function()
+		closeThemeEditor(true)
+	end))
+
+	themeTrack(closeBtn.MouseButton1Click:Connect(function()
+		updatesaves()
+		closeThemeEditor(false)
+		notify(T("editTheme"), uiLang == "ru" and "Тема сохранена" or "Theme saved")
+	end))
+
+	dragGUI(topBar)
+	selectSlot(slotDefs[2])
+	root:TweenPosition(UDim2.new(0.5, -THEME_EDITOR_W / 2, 0, 72), "InOut", "Quart", 0.4, true, nil)
+	notify(T("editTheme"), uiLang == "ru"
+		and "Выбери слой, крути цвет — сразу видно. X = сохранить."
+		or "Pick a layer, tweak color — live preview. X saves.")
+end
+
 ColorsButton.MouseButton1Click:Connect(function()
-    cache_currentShade1 = currentShade1
-    cache_currentShade2 = currentShade2
-    cache_currentShade3 = currentShade3
-    cache_currentText1 = currentText1
-    cache_currentText2 = currentText2
-    cache_currentScroll = currentScroll
-    if not colorpickerOpen then
-        colorpickerOpen = true
-        local okGet, objs = pcall(function()
-            return game:GetObjects("rbxassetid://4908465318")
-        end)
-        if not okGet or type(objs) ~= "table" or not objs[1] then
-            colorpickerOpen = false
-            notify(T("editTheme"), uiLang == "ru" and "Не удалось открыть Color Picker" or "Failed to open Color Picker")
-            return
-        end
-        picker = objs[1]
-        picker.Name = randomString()
-        picker.Parent = ScaledHolder
-
-        local ColorPicker do
-            ColorPicker = {}
-
-            ColorPicker.new = function()
-                local newMt = setmetatable({},{})
-
-                local pickerGui = picker.ColorPicker
-                local pickerTopBar = pickerGui.TopBar
-                local pickerExit = pickerTopBar.Exit
-                local pickerFrame = pickerGui.Content
-                local colorSpace = pickerFrame.ColorSpaceFrame.ColorSpace
-                local colorStrip = pickerFrame.ColorStrip
-                local previewFrame = pickerFrame.Preview
-                local basicColorsFrame = pickerFrame.BasicColors
-                local customColorsFrame = pickerFrame.CustomColors
-                local defaultButton = pickerFrame.Default
-                local cancelButton = pickerFrame.Cancel
-                local shade1Button = pickerFrame.Shade1
-                local shade2Button = pickerFrame.Shade2
-                local shade3Button = pickerFrame.Shade3
-                local text1Button = pickerFrame.Text1
-                local text2Button = pickerFrame.Text2
-                local scrollButton = pickerFrame.Scroll
-
-                local colorScope = colorSpace.Scope
-                local colorArrow = pickerFrame.ArrowFrame.Arrow
-
-                local hueInput = pickerFrame.Hue.Input
-                local satInput = pickerFrame.Sat.Input
-                local valInput = pickerFrame.Val.Input
-
-                local redInput = pickerFrame.Red.Input
-                local greenInput = pickerFrame.Green.Input
-                local blueInput = pickerFrame.Blue.Input
-
-                local mouse = IYMouse
-
-                local hue,sat,val = 0,0,1
-                local red,green,blue = 1,1,1
-                local chosenColor = Color3.new(0,0,0)
-
-                local basicColors = {Color3.new(0,0,0),Color3.new(0.66666668653488,0,0),Color3.new(0,0.33333334326744,0),Color3.new(0.66666668653488,0.33333334326744,0),Color3.new(0,0.66666668653488,0),Color3.new(0.66666668653488,0.66666668653488,0),Color3.new(0,1,0),Color3.new(0.66666668653488,1,0),Color3.new(0,0,0.49803924560547),Color3.new(0.66666668653488,0,0.49803924560547),Color3.new(0,0.33333334326744,0.49803924560547),Color3.new(0.66666668653488,0.33333334326744,0.49803924560547),Color3.new(0,0.66666668653488,0.49803924560547),Color3.new(0.66666668653488,0.66666668653488,0.49803924560547),Color3.new(0,1,0.49803924560547),Color3.new(0.66666668653488,1,0.49803924560547),Color3.new(0,0,1),Color3.new(0.66666668653488,0,1),Color3.new(0,0.33333334326744,1),Color3.new(0.66666668653488,0.33333334326744,1),Color3.new(0,0.66666668653488,1),Color3.new(0.66666668653488,0.66666668653488,1),Color3.new(0,1,1),Color3.new(0.66666668653488,1,1),Color3.new(0.33333334326744,0,0),Color3.new(1,0,0),Color3.new(0.33333334326744,0.33333334326744,0),Color3.new(1,0.33333334326744,0),Color3.new(0.33333334326744,0.66666668653488,0),Color3.new(1,0.66666668653488,0),Color3.new(0.33333334326744,1,0),Color3.new(1,1,0),Color3.new(0.33333334326744,0,0.49803924560547),Color3.new(1,0,0.49803924560547),Color3.new(0.33333334326744,0.33333334326744,0.49803924560547),Color3.new(1,0.33333334326744,0.49803924560547),Color3.new(0.33333334326744,0.66666668653488,0.49803924560547),Color3.new(1,0.66666668653488,0.49803924560547),Color3.new(0.33333334326744,1,0.49803924560547),Color3.new(1,1,0.49803924560547),Color3.new(0.33333334326744,0,1),Color3.new(1,0,1),Color3.new(0.33333334326744,0.33333334326744,1),Color3.new(1,0.33333334326744,1),Color3.new(0.33333334326744,0.66666668653488,1),Color3.new(1,0.66666668653488,1),Color3.new(0.33333334326744,1,1),Color3.new(1,1,1)}
-                local customColors = {}
-                for i = 1, 12 do
-                    customColors[i] = (themeCustomColors and themeCustomColors[i]) or Color3.new(0, 0, 0)
-                end
-
-                dragGUI(picker)
-
-                local function updateColor(noupdate)
-                    local relativeX,relativeY,relativeStripY = 219 - hue*219, 199 - sat*199, 199 - val*199
-                    local hsvColor = Color3.fromHSV(hue,sat,val)
-
-                    if noupdate == 2 or not noupdate then
-                        hueInput.Text = tostring(math.ceil(359*hue))
-                        satInput.Text = tostring(math.ceil(255*sat))
-                        valInput.Text = tostring(math.floor(255*val))
-                    end
-                    if noupdate == 1 or not noupdate then
-                        redInput.Text = tostring(math.floor(255*red))
-                        greenInput.Text = tostring(math.floor(255*green))
-                        blueInput.Text = tostring(math.floor(255*blue))
-                    end
-
-                    chosenColor = Color3.new(red,green,blue)
-
-                    colorScope.Position = UDim2.new(0,relativeX-9,0,relativeY-9)
-                    colorStrip.ImageColor3 = Color3.fromHSV(hue,sat,1)
-                    colorArrow.Position = UDim2.new(0,-2,0,relativeStripY-4)
-                    previewFrame.BackgroundColor3 = chosenColor
-
-                    newMt.Color = chosenColor
-                    if newMt.Changed then newMt:Changed(chosenColor) end
-                end
-
-                local function colorSpaceInput()
-                    local relativeX = mouse.X - colorSpace.AbsolutePosition.X
-                    local relativeY = mouse.Y - colorSpace.AbsolutePosition.Y
-
-                    if relativeX < 0 then relativeX = 0 elseif relativeX > 219 then relativeX = 219 end
-                    if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
-
-                    hue = (219 - relativeX)/219
-                    sat = (199 - relativeY)/199
-
-                    local hsvColor = Color3.fromHSV(hue,sat,val)
-                    red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-
-                    updateColor()
-                end
-
-                local function colorStripInput()
-                    local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
-
-                    if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
-
-                    val = (199 - relativeY)/199
-
-                    local hsvColor = Color3.fromHSV(hue,sat,val)
-                    red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-
-                    updateColor()
-                end
-
-                local function hookButtons(frame,func)
-                    frame.ArrowFrame.Up.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            frame.ArrowFrame.Up.BackgroundTransparency = 0.5
-                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            local releaseEvent,runEvent
-
-                            local startTime = tick()
-                            local pressing = true
-                            local startNum = tonumber(frame.Text)
-
-                            if not startNum then return end
-
-                            releaseEvent = UserInputService.InputEnded:Connect(function(input)
-                                if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-                                releaseEvent:Disconnect()
-                                pressing = false
-                            end)
-
-                            startNum += 1
-                            func(startNum)
-                            while pressing do
-                                if tick()-startTime > 0.3 then
-                                    startNum += 1
-                                    func(startNum)
-                                end
-                                task.wait(0.1)
-                            end
-                        end
-                    end)
-
-                    frame.ArrowFrame.Up.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            frame.ArrowFrame.Up.BackgroundTransparency = 1
-                        end
-                    end)
-
-                    frame.ArrowFrame.Down.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            frame.ArrowFrame.Down.BackgroundTransparency = 0.5
-                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            local releaseEvent,runEvent
-
-                            local startTime = tick()
-                            local pressing = true
-                            local startNum = tonumber(frame.Text)
-
-                            if not startNum then return end
-
-                            releaseEvent = UserInputService.InputEnded:Connect(function(input)
-                                if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-                                releaseEvent:Disconnect()
-                                pressing = false
-                            end)
-
-                            startNum = startNum - 1
-                            func(startNum)
-                            while pressing do
-                                if tick()-startTime > 0.3 then
-                                    startNum = startNum - 1
-                                    func(startNum)
-                                end
-                                task.wait(0.1)
-                            end
-                        end
-                    end)
-
-                    frame.ArrowFrame.Down.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            frame.ArrowFrame.Down.BackgroundTransparency = 1
-                        end
-                    end)
-                end
-
-                colorSpace.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        local releaseEvent,mouseEvent
-
-                        releaseEvent = UserInputService.InputEnded:Connect(function(input)
-                            if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-                            releaseEvent:Disconnect()
-                            mouseEvent:Disconnect()
-                        end)
-
-                        mouseEvent = UserInputService.InputChanged:Connect(function(input)
-                            if input.UserInputType == Enum.UserInputType.MouseMovement then
-                                colorSpaceInput()
-                            end
-                        end)
-
-                        colorSpaceInput()
-                    end
-                end)
-
-                colorStrip.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        local releaseEvent,mouseEvent
-
-                        releaseEvent = UserInputService.InputEnded:Connect(function(input)
-                            if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-                            releaseEvent:Disconnect()
-                            mouseEvent:Disconnect()
-                        end)
-
-                        mouseEvent = UserInputService.InputChanged:Connect(function(input)
-                            if input.UserInputType == Enum.UserInputType.MouseMovement then
-                                colorStripInput()
-                            end
-                        end)
-
-                        colorStripInput()
-                    end
-                end)
-
-                local function updateHue(str)
-                    local num = tonumber(str)
-                    if num then
-                        hue = math.clamp(math.floor(num),0,359)/359
-                        local hsvColor = Color3.fromHSV(hue,sat,val)
-                        red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-                        hueInput.Text = tostring(hue*359)
-                        updateColor(1)
-                    end
-                end
-                hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput,updateHue)
-
-                local function updateSat(str)
-                    local num = tonumber(str)
-                    if num then
-                        sat = math.clamp(math.floor(num),0,255)/255
-                        local hsvColor = Color3.fromHSV(hue,sat,val)
-                        red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-                        satInput.Text = tostring(sat*255)
-                        updateColor(1)
-                    end
-                end
-                satInput.FocusLost:Connect(function() updateSat(satInput.Text) end) hookButtons(satInput,updateSat)
-
-                local function updateVal(str)
-                    local num = tonumber(str)
-                    if num then
-                        val = math.clamp(math.floor(num),0,255)/255
-                        local hsvColor = Color3.fromHSV(hue,sat,val)
-                        red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-                        valInput.Text = tostring(val*255)
-                        updateColor(1)
-                    end
-                end
-                valInput.FocusLost:Connect(function() updateVal(valInput.Text) end) hookButtons(valInput,updateVal)
-
-                local function updateRed(str)
-                    local num = tonumber(str)
-                    if num then
-                        red = math.clamp(math.floor(num),0,255)/255
-                        local newColor = Color3.new(red,green,blue)
-                        hue,sat,val = Color3.toHSV(newColor)
-                        redInput.Text = tostring(red*255)
-                        updateColor(2)
-                    end
-                end
-                redInput.FocusLost:Connect(function() updateRed(redInput.Text) end) hookButtons(redInput,updateRed)
-
-                local function updateGreen(str)
-                    local num = tonumber(str)
-                    if num then
-                        green = math.clamp(math.floor(num),0,255)/255
-                        local newColor = Color3.new(red,green,blue)
-                        hue,sat,val = Color3.toHSV(newColor)
-                        greenInput.Text = tostring(green*255)
-                        updateColor(2)
-                    end
-                end
-                greenInput.FocusLost:Connect(function() updateGreen(greenInput.Text) end) hookButtons(greenInput,updateGreen)
-
-                local function updateBlue(str)
-                    local num = tonumber(str)
-                    if num then
-                        blue = math.clamp(math.floor(num),0,255)/255
-                        local newColor = Color3.new(red,green,blue)
-                        hue,sat,val = Color3.toHSV(newColor)
-                        blueInput.Text = tostring(blue*255)
-                        updateColor(2)
-                    end
-                end
-                blueInput.FocusLost:Connect(function() updateBlue(blueInput.Text) end) hookButtons(blueInput,updateBlue)
-
-                local colorChoice = Instance.new("TextButton")
-                colorChoice.Name = "Choice"
-                colorChoice.Size = UDim2.new(0,25,0,18)
-                colorChoice.BorderColor3 = Color3.new(96/255,96/255,96/255)
-                colorChoice.Text = ""
-                colorChoice.AutoButtonColor = false
-                colorChoice.ZIndex = 10
-
-                local row = 0
-                local column = 0
-                for i,v in pairs(basicColors) do
-                    local newColor = colorChoice:Clone()
-                    newColor.BackgroundColor3 = v
-                    newColor.Position = UDim2.new(0,1 + 30*column,0,21 + 23*row)
-
-                    newColor.MouseButton1Click:Connect(function()
-                        red,green,blue = v.r,v.g,v.b
-                        local newColor = Color3.new(red,green,blue)
-                        hue,sat,val = Color3.toHSV(newColor)
-                        updateColor()
-                    end)	
-
-                    newColor.Parent = basicColorsFrame
-                    column += 1
-                    if column == 6 then row += 1 column = 0 end
-                end
-
-                row = 0
-                column = 0
-                for i = 1,12 do
-                    local color = customColors[i] or Color3.new(0,0,0)
-                    local newColor = colorChoice:Clone()
-                    newColor.BackgroundColor3 = color
-                    newColor.Position = UDim2.new(0,1 + 30*column,0,20 + 23*row)
-
-                    newColor.MouseButton1Click:Connect(function()
-                        local curColor = customColors[i] or Color3.new(0,0,0)
-                        red,green,blue = curColor.r,curColor.g,curColor.b
-                        hue,sat,val = Color3.toHSV(curColor)
-                        updateColor()
-                    end)
-
-                    newColor.MouseButton2Click:Connect(function()
-                        customColors[i] = chosenColor
-                        themeCustomColors[i] = chosenColor
-                        newColor.BackgroundColor3 = chosenColor
-                        updatesaves()
-                    end)
-
-                    newColor.Parent = customColorsFrame
-                    column = column + 1
-                    if column == 6 then row = row + 1 column = 0 end
-                end
-
-                local slotButtons = {
-                    {btn = shade1Button, ctype = shade1, get = function() return currentShade1 end},
-                    {btn = shade2Button, ctype = shade2, get = function() return currentShade2 end},
-                    {btn = shade3Button, ctype = shade3, get = function() return currentShade3 end},
-                    {btn = text1Button, ctype = text1, get = function() return currentText1 end},
-                    {btn = text2Button, ctype = text2, get = function() return currentText2 end},
-                    {btn = scrollButton, ctype = scroll, get = function() return currentScroll end},
-                }
-
-                local function highlightSlot(activeBtn)
-                    for _, entry in pairs(slotButtons) do
-                        entry.btn.BackgroundTransparency = (entry.btn == activeBtn) and 0.35 or 0
-                    end
-                end
-
-                local function selectSlot(entry)
-                    activeThemeSlot = entry.ctype
-                    highlightSlot(entry.btn)
-                    if newMt.SetColor then
-                        newMt:SetColor(entry.get())
-                    end
-                end
-
-                for _, entry in pairs(slotButtons) do
-                    entry.btn.MouseButton1Click:Connect(function()
-                        selectSlot(entry)
-                    end)
-                    entry.btn.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            if activeThemeSlot ~= entry.ctype then
-                                entry.btn.BackgroundTransparency = 0.4
-                            end
-                        end
-                    end)
-                    entry.btn.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            entry.btn.BackgroundTransparency = (activeThemeSlot == entry.ctype) and 0.35 or 0
-                        end
-                    end)
-                end
-
-                cancelButton.MouseButton1Click:Connect(function() if newMt.Cancel then newMt:Cancel() end end)
-                cancelButton.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then cancelButton.BackgroundTransparency = 0.4 end end)
-                cancelButton.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then cancelButton.BackgroundTransparency = 0 end end)
-
-                defaultButton.MouseButton1Click:Connect(function() if newMt.Default then newMt:Default() end end)
-                defaultButton.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then defaultButton.BackgroundTransparency = 0.4 end end)
-                defaultButton.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then defaultButton.BackgroundTransparency = 0 end end)
-
-                pickerExit.MouseButton1Click:Connect(function()
-                    updatesaves()
-                    picker:TweenPosition(UDim2.new(0.5, -219, 0, -500), "InOut", "Quart", 0.5, true, nil)
-                    notify(T("editTheme"), uiLang == "ru" and "Тема сохранена" or "Theme saved")
-                end)
-
-                updateColor()
-
-                newMt.SetColor = function(self,color)
-                    red,green,blue = color.r,color.g,color.b
-                    hue,sat,val = Color3.toHSV(color)
-                    updateColor()
-                end
-                newMt.SelectSlot = selectSlot
-                newMt.Slots = slotButtons
-
-                return newMt
-            end
-        end
-
-        picker:TweenPosition(UDim2.new(0.5, -219, 0, 100), "InOut", "Quart", 0.5, true, nil)
-
-        local Npicker = ColorPicker.new()
-        Npicker.Changed = function(self, color)
-            if activeThemeSlot then
-                updateColors(color, activeThemeSlot)
-            end
-        end
-        Npicker.Cancel = function(self)
-            updateColors(cache_currentShade1,shade1)
-            updateColors(cache_currentShade2,shade2)
-            updateColors(cache_currentShade3,shade3)
-            updateColors(cache_currentText1,text1)
-            updateColors(cache_currentText2,text2)
-            updateColors(cache_currentScroll,scroll)
-            updatesaves()
-            picker:TweenPosition(UDim2.new(0.5, -219, 0, -500), "InOut", "Quart", 0.5, true, nil)
-        end
-        Npicker.Default = function(self)
-            updateColors(Color3.fromRGB(14, 14, 18),shade1)
-            updateColors(Color3.fromRGB(18, 18, 24),shade2)
-            updateColors(Color3.fromRGB(48, 44, 66),shade3)
-            updateColors(Color3.new(1, 1, 1),text1)
-            updateColors(Color3.new(0, 0, 0),text2)
-            updateColors(Color3.fromRGB(90, 84, 120),scroll)
-            updatesaves()
-            if Npicker.SelectSlot and Npicker.Slots and Npicker.Slots[2] then
-                Npicker.SelectSlot(Npicker.Slots[2])
-            end
-        end
-        if Npicker.SelectSlot and Npicker.Slots and Npicker.Slots[2] then
-            Npicker.SelectSlot(Npicker.Slots[2]) -- Shade2 = main menu
-        end
-        notify(T("editTheme"), uiLang == "ru"
-            and "Выбери Shade/Text/Scroll, крути цвет — сразу видно. X = сохранить, Cancel = откат."
-            or "Select Shade/Text/Scroll, tweak color — live preview. X saves, Cancel reverts.")
-    else
-        picker:TweenPosition(UDim2.new(0.5, -219, 0, 100), "InOut", "Quart", 0.5, true, nil)
-    end
+	openThemeEditor()
 end)
 
 
