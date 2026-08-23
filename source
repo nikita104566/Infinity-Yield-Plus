@@ -1,26 +1,12 @@
 --[[
-	Hello! You might wonder why Infinite Yield Reborn is not executing.
-        You may have also wondered if the script is obfuscated or not. As you can see, it isn't.
-        (Yeah this isn't Infinite Yield Reborn by Patrick's, because that one doesn't support most executors)
+	Infinity Yield Plus
+	https://github.com/nikita104566/Infinity-Yield-Plus
 
-	If IY Reborn is not executing, your executor may not support LuaU syntax.
+	Load:
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
 
-	To check if it supports LuaU syntax, run this:
-	print(true and "Supported" or "This shouldn't be printed")
-
-	The issue is probably different if you see the message "Supported" in the console (F9 or /console in chat).
-
-	You can also run these lines too:
-	local test = 1
-	test += 1 -- Normal Lua doesn't have this feature. You'd have to use "test = test + 1"
-	print(test)
-
-	If it prints without any errors, then the issue is probably different.
+	Requires an executor with Luau support.
 ]]--
-
---[[ things to add:
-      currently none, was abt to add earrp but lazy
-]]
 
 local getconnections = getconnections or get_signal_cons
 if getconnections then
@@ -29,13 +15,37 @@ if getconnections then
     end
 end
 
-if IY_LOADED and not _G.IY_DEBUG == true then
-    if typeof(IYR_MAIN) == "Instance" then
-        pcall(function() IYR_MAIN:Destroy() end)
-    else
-    loadstring(game:HttpGet(('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/refs/heads/main/alreadyexecuted' or 'https://mxsynry.github.io/storage/iyrbackup/legacy/master/uselessscriptthatexistsinthisrepoiwin')))()
-    return
-    end
+if (function()
+	local genv = (getgenv and getgenv()) or _G
+	return genv.IY_LOADED or IY_LOADED
+end)() and not (_G.IY_DEBUG == true) then
+	pcall(function()
+		local genv = (getgenv and getgenv()) or _G
+		if type(genv.IYR_CLEAR_ESP) == "function" then genv.IYR_CLEAR_ESP() end
+		if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
+		if type(IYR_CLEANUP) == "function" then IYR_CLEANUP() end
+	end)
+	local coreGui = game:GetService("CoreGui")
+	for _, ref in ipairs({
+		(getgenv and getgenv() or _G).IYR_MAIN,
+		IYR_MAIN,
+		coreGui:FindFirstChild("IYR_MAIN"),
+	}) do
+		if typeof(ref) == "Instance" then
+			pcall(function() ref:Destroy() end)
+		end
+	end
+	pcall(function()
+		local hidden = get_hidden_gui or gethui
+		if hidden then
+			local old = hidden():FindFirstChild("IYR_MAIN")
+			if old then old:Destroy() end
+		end
+	end)
+	pcall(function()
+		local genv = (getgenv and getgenv()) or _G
+		genv.IYR_SKIP_INTRO = true
+	end)
 end
 
 pcall(function() getgenv().IY_LOADED = true end)
@@ -131,9 +141,9 @@ VoiceChatService = Services.VoiceChatService
 SocialService = Services.SocialService
 
 pcall(function()
-	if type(IYR_CLEANUP) == "function" then
-		IYR_CLEANUP()
-	end
+	local genv = (getgenv and getgenv()) or _G
+	if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
+	if type(IYR_CLEANUP) == "function" then IYR_CLEANUP() end
 end)
 IYR_GEN = (tonumber(IYR_GEN) or 0) + 1
 IYR_CONNS = {}
@@ -159,10 +169,78 @@ function IYR_CLEANUP()
 			end)
 		end
 	end
+
+	local genv = (getgenv and getgenv()) or _G
+	pcall(function()
+		if type(genv.IYR_CLEAR_ESP) == "function" then
+			genv.IYR_CLEAR_ESP()
+		elseif type(clearAllESP) == "function" then
+			clearAllESP()
+		end
+	end)
 	pcall(function()
 		RunService:UnbindFromRenderStep("iyresp")
+		RunService:UnbindFromRenderStep("Freecam")
 	end)
+	pcall(function()
+		if type(genv.IYR_STOP_FREECAM) == "function" then genv.IYR_STOP_FREECAM() end
+		if type(StopFreecam) == "function" then StopFreecam() end
+	end)
+	pcall(function()
+		if type(genv.IYR_NOFLY) == "function" then genv.IYR_NOFLY() end
+		if type(NOFLY) == "function" then NOFLY() end
+	end)
+	pcall(function()
+		local cg = COREGUI or game:GetService("CoreGui")
+		for _, v in pairs(cg:GetChildren()) do
+			local n = tostring(v.Name)
+			if string.sub(n, -4) == "_ESP" or string.sub(n, -5) == "_CHMS" or string.sub(n, -3) == "_LC" then
+				v:Destroy()
+			end
+		end
+	end)
+	pcall(function()
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v:IsA("BoxHandleAdornment") and string.sub(tostring(v.Name), -5) == "_PESP" then
+				v:Destroy()
+			end
+		end
+	end)
+	pcall(function()
+		local hooks = genv.IYR_RESET_HOOKS
+		if type(hooks) == "table" then
+			for i = 1, #hooks do
+				pcall(hooks[i])
+			end
+		end
+	end)
+	pcall(function()
+		local lp = Players and Players.LocalPlayer
+		local char = lp and lp.Character
+		if char then
+			local root = char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart
+			if root then
+				root.Anchored = false
+				for _, c in pairs(root:GetChildren()) do
+					if c:IsA("BodyVelocity") or c:IsA("BodyGyro") or c:IsA("BodyPosition") then
+						c:Destroy()
+					end
+				end
+			end
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then hum.PlatformStand = false end
+		end
+	end)
+
 	ESPenabled = false
+	ESPteamOnly = false
+	CHMSenabled = false
+	CFing = false
+	FLYING = false
+	flying = false
+	Floating = false
+	fcRunning = false
+	swimming = false
 	AntiFlingEnabled = false
 	AntiBangEnabled = false
 	adblockConn = nil
@@ -170,6 +248,19 @@ function IYR_CLEANUP()
 		pcall(function() AntiFlingConn:Disconnect() end)
 		AntiFlingConn = nil
 	end
+end
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_CLEANUP = IYR_CLEANUP
+	genv.IYR_FULL_RESET = IYR_CLEANUP
+	genv.IYR_RESET_HOOKS = {} -- fresh hooks for this session (old cleanup already ran)
+end)
+
+function IYR_ADD_RESET_HOOK(fn)
+	if type(fn) ~= "function" then return end
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_RESET_HOOKS = genv.IYR_RESET_HOOKS or {}
+	table.insert(genv.IYR_RESET_HOOKS, fn)
 end
 
 IYMouse = cloneref(Players.LocalPlayer:GetMouse())
@@ -213,11 +304,17 @@ local iyrassets = {
 }
 
 local function getcustomasset(asset)
+    local fileName = tostring(asset or ""):match("([^/\\]+)$") or asset
+    local localPath = "infiniteyieldreborn/assets/" .. tostring(fileName)
     if waxgetcustomasset then
-        local success, result = pcall(function()
-            return waxgetcustomasset(asset)
-        end)
-        if success and result ~= nil and result ~= "" then
+        if isfile and isfile(localPath) then
+            local ok, result = pcall(waxgetcustomasset, localPath)
+            if ok and result ~= nil and result ~= "" then
+                return result
+            end
+        end
+        local ok, result = pcall(waxgetcustomasset, asset)
+        if ok and result ~= nil and result ~= "" then
             return result
         end
     end
@@ -227,6 +324,8 @@ end
 if makefolder and isfolder and writefile and isfile and readfile then
     pcall(function()
         local assetsURL = "https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/"
+        local logoURL = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/logo.png"
+        local logoVer = "iyp-3"
         local targetFolder = "infiniteyieldreborn/assets"
         local sourceFolder = "infiniteyield/assets"
 
@@ -251,13 +350,42 @@ if makefolder and isfolder and writefile and isfile and readfile then
             end
         end
 
+        -- Always refresh splash logo for Infinity Yield Plus branding
+        do
+            local logoPath = targetFolder .. "/logo.png"
+            local verPath = targetFolder .. "/logo.ver"
+            local needLogo = (not isfile(logoPath)) or (not isfile(verPath)) or (readfile(verPath) ~= logoVer)
+            if needLogo then
+                local content = nil
+                for _, candidate in ipairs({ "logo.png", "iyp-logo.png", "assets/logo-splash.png" }) do
+                    if isfile(candidate) then
+                        local ok, data = pcall(readfile, candidate)
+                        if ok and type(data) == "string" and #data > 1000 then
+                            content = data
+                            break
+                        end
+                    end
+                end
+                if not content then
+                    local ok, data = pcall(function() return game:HttpGet(logoURL) end)
+                    if ok and type(data) == "string" and #data > 1000 then
+                        content = data
+                    end
+                end
+                if content then
+                    writefile(logoPath, content)
+                    writefile(verPath, logoVer)
+                end
+            end
+        end
+
         if IsOnMobile then 
             writefile(targetFolder .. "/.nomedia", "") 
         end
     end)
 end
 
-currentVersion = '7.4.9'
+currentVersion = '7.3.5'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -276,9 +404,11 @@ SETTINGS_CONTENT_H = 300
 SCROLL_GUTTER = 18
 SUB_FOOTER_H = 28
 SUB_FOOTER_Y = -(SUB_FOOTER_H - 4)
-KB_EDITOR_W = 360
-KB_EDITOR_BODY_H = 196
+KB_EDITOR_W = 460
+KB_EDITOR_BODY_H = 300
 KB_EDITOR_TITLE_H = 28
+KB_LIST_H = 132
+KB_ROW_H = 22
 ACCENT = Color3.fromRGB(167, 139, 250)
 ACCENT_SOFT = Color3.fromRGB(109, 90, 186)
 ROW_PURPLE = Color3.fromRGB(72, 58, 108)
@@ -299,12 +429,34 @@ UI_L = {
 		managePlugins = "Manage Plugins",
 		noDesc = "No description",
 		outdated = "Outdated",
-		outdatedBody = "Get the new version by executing it again (or rejoin if keepiy is enabled)",
+		outdatedBody = "Get the new version by executing it again",
 		player = "Player",
 		yourself = "Yourself",
 		everyone = "Everyone",
 		everyoneExcept = "Everyone except you",
 		randomPlayer = "A random player",
+		themeEditorTitle = "Theme Editor",
+		themeBasicColors = "Basic Colors",
+		themeCustomColors = "Custom (right click to save)",
+		themeDefaults = "Defaults",
+		themeCancel = "Cancel",
+		themeSave = "Save",
+		themeSaved = "Theme saved",
+		themeHint = "Pick a layer, tweak color — live preview. X saves.",
+		godEnabled = "God mode enabled",
+		godDisabled = "God mode disabled",
+		godAlready = "God mode is already on",
+		keybindEditorTitle = "Set Keybinds",
+		keybindHint = "Click below, press a key or mouse button, then pick what to bind.",
+		keybindPickCmd = "Command",
+		keybindPickCmd2 = "Command 2 (toggle off)",
+		keybindNoMatch = "No matching commands",
+		keybindBrowseHint = "Type to filter or pick from the list",
+		keybindToggle = "Create Toggle",
+		keybindToggleOn = "Create Toggle",
+		favorites = "Favorites",
+		addFavorite = "Add to favorites",
+		removeFavorite = "Remove from favorites",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -365,12 +517,34 @@ UI_L = {
 		managePlugins = "Плагины",
 		noDesc = "Нет описания",
 		outdated = "Устарело",
-		outdatedBody = "Запусти скрипт ещё раз (или перезайди, если включён keepiy)",
+		outdatedBody = "Запусти скрипт ещё раз",
 		player = "Игрок",
 		yourself = "Ты",
 		everyone = "Все",
 		everyoneExcept = "Все кроме тебя",
 		randomPlayer = "Случайный игрок",
+		themeEditorTitle = "Редактор темы",
+		themeBasicColors = "Базовые цвета",
+		themeCustomColors = "Свои (ПКМ — сохранить)",
+		themeDefaults = "Сброс",
+		themeCancel = "Отмена",
+		themeSave = "Сохранить",
+		themeSaved = "Тема сохранена",
+		themeHint = "Выбери слой, крути цвет — сразу видно. X = сохранить.",
+		godEnabled = "Бессмертие включено",
+		godDisabled = "Бессмертие выключено",
+		godAlready = "Бессмертие уже включено",
+		keybindEditorTitle = "Клавиши",
+		keybindHint = "Нажми кнопку, выбери клавишу, затем команду из списка.",
+		keybindPickCmd = "Команда",
+		keybindPickCmd2 = "Команда 2 (выкл.)",
+		keybindNoMatch = "Нет подходящих команд",
+		keybindBrowseHint = "Вводи для фильтра или выбери из списка",
+		keybindToggle = "Создать тоггл",
+		keybindToggleOn = "Создать тоггл",
+		favorites = "Избранное",
+		addFavorite = "В избранное",
+		removeFavorite = "Убрать из избранного",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -446,6 +620,11 @@ function autoRuDesc(desc)
 	if s == "" then return "" end
 	-- Longest phrases first
 	local reps = {
+		{"Sets a position where you will spawn", "Задаёт точку, в которой ты будешь появляться"},
+		{"Removes your custom spawn point", "Убирает свою точку спавна"},
+		{"Sets a waypoint at your position", "Ставит waypoint в текущей позиции"},
+		{"Sets a ", "Задаёт "},
+		{"Sets the ", "Задаёт "},
 		{"Prevents you from getting banged", "Защищает от bang"},
 		{"Prevents you from getting", "Не даёт тебе"},
 		{"Prevents you from", "Защищает от"},
@@ -555,19 +734,28 @@ function autoRuDesc(desc)
 	return s
 end
 
+function looksRussian(s)
+	s = tostring(s or "")
+	-- UTF-8 Cyrillic bytes (А-я and ё/Ё roughly)
+	return s:find("\208[\144-\191]") ~= nil or s:find("\209[\128-\191]") ~= nil or s:find("\208\129") ~= nil or s:find("\209\145") ~= nil
+end
+
 function getLocalizedDesc(title, desc)
 	desc = tostring(desc or "")
 	if uiLang == "ru" then
 		local key = cmdPrimaryKey(title)
 		local ru = CMD_DESC_RU[key]
-		if ru and ru ~= "" then
+		if ru and ru ~= "" and looksRussian(ru) then
 			return ru
 		end
 		if desc ~= "" then
 			local translated = autoRuDesc(desc)
-			if translated ~= "" then
+			if translated ~= "" and looksRussian(translated) then
 				return translated
 			end
+		end
+		if ru and ru ~= "" then
+			return ru
 		end
 		return T("noDesc")
 	end
@@ -587,9 +775,15 @@ function applyUiLanguage()
 	if LanguageRow then LanguageRow.Text = T("language") end
 	if LanguageValue then LanguageValue.Text = (uiLang == "ru") and "RU" or "EN" end
 	if ColorsButton and ColorsButton:FindFirstChild("ButtonLabel") then ColorsButton.ButtonLabel.Text = T("editTheme") end
-	if Keybinds and Keybinds:FindFirstChild("ButtonLabel") then Keybinds.ButtonLabel.Text = T("editKeybinds") end
-	if Aliases and Aliases:FindFirstChild("ButtonLabel") then Aliases.ButtonLabel.Text = T("editAliases") end
-	if Positions and Positions:FindFirstChild("ButtonLabel") then Positions.ButtonLabel.Text = T("editWaypoints") end
+	if Keybinds and Keybinds:FindFirstChild("ButtonLabel") then
+		Keybinds.ButtonLabel.Text = T("editKeybinds") .. " (x" .. #(binds or {}) .. ")"
+	end
+	if Aliases and Aliases:FindFirstChild("ButtonLabel") then
+		Aliases.ButtonLabel.Text = T("editAliases") .. " (x" .. #(aliases or {}) .. ")"
+	end
+	if Positions and Positions:FindFirstChild("ButtonLabel") then
+		Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #(WayPoints or {}) .. ")"
+	end
 	if EventBind and EventBind:FindFirstChild("ButtonLabel") then EventBind.ButtonLabel.Text = T("editEvents") end
 	if Plugins and Plugins:FindFirstChild("ButtonLabel") then Plugins.ButtonLabel.Text = T("managePlugins") end
 	if type(applyReferenceLanguage) == "function" then
@@ -598,6 +792,15 @@ function applyUiLanguage()
 	if type(updateHintAndGhost) == "function" then
 		updateHintAndGhost()
 	end
+	if type(refreshKbCmdPicker) == "function" then
+		refreshKbCmdPicker()
+	end
+	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+	if Directions then Directions.Text = T("keybindHint") end
+	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+	if Cmdbar_3 then Cmdbar_3.PlaceholderText = T("keybindPickCmd2") end
+	if KbCmdEmpty then KbCmdEmpty.Text = T("keybindBrowseHint") end
+	if type(updateKbToggleLabel) == "function" then updateKbToggleLabel() end
 end
 
 UI_FONT = Enum.Font.SourceSans
@@ -707,7 +910,7 @@ ClickDelete = Instance.new("Frame")
 Select_2 = Instance.new("TextButton")
 Cmdbar_2 = Instance.new("TextBox")
 Cmdbar_3 = Instance.new("TextBox")
-CreateToggle = Instance.new("TextLabel")
+CreateToggle = Instance.new("TextButton")
 Button_2 = Instance.new("Frame")
 On_2 = Instance.new("TextButton")
 shadow_2 = Instance.new("Frame")
@@ -797,7 +1000,7 @@ local MAX_DISPLAY_ORDER = 2147483647
 local PARENT
 
 local Main = Instance.new("ScreenGui")
-Main.Name = (typeof(randomString) == "function") and randomString() or "BaseGui"
+Main.Name = "IYR_MAIN"
 Main.ResetOnSpawn = false
 Main.DisplayOrder = MAX_DISPLAY_ORDER
 pcall(function()
@@ -816,6 +1019,10 @@ else
     PARENT = Main
 end
 IYR_MAIN = Main
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_MAIN = Main
+end)
 
 shade1 = {}
 shade2 = {}
@@ -1606,6 +1813,7 @@ Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
 Logo.Position = UDim2.new(0, 125, 0, 127)
 Logo.Size = UDim2.new(0, 10, 0, 10)
+Logo.ScaleType = Enum.ScaleType.Fit
 Logo.Image = getcustomasset("IYR.LOL/assets/logo.png")
 Logo.ImageTransparency = 0
 Logo.ZIndex = 10
@@ -1618,7 +1826,7 @@ Credits.Position = UDim2.new(0, 0, 0.9, 30)
 Credits.Size = UDim2.new(0, 250, 0, 20)
 Credits.Font = UI_FONT
 Credits.TextSize = 14
-Credits.Text = "Edge // Zwolf // Moon // Toon // _Real"
+Credits.Text = BRAND_NAME
 Credits.TextColor3 = Color3.new(1, 1, 1)
 Credits.ZIndex = 10
 
@@ -1765,7 +1973,7 @@ PopupText_2.Size = UDim2.new(1, -28, 1, 0)
 PopupText_2.Position = UDim2.new(0, 10, 0, 0)
 PopupText_2.ZIndex = 32
 PopupText_2.Font = UI_FONT_MED
-PopupText_2.Text = "Set Keybinds"
+PopupText_2.Text = T("keybindEditorTitle")
 PopupText_2.TextColor3 = Color3.fromRGB(245, 245, 247)
 PopupText_2.TextSize = 13
 PopupText_2.TextXAlignment = Enum.TextXAlignment.Left
@@ -1816,7 +2024,7 @@ Directions.Position = UDim2.new(0, 10, 0, 10)
 Directions.Size = UDim2.new(0, 112, 0, 52)
 Directions.ZIndex = 32
 Directions.Font = UI_FONT
-Directions.Text = "Click below, press a key or mouse button, then pick what to bind."
+Directions.Text = T("keybindHint")
 Directions.TextColor3 = Color3.fromRGB(186, 182, 204)
 Directions.TextSize = 12
 Directions.TextWrapped = true
@@ -1871,64 +2079,57 @@ uiCorner(BindTriggerSelect, 4)
 
 CreateToggle.Name = "CreateToggle"
 CreateToggle.Parent = background_2
-CreateToggle.BackgroundTransparency = 1
+CreateToggle.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 CreateToggle.BorderSizePixel = 0
-CreateToggle.Position = UDim2.new(0, 142, 0, 10)
-CreateToggle.Size = UDim2.new(1, -152, 0, 24)
-CreateToggle.ZIndex = 32
-CreateToggle.Font = UI_FONT
-CreateToggle.Text = "Create Toggle"
-CreateToggle.TextColor3 = Color3.fromRGB(244, 244, 248)
-CreateToggle.TextSize = 13
-CreateToggle.TextXAlignment = Enum.TextXAlignment.Left
-table.insert(text1,CreateToggle)
+CreateToggle.Position = UDim2.new(1, -176, 0, 10)
+CreateToggle.Size = UDim2.new(0, 118, 0, 24)
+CreateToggle.ZIndex = 34
+CreateToggle.Font = UI_FONT_MED
+CreateToggle.Text = T("keybindToggle")
+CreateToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+CreateToggle.TextSize = 11
+CreateToggle.TextTruncate = Enum.TextTruncate.None
+CreateToggle.AutoButtonColor = false
+CreateToggle.ClipsDescendants = false
+table.insert(shade2, CreateToggle)
+table.insert(text1, CreateToggle)
+uiCorner(CreateToggle, 6)
 
+-- Legacy checkbox nodes unused (hidden, no layout impact)
 Button_2.Name = "Button"
-Button_2.Parent = CreateToggle
-Button_2.BackgroundColor3 = Color3.fromRGB(78, 78, 79)
-Button_2.BorderSizePixel = 0
-Button_2.Position = UDim2.new(1, -22, 0.5, -11)
-Button_2.Size = UDim2.new(0, 22, 0, 22)
-Button_2.ZIndex = 33
-table.insert(shade3,Button_2)
-uiCorner(Button_2, 4)
-
+Button_2.Parent = background_2
+Button_2.Visible = false
+Button_2.Size = UDim2.new(0, 0, 0, 0)
 On_2.Name = "On"
-On_2.Parent = Button_2
-On_2.BackgroundColor3 = ACCENT
-On_2.BackgroundTransparency = 1
-On_2.BorderSizePixel = 0
-On_2.Position = UDim2.new(0, 3, 0, 3)
-On_2.Size = UDim2.new(0, 16, 0, 16)
-On_2.ZIndex = 34
-On_2.Text = ""
-uiCorner(On_2, 3)
+On_2.Parent = background_2
+On_2.Visible = false
+On_2.Size = UDim2.new(0, 0, 0, 0)
 
 Cmdbar_2.Name = "Cmdbar_2"
 Cmdbar_2.Parent = background_2
 Cmdbar_2.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 Cmdbar_2.BorderSizePixel = 0
-Cmdbar_2.Position = UDim2.new(0, 142, 0, 40)
-Cmdbar_2.Size = UDim2.new(1, -206, 0, 24)
+Cmdbar_2.Position = UDim2.new(0, 142, 0, 10)
+-- Leave room for Create Toggle (118) + gaps + Add (44)
+Cmdbar_2.Size = UDim2.new(1, -322, 0, 24)
 Cmdbar_2.ZIndex = 32
 Cmdbar_2.Font = UI_FONT
-Cmdbar_2.PlaceholderText = "Command"
+Cmdbar_2.PlaceholderText = T("keybindPickCmd")
 Cmdbar_2.PlaceholderColor3 = Color3.fromRGB(120, 116, 138)
 Cmdbar_2.Text = ""
 Cmdbar_2.TextColor3 = Color3.fromRGB(255, 255, 255)
 Cmdbar_2.TextSize = 13
 Cmdbar_2.TextXAlignment = Enum.TextXAlignment.Left
 Cmdbar_2.ClearTextOnFocus = false
-uiPad(Cmdbar_2, 8, 0, 8, 0)
 uiCorner(Cmdbar_2, 6)
 
 Add_2.Name = "Add"
 Add_2.Parent = background_2
 Add_2.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 Add_2.BorderSizePixel = 0
-Add_2.Position = UDim2.new(1, -54, 0, 40)
+Add_2.Position = UDim2.new(1, -54, 0, 10)
 Add_2.Size = UDim2.new(0, 44, 0, 24)
-Add_2.ZIndex = 32
+Add_2.ZIndex = 34
 Add_2.Font = UI_FONT_MED
 Add_2.Text = "Add"
 Add_2.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1942,20 +2143,94 @@ Cmdbar_3.Name = "Cmdbar_3"
 Cmdbar_3.Parent = background_2
 Cmdbar_3.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 Cmdbar_3.BorderSizePixel = 0
-Cmdbar_3.Position = UDim2.new(0, 142, 0, 68)
+Cmdbar_3.Position = UDim2.new(0, 142, 0, 38)
 Cmdbar_3.Size = UDim2.new(1, -152, 0, 24)
 Cmdbar_3.ZIndex = 32
 Cmdbar_3.Font = UI_FONT
-Cmdbar_3.PlaceholderText = "Command 2 (toggle off)"
+Cmdbar_3.PlaceholderText = T("keybindPickCmd2")
 Cmdbar_3.PlaceholderColor3 = Color3.fromRGB(120, 116, 138)
 Cmdbar_3.Text = ""
 Cmdbar_3.TextColor3 = Color3.fromRGB(255, 255, 255)
 Cmdbar_3.TextSize = 13
 Cmdbar_3.TextXAlignment = Enum.TextXAlignment.Left
 Cmdbar_3.ClearTextOnFocus = false
-Cmdbar_3.Visible = false
-uiPad(Cmdbar_3, 8, 0, 8, 0)
+Cmdbar_3.Visible = true
 uiCorner(Cmdbar_3, 6)
+
+KbCmdList = Instance.new("ScrollingFrame")
+KbCmdList.Name = "KbCmdList"
+KbCmdList.Parent = background_2
+KbCmdList.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
+KbCmdList.BackgroundTransparency = 0.15
+KbCmdList.BorderSizePixel = 0
+KbCmdList.Position = UDim2.new(0, 142, 0, 40)
+KbCmdList.Size = UDim2.new(1, -152, 0, 198)
+KbCmdList.ZIndex = 32
+KbCmdList.CanvasSize = UDim2.new(0, 0, 0, 0)
+KbCmdList.ScrollBarThickness = 6
+KbCmdList.ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120)
+KbCmdList.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+KbCmdList.AutomaticCanvasSize = Enum.AutomaticSize.None
+table.insert(shade2, KbCmdList)
+table.insert(scroll, KbCmdList)
+uiCorner(KbCmdList, 6)
+
+KbCmdEmpty = Instance.new("TextLabel")
+KbCmdEmpty.Name = "Empty"
+KbCmdEmpty.Parent = KbCmdList
+KbCmdEmpty.BackgroundTransparency = 1
+KbCmdEmpty.Size = UDim2.new(1, -8, 0, KB_ROW_H)
+KbCmdEmpty.Position = UDim2.new(0, 4, 0, 0)
+KbCmdEmpty.Font = UI_FONT
+KbCmdEmpty.TextSize = 11
+KbCmdEmpty.Text = T("keybindBrowseHint")
+KbCmdEmpty.TextColor3 = Color3.fromRGB(120, 116, 138)
+KbCmdEmpty.TextXAlignment = Enum.TextXAlignment.Left
+KbCmdEmpty.TextYAlignment = Enum.TextYAlignment.Center
+KbCmdEmpty.ZIndex = 33
+KbCmdEmpty.Visible = true
+table.insert(text1, KbCmdEmpty)
+
+KbCmdRowTemplate = Instance.new("TextButton")
+KbCmdRowTemplate.Name = "KbCmdRowTemplate"
+KbCmdRowTemplate.Parent = background_2
+KbCmdRowTemplate.BackgroundColor3 = ROW_PURPLE
+KbCmdRowTemplate.BackgroundTransparency = 1
+KbCmdRowTemplate.BorderSizePixel = 0
+KbCmdRowTemplate.Size = UDim2.new(1, -8, 0, KB_ROW_H)
+KbCmdRowTemplate.AutoButtonColor = false
+KbCmdRowTemplate.Text = ""
+KbCmdRowTemplate.Visible = false
+KbCmdRowTemplate.ZIndex = 33
+uiCorner(KbCmdRowTemplate, 4)
+
+local KbCmdRowName = Instance.new("TextLabel")
+KbCmdRowName.Name = "NameLbl"
+KbCmdRowName.Parent = KbCmdRowTemplate
+KbCmdRowName.BackgroundTransparency = 1
+KbCmdRowName.Position = UDim2.new(0, 6, 0, 0)
+KbCmdRowName.Size = UDim2.new(0, 88, 1, 0)
+KbCmdRowName.Font = UI_FONT_MED
+KbCmdRowName.TextSize = 12
+KbCmdRowName.TextColor3 = Color3.fromRGB(244, 244, 248)
+KbCmdRowName.TextXAlignment = Enum.TextXAlignment.Left
+KbCmdRowName.TextTruncate = Enum.TextTruncate.AtEnd
+KbCmdRowName.ZIndex = 34
+table.insert(text1, KbCmdRowName)
+
+local KbCmdRowDesc = Instance.new("TextLabel")
+KbCmdRowDesc.Name = "DescLbl"
+KbCmdRowDesc.Parent = KbCmdRowTemplate
+KbCmdRowDesc.BackgroundTransparency = 1
+KbCmdRowDesc.Position = UDim2.new(0, 96, 0, 0)
+KbCmdRowDesc.Size = UDim2.new(1, -102, 1, 0)
+KbCmdRowDesc.Font = UI_FONT
+KbCmdRowDesc.TextSize = 11
+KbCmdRowDesc.TextColor3 = Color3.fromRGB(186, 182, 204)
+KbCmdRowDesc.TextXAlignment = Enum.TextXAlignment.Left
+KbCmdRowDesc.TextTruncate = Enum.TextTruncate.AtEnd
+KbCmdRowDesc.ZIndex = 34
+table.insert(text1, KbCmdRowDesc)
 
 Toggles.Name = "Toggles"
 Toggles.Parent = background_2
@@ -2953,11 +3228,62 @@ ViewportTextBox = (function()
     return {convert = convert}
 end)()
 
-ViewportTextBox.convert(Cmdbar).View.ZIndex = 10
-ViewportTextBox.convert(Cmdbar_2).View.ZIndex = 10
+local CmdbarBox = ViewportTextBox.convert(Cmdbar)
+CmdbarBox.View.ZIndex = 10
+CmdGhost.Parent = CmdbarBox.View
+CmdGhost.Position = UDim2.new(0, 4, 0, 0)
+CmdGhost.Size = UDim2.new(1, -8, 1, 0)
+CmdGhost.ZIndex = 10
+Cmdbar.ZIndex = 11
+local function syncCmdGhostLayout()
+	if CmdGhost and Cmdbar then
+		CmdGhost.Position = Cmdbar.Position
+		CmdGhost.Size = Cmdbar.Size
+	end
+end
+Cmdbar.Changed:Connect(function(prop)
+	if prop == "Position" or prop == "Size" then
+		syncCmdGhostLayout()
+	end
+end)
+syncCmdGhostLayout()
+local Cmdbar_2Box = ViewportTextBox.convert(Cmdbar_2)
+Cmdbar_2Box.View.ZIndex = 31
+Cmdbar_2.ZIndex = 33
+CreateToggle.ZIndex = 34
+Add_2.ZIndex = 34
+
+KbCmdGhost = Instance.new("TextLabel")
+KbCmdGhost.Name = "KbGhost"
+KbCmdGhost.Parent = Cmdbar_2Box.View
+KbCmdGhost.BackgroundTransparency = 1
+KbCmdGhost.Position = UDim2.new(0, 4, 0, 0)
+KbCmdGhost.Size = UDim2.new(1, -8, 1, 0)
+KbCmdGhost.Font = UI_FONT
+KbCmdGhost.TextSize = 13
+KbCmdGhost.TextXAlignment = Enum.TextXAlignment.Left
+KbCmdGhost.TextColor3 = Color3.fromRGB(255, 255, 255)
+KbCmdGhost.TextTransparency = 0.78
+KbCmdGhost.Text = ""
+KbCmdGhost.ZIndex = 32
+local function syncKbCmdGhostLayout()
+	if KbCmdGhost and Cmdbar_2 then
+		KbCmdGhost.Position = Cmdbar_2.Position
+		KbCmdGhost.Size = Cmdbar_2.Size
+	end
+end
+Cmdbar_2.Changed:Connect(function(prop)
+	if prop == "Position" or prop == "Size" then
+		syncKbCmdGhostLayout()
+	end
+end)
+syncKbCmdGhostLayout()
+
 local Cmdbar_3Box = ViewportTextBox.convert(Cmdbar_3)
-Cmdbar_3Box.View.ZIndex = 32
+Cmdbar_3Box.View.ZIndex = 34
 Cmdbar_3Box.View.Visible = false
+Cmdbar_3.ZIndex = 35
+Cmdbar_3.Visible = true -- visibility controlled via View
 
 local function scall(func, ...)
     if type(func) == "function" then
@@ -3957,6 +4283,7 @@ defaultsettings = {
     binds = {};
     WayPoints = {};
     PluginsTable = {};
+    favCmds = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -3983,6 +4310,7 @@ useFactorySettings = function()
 	binds = {}
 	WayPoints = {}
 	PluginsTable = {}
+	favCmds = {}
 end
 
 themeCustomColors = themeCustomColors or {}
@@ -4169,6 +4497,7 @@ function saves()
                     if vtype(json.spawnCmds, "table") then spawnCmds = json.spawnCmds end
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
+                    if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -4255,6 +4584,7 @@ function updatesaves()
             binds = binds or {};
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
+            favCmds = favCmds or {};
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -4722,6 +5052,8 @@ function updateColors(color,ctype)
 	syncThemeChrome()
 end
 
+-- Theme editor in its own function scope (Luau 200-local register limit).
+(function()
 local THEME_EDITOR_W = 438
 local THEME_EDITOR_H = 348
 local themeEditorInst = nil
@@ -4747,6 +5079,46 @@ local function themeTrack(conn)
 		themeEditorConns[#themeEditorConns + 1] = conn
 	end
 	return conn
+end
+
+local function bindThemeDrag(handle, window)
+	local dragging = false
+	local dragInput = nil
+	local dragStart = Vector3.zero
+	local startPos = window.Position
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		window.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+
+	themeTrack(handle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = window.Position
+			themeTrack(input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end))
+		end
+	end))
+
+	themeTrack(handle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end))
+
+	themeTrack(UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end))
 end
 
 local function closeThemeEditor(revert)
@@ -4849,7 +5221,7 @@ local function openThemeEditor()
 	titleLbl.Size = UDim2.new(1, -36, 1, 0)
 	titleLbl.Font = UI_FONT_MED
 	titleLbl.TextSize = 13
-	titleLbl.Text = uiLang == "ru" and "Редактор темы" or "Theme Editor"
+	titleLbl.Text = T("themeEditorTitle")
 	titleLbl.TextColor3 = Color3.fromRGB(244, 244, 248)
 	titleLbl.TextXAlignment = Enum.TextXAlignment.Left
 	titleLbl.ZIndex = 42
@@ -4881,7 +5253,7 @@ local function openThemeEditor()
 	basicHdr.Size = UDim2.new(0, 180, 0, 16)
 	basicHdr.Font = UI_FONT
 	basicHdr.TextSize = 12
-	basicHdr.Text = uiLang == "ru" and "Базовые цвета" or "Basic Colors"
+	basicHdr.Text = T("themeBasicColors")
 	basicHdr.TextColor3 = Color3.fromRGB(186, 182, 204)
 	basicHdr.TextXAlignment = Enum.TextXAlignment.Left
 	basicHdr.ZIndex = 42
@@ -4900,7 +5272,7 @@ local function openThemeEditor()
 	customHdr.Size = UDim2.new(0, 220, 0, 16)
 	customHdr.Font = UI_FONT
 	customHdr.TextSize = 11
-	customHdr.Text = uiLang == "ru" and "Свои (ПКМ — сохранить)" or "Custom (right click to save)"
+	customHdr.Text = T("themeCustomColors")
 	customHdr.TextColor3 = Color3.fromRGB(186, 182, 204)
 	customHdr.TextXAlignment = Enum.TextXAlignment.Left
 	customHdr.ZIndex = 42
@@ -4968,6 +5340,7 @@ local function openThemeEditor()
 	svCursor.Parent = svArea
 
 	local hueStrip = Instance.new("Frame")
+	hueStrip.BackgroundColor3 = Color3.new(1, 1, 1)
 	hueStrip.BorderSizePixel = 0
 	hueStrip.Position = UDim2.new(1, -218, 0, 8)
 	hueStrip.Size = UDim2.new(0, 14, 0, 180)
@@ -5155,7 +5528,7 @@ local function openThemeEditor()
 		end))
 		sw.Parent = basicFrame
 		col += 1
-		if col >= 6 then col = 0 row += 1 end
+		if col >= 6 then col = 0; row += 1 end
 	end
 
 	row, col = 0, 0
@@ -5177,7 +5550,7 @@ local function openThemeEditor()
 		end))
 		sw.Parent = customFrame
 		col += 1
-		if col >= 6 then col = 0 row += 1 end
+		if col >= 6 then col = 0; row += 1 end
 	end
 
 	local slotDefs = {
@@ -5207,10 +5580,10 @@ local function openThemeEditor()
 		local btn = Instance.new("TextButton")
 		btn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 		btn.BorderSizePixel = 0
-		btn.Size = UDim2.new(0, 52, 0, 24)
+		btn.Size = UDim2.new(0, 44, 0, 24)
 		btn.Position = UDim2.new(0, slotX, 0, 0)
 		btn.Font = UI_FONT
-		btn.TextSize = 11
+		btn.TextSize = 10
 		btn.Text = entry.name
 		btn.TextColor3 = Color3.fromRGB(220, 216, 232)
 		btn.AutoButtonColor = false
@@ -5222,17 +5595,17 @@ local function openThemeEditor()
 		themeTrack(btn.MouseButton1Click:Connect(function()
 			selectSlot(entry)
 		end))
-		slotX += 56
+		slotX += 48
 	end
 
 	local defaultsBtn = Instance.new("TextButton")
 	defaultsBtn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 	defaultsBtn.BorderSizePixel = 0
-	defaultsBtn.Size = UDim2.new(0, 58, 0, 24)
-	defaultsBtn.Position = UDim2.new(1, -126, 0, 0)
+	defaultsBtn.Size = UDim2.new(0, 54, 0, 24)
+	defaultsBtn.Position = UDim2.new(1, -178, 0, 0)
 	defaultsBtn.Font = UI_FONT
 	defaultsBtn.TextSize = 11
-	defaultsBtn.Text = uiLang == "ru" and "Сброс" or "Defaults"
+	defaultsBtn.Text = T("themeDefaults")
 	defaultsBtn.TextColor3 = Color3.new(1, 1, 1)
 	defaultsBtn.AutoButtonColor = false
 	defaultsBtn.ZIndex = 43
@@ -5242,16 +5615,30 @@ local function openThemeEditor()
 	local cancelBtn = Instance.new("TextButton")
 	cancelBtn.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
 	cancelBtn.BorderSizePixel = 0
-	cancelBtn.Size = UDim2.new(0, 58, 0, 24)
-	cancelBtn.Position = UDim2.new(1, -62, 0, 0)
+	cancelBtn.Size = UDim2.new(0, 54, 0, 24)
+	cancelBtn.Position = UDim2.new(1, -118, 0, 0)
 	cancelBtn.Font = UI_FONT
 	cancelBtn.TextSize = 11
-	cancelBtn.Text = uiLang == "ru" and "Отмена" or "Cancel"
+	cancelBtn.Text = T("themeCancel")
 	cancelBtn.TextColor3 = Color3.new(1, 1, 1)
 	cancelBtn.AutoButtonColor = false
 	cancelBtn.ZIndex = 43
 	uiCorner(cancelBtn, 4)
 	cancelBtn.Parent = footer
+
+	local saveBtn = Instance.new("TextButton")
+	saveBtn.BackgroundColor3 = Color3.fromRGB(48, 44, 66)
+	saveBtn.BorderSizePixel = 0
+	saveBtn.Size = UDim2.new(0, 54, 0, 24)
+	saveBtn.Position = UDim2.new(1, -58, 0, 0)
+	saveBtn.Font = UI_FONT
+	saveBtn.TextSize = 11
+	saveBtn.Text = T("themeSave")
+	saveBtn.TextColor3 = Color3.new(1, 1, 1)
+	saveBtn.AutoButtonColor = false
+	saveBtn.ZIndex = 43
+	uiCorner(saveBtn, 4)
+	saveBtn.Parent = footer
 
 	themeTrack(defaultsBtn.MouseButton1Click:Connect(function()
 		updateColors(DEFAULT_THEME.shade1, shade1)
@@ -5266,25 +5653,28 @@ local function openThemeEditor()
 
 	themeTrack(cancelBtn.MouseButton1Click:Connect(function()
 		closeThemeEditor(true)
+		updatesaves()
 	end))
 
-	themeTrack(closeBtn.MouseButton1Click:Connect(function()
+	local function saveThemeAndClose()
 		updatesaves()
 		closeThemeEditor(false)
-		notify(T("editTheme"), uiLang == "ru" and "Тема сохранена" or "Theme saved")
-	end))
+		notify(T("editTheme"), T("themeSaved"))
+	end
 
-	dragGUI(topBar)
+	themeTrack(saveBtn.MouseButton1Click:Connect(saveThemeAndClose))
+	themeTrack(closeBtn.MouseButton1Click:Connect(saveThemeAndClose))
+
+	bindThemeDrag(topBar, root)
 	selectSlot(slotDefs[2])
 	root:TweenPosition(UDim2.new(0.5, -THEME_EDITOR_W / 2, 0, 72), "InOut", "Quart", 0.4, true, nil)
-	notify(T("editTheme"), uiLang == "ru"
-		and "Выбери слой, крути цвет — сразу видно. X = сохранить."
-		or "Pick a layer, tweak color — live preview. X saves.")
+	notify(T("editTheme"), T("themeHint"))
 end
 
 ColorsButton.MouseButton1Click:Connect(function()
 	openThemeEditor()
 end)
+end)()
 
 
 SettingsButton.MouseButton1Click:Connect(function()
@@ -5509,10 +5899,17 @@ end)
 
 Add.MouseButton1Click:Connect(function()
     KeybindEditor:TweenPosition(UDim2.new(0.5, -KB_EDITOR_W / 2, 0, 260), "InOut", "Quart", 0.5, true, nil)
+    if type(setKbActiveField) == "function" then setKbActiveField("cmd1") end
+    if type(refreshKbCmdPicker) == "function" then refreshKbCmdPicker() end
+    task.defer(function()
+        pcall(function() Cmdbar_2:CaptureFocus() end)
+    end)
 end)
 
 Delete.MouseButton1Click:Connect(function()
-    binds = {}
+    for i = #binds, 1, -1 do
+        table.remove(binds, i)
+    end
     refreshbinds()
     updatesaves()
     notify('Keybinds Updated','Removed all keybinds')
@@ -6639,7 +7036,8 @@ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'reset', DESC = 'Resets your character normally'}
 CMDs[#CMDs + 1] = {NAME = 'respawn', DESC = 'Respawns you'}
 CMDs[#CMDs + 1] = {NAME = 'refresh / re', DESC = 'Respawns and brings you back to the same position'}
-CMDs[#CMDs + 1] = {NAME = 'god', DESC = 'Makes your character difficult to kill in most games'}
+CMDs[#CMDs + 1] = {NAME = 'god / godmode', DESC = 'Makes your character difficult to kill (health lock + death states blocked, persists on respawn)'}
+CMDs[#CMDs + 1] = {NAME = 'ungod / ungodmode', DESC = 'Disables god mode'}
 CMDs[#CMDs + 1] = {NAME = 'permadeath', DESC = 'Makes you unable to respawn after death'}
 CMDs[#CMDs + 1] = {NAME = 'invisible / invis', DESC = 'Makes you invisible to other players'}
 CMDs[#CMDs + 1] = {NAME = 'visible / vis', DESC = 'Makes you visible to other players'}
@@ -6742,6 +7140,7 @@ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'addplugin / plugin [name]', DESC = 'Add a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'removeplugin / deleteplugin [name]', DESC = 'Remove a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'reloadplugin [name]', DESC = 'Reloads a plugin'}
+CMDs[#CMDs + 1] = {NAME = 'reload / iyreload / reiy', DESC = 'Reloads Infinity Yield Plus without rejoining'}
 CMDs[#CMDs + 1] = {NAME = 'addallplugins / loadallplugins', DESC = 'Adds all available plugins from the workspace folder'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'breakloops / break (cmd loops)', DESC = 'Stops any cmd loops (;100^1^cmd)'}
@@ -6866,8 +7265,10 @@ do
 		chatspy = "Загрузить chatspy",
 		respawn = "Респавн",
 		refresh = "Респавн с сохранением позиции",
-		god = "Бессмертие",
+		god = "Бессмертие (health lock, держится после респавна)",
+		godmode = "Бессмертие (health lock, держится после респавна)",
 		ungod = "Выключить бессмертие",
+		ungodmode = "Выключить бессмертие",
 		float = "Парение",
 		unfloat = "Выключить парение",
 		swim = "Плавание в воздухе",
@@ -7017,7 +7418,322 @@ do
 		feflip = "FE backflip (Zeezy)",
 		alignmentkeys = "Клавиши выравнивания (запятая/точка)",
 		unalignmentkeys = "Выключить клавиши выравнивания",
+		reloadplugin = "Перезагрузить плагин",
+		reload = "Перезагрузить админку без rejoin",
+		iyreload = "Перезагрузить админку без rejoin",
+		reiy = "Перезагрузить админку без rejoin",
+		spawnpoint = "Задаёт точку, в которой ты будешь появляться",
+		nospawnpoint = "Убирает свою точку спавна",
+		setwaypoint = "Ставит waypoint в текущей позиции",
 		whatexpsareonline = "Какие экзекьюторы онлайн",
+		-- IYP_RU_EXTRA_START
+		addallplugins = 'Добавляет all available plugins из папки workspace',
+		addplugin = 'Добавить a plugin via command',
+		addunc = 'Добавляет some UNC Environment(s) from version 1 - 3, by vxsty',
+		allowcustomanim = 'Позволяет use custom animation packs instead',
+		antichatlogger = 'Описание: Prevents AutoMod from detecting you bypassing chatfilter.',
+		antiidle = 'Не даёт game from kicking you за бездействие/AFK',
+		antilag = 'Снижает game качество чтобы поднять FPS',
+		appearanceid = 'Notifies a игроков appearance ID',
+		autoclick = 'Автоматически clicks your mouse с заданной задержкой',
+		autojump = 'Автоматически jumps when you run into an object',
+		autokeypress = 'Автоматически presses a key с заданной задержкой',
+		backpack = 'Стать someones backpack',
+		blow = 'Ещё вариант facebang (NSFW)',
+		bombvest = 'Ставит the selected cat in your torso',
+		boxreach = 'Увеличивает the hitbox of your held инструменты in a box shape',
+		breakvelocity = 'Описание: Sets your characters velocity to 0',
+		bringpart = 'Moves a part or multiple parts to твоего персонажа',
+		bringpartclass = 'Moves a part or multiple parts to твоего персонажа based on classname',
+		brn = 'Описание: Attempts to bring npc(s)',
+		camdistance = 'Changes камеру distance from your игрока',
+		cancelteleport = 'Описание: Cancels teleports in progress',
+		carpet = 'Стать someones carpet',
+		cframefly = 'Полёт через CFrame (обход части античитов, работает на мобилке)',
+		cframeflyspeed = 'Задаёт скорость cfly',
+		chatage = 'Chats the age of игрока',
+		chatjoindate = 'Chats the date игрока joined Roblox',
+		chatlogswebhook = 'Задать a discord webhook for chatlogs to go to (provide no url to disable this)',
+		chokeon = 'Описание: Chokes someones private part(s) (NSFW)',
+		clearchat = 'Очищает the chat serversidely (ONLY WORKS WITH NEW TEXTCHAT)',
+		clearerror = 'Очищает the annoying box and blur when a game kicks you',
+		cleargamewaypoints = 'Очищает all waypoints for the game you are in',
+		clearnilinstances = 'Убирает nil instances',
+		clearwaypoints = 'Очищает all waypoints',
+		clickfling = 'Click to fling игроков, the chance of success will depends on your ping',
+		clickteleport = 'Описание: Go to Settings > Keybinds > Add for click teleport',
+		clientantikick = 'Описание: Prevents localscripts from kicking you',
+		clientantiteleport = 'Описание: Prevents localscripts from teleporting you',
+		climb = 'Меняет твой/твою character climb a clientsided truss (no its still visible in client replication, skid)',
+		clraliases = 'Убирает all custom aliases',
+		copyanimation = 'Копирует someone elses animation',
+		copyanimationid = 'Копирует your animation id or someone elses to твой буфер обмена',
+		copyappearanceid = 'Копирует a игроков appearance ID to твой буфер обмена',
+		copycreatorid = 'Копирует the creators ID to твой буфер обмена',
+		copyfreecamposition = 'Копирует координаты freecam в буфер',
+		copygameid = 'Копирует the current game id to твой буфер обмена',
+		copyplaceid = 'Копирует the current place id to твой буфер обмена',
+		copyposition = 'Копирует the coordinates of a character to твой буфер обмена',
+		copyuserid = 'Копирует a игроков user ID to твой буфер обмена',
+		creatorid = 'Уведомляет: the creators ID',
+		cunc = 'Ещё вариант the SUNC Test, by Cherry [InfernusScripts]',
+		dance = 'Делает тебя / позволяет  d a n c e',
+		datalimit = 'Задать outgoing KBPS limit',
+		deleteclass = 'Убирает any part with a certain classname from the workspace (DOES NOT REPLICATE)',
+		deleteglobal = 'Задать a global variable to certain value.',
+		deleteinvisparts = 'Описание: Deletes invisible parts',
+		deletevelocity = 'Убирает any velocity / force instances in твоего персонажа',
+		deletewaypoint = 'Описание: Deletes a waypoint',
+		destroyheight = 'Описание: Sets FallenPartsDestroyHeight',
+		dig = 'Описание: Attempts to dig part of terrain',
+		disable = 'Переключает visibility of coregui items',
+		disablestate = 'Выключает a humanoid state type',
+		dupetools = 'Описание: Drops items',
+		edgejump = 'Автоматически jumps when you get to the edge of an object',
+		enable = 'Переключает visibility of coregui items',
+		enableshiftlock = 'Включает shift lock option',
+		enablestate = 'Включает a humanoid state type',
+		esptransparency = 'Меняет прозрачность ESP',
+		extendbase = 'Описание: Extends the baseplate locally (Should work universally in any baseplate game)',
+		f3x = 'Даёт тебе F3X building инструменты (DOES NOT REPLICATE)',
+		facebang = 'Описание: Fucks someone in the face (NSFW)',
+		fireclickdetectors = 'Описание: Uses all click detectors in a game or uses the optional name',
+		fireproximityprompts = 'Описание: Uses all proximity prompts in a game or uses the optional name',
+		firetouchinterests = 'Описание: Uses all touchinterests in a game or uses the optional name',
+		firstp = 'Forces камеру to go into first person',
+		fixcam = 'Fixes камеру',
+		flashback = 'Телепортирует к where you last died',
+		flyfling = 'Описание: Basically the invisfling command but not invisible',
+		flyjump = 'Позволяет hold space to fly up',
+		flyspeed = 'Скорость полёта (по умолчанию 20)',
+		forceday = 'Описание: Forces to be day',
+		forcenight = 'Описание: Forces to be night',
+		freecamgoto = 'Открывает freecam у игрока',
+		freecampos = 'Открывает freecam в указанной позиции',
+		freecamspeed = 'Скорость freecam (по умолчанию 1)',
+		freecamwaypoint = 'Открывает freecam у waypoint',
+		freezeanims = 'Описание: Freezes your animations / pauses your animations - Does not work on default animations',
+		friend = 'Sends a friend request to certain игроков',
+		gettools = 'Gets инструменты',
+		globalshadows = 'Включает global shadows',
+		gotocamera = 'Телепортирует к the location of your камеру',
+		gotocat = 'Телепортирует к the selected cat',
+		gotomodel = 'Moves твоего персонажа to a model or multiple models',
+		gotopart = 'Moves твоего персонажа to a part or multiple parts',
+		gotopartclass = 'Moves твоего персонажа to a part or multiple parts based on classname',
+		gotopartdelay = 'Adjusts how quickly you teleport to each part (по умолчанию 0.1)',
+		grabtools = 'Автоматически get инструменты that are dropped',
+		grippos = 'Changes your current инструменты grip position',
+		guidelete = 'Включает backspace to delete GUI',
+		hairdresser = 'Does the hairdressing on игрока :3',
+		handlekill = 'Убивает игрока using инструменты damage (YOU NEED A инструменты)',
+		headsit = 'Sit on a игроков head',
+		headsize = 'Expands the head size for игроков Head (по умолчанию 1)',
+		headthrow = 'Описание: Simply makes you throw your head',
+		hideguis = 'Описание: Hides any GUIs in PlayerGui',
+		hidewaypoints = 'Описание: Hides shown waypoints',
+		hitbox = 'Expands the hitbox for игроков HumanoidRootPart (по умолчанию 1)',
+		hovername = 'Shows a игроков username when your mouse is hovered over them',
+		hug = 'Описание: Hugs someone.',
+		hugtool = 'Даёт тебе a hug инструменты',
+		infinitejump = 'Позволяет jump before hitting the ground',
+		inspect = 'Открывает InspectMenu for a certain игрока',
+		instantproximityprompts = 'Описание: Disable the cooldown for proximity prompts',
+		invisfling = 'Включает invisible fling (the invis part is patched, try using the god command before using this)',
+		invisibleparts = 'Описание: Shows invisible parts',
+		jerk = 'Делает тебя / позволяет jork it (NSFW)',
+		jerktool = 'Даёт тебе a инструменты that makes you jork it (NSFW)',
+		joindate = 'Tells you the date игрока joined Roblox',
+		joinlogs = 'Описание: Log when people join',
+		killiy = 'Убивает IYR',
+		lastcommand = 'Описание: Executes the previous command used',
+		lay = 'Меняет твой/твою character lay down',
+		light = 'Даёт your игрока dynamic light',
+		locate = 'Показать a single игрока and their status',
+		lockworkspace = 'Описание: Locks the whole workspace',
+		lookat = 'Moves your камеру view to игрока',
+		loopanimation = 'Описание: Loops your current animation',
+		loopbring = 'Loop brings игрока to you (useful for killing)',
+		loopfullbright = 'Описание: Makes the map brighter / more visible but looped',
+		loopjumppower = 'Описание: Loops your jump height',
+		loopnobgui = 'Loop removes billboard and surface GUIs from your игроков (i.e. name GUIs at cafes)',
+		loopoof = 'Loops everyones character sounds (всех can hear)',
+		loopspeed = 'Описание: Loops your walkspeed',
+		loopxray = 'Описание: Makes all parts in workspace transparent but looped',
+		marble = 'Описание: Turns you into a marble',
+		maxslopeangle = 'Описание: Adjusts MaxSlopeAngle',
+		maxzoom = 'Maximum камеру zoom',
+		minzoom = 'Minimum камеру zoom',
+		mousesensitivity = 'Sets your mouse sensitivity (affects first person and right click drag) (по умолчанию 1)',
+		mouseteleport = 'Teleports твоего персонажа to your mouse. This is recommended as a keybind',
+		muteboombox = 'Описание: Mutes someones boombox',
+		noanim = 'Выключает your animations',
+		nobillboardgui = 'Убирает billboard and surface GUIs from your игроков (i.e. name GUIs at cafes)',
+		noclickdetectorlimits = 'Описание: Sets all click detectors MaxActivationDistance to math.huge',
+		noclipcam = 'Allows камеру to go through objects like walls',
+		noglobalshadows = 'Выключает global shadows',
+		nolight = 'Убирает dynamic light from your игрока',
+		noprompts = 'Не даёт game from showing you purchase/premium prompts',
+		noproximitypromptlimits = 'Описание: Sets all proximity prompts MaxActivationDistance to math.huge',
+		norender = 'Описание: Disable 3d Rendering to decrease the amount of CPU the client uses',
+		norotate = 'Выключает AutoRotate',
+		nosimulationradius = 'Задать the simulation radius to the default values (139).',
+		nosit = 'Prevents твоего персонажа from sitting',
+		nospawnpoint = 'Убирает свою точку спавна',
+		notifyfreecamposition = 'Показывает координаты freecam',
+		notifyjobid = 'Уведомляет: the games JobId',
+		notifyposition = 'Уведомляет: the coordinates of a character',
+		nowalltp = 'Выключает walltp',
+		offset = 'Описание: Offsets you by certain coordinates',
+		partesp = 'Подсвечивает парт',
+		partname = 'Позволяет click a part to see its path & name',
+		pathfindwalkto = 'Follow игрока using pathfinding',
+		pathfindwalktowaypoint = 'Описание: Walk to a waypoint using pathfinding',
+		permadeath = 'Делает тебя / позволяет unable to respawn after death',
+		platformstand = 'Включает PlatformStand',
+		pmspam = 'Делает тебя / позволяет spam a игроков whispers',
+		promptr15 = 'Описание: Prompts the game to switch your rig type to R15',
+		promptr6 = 'Описание: Prompts the game to switch your rig type to R6',
+		pulsetp = 'Телепортирует к игрока for a specified amount of time',
+		qefly = 'Включает или выключает Q и E для полёта',
+		r6 = 'Описание: Changes your R15 animations to R6',
+		reach = 'Увеличивает the hitbox of your held инструменты',
+		reanim = 'Описание: Restores your animations',
+		record = 'Описание: Starts Roblox recorder',
+		refreshanimations = 'Описание: Refreshes animations',
+		reloadplugin = 'Описание: Reloads a plugin',
+		removeanticheat = 'Описание: Deletes some simple anticheats.',
+		removecmd = 'Убирает a command until the admin is reloaded',
+		removeplugin = 'Описание: Remove a plugin via command',
+		removeterrain = 'Убирает all terrain',
+		render = 'Описание: Enable 3d Rendering',
+		replicationlag = 'Задать IncomingReplicationLag',
+		report = 'Reports игрока for the specified reason and details or default if not specified',
+		restorelighting = 'Описание: Restores Lighting properties',
+		rolewatch = 'Уведомить: if someone from a watched group joins the сервер',
+		rolewatchleave = 'Toggle if you should leave the game if someone from a watched group joins the сервер',
+		rolewatchstop = 'Описание: Disable Rolewatch',
+		savegame = 'Описание: Uses saveinstance to save the game',
+		savelogs = 'Описание: Saves console logs as a file',
+		screenshot = 'Описание: Takes a screenshot',
+		sendtool = 'Sends the инструменты you\\\'re holding to [игрока].',
+		setcreatorid = 'Описание: Sets your userid to the creators ID',
+		setwaypoint = 'Ставит waypoint в текущей позиции',
+		showguis = 'Описание: Shows any invisible GUIs',
+		showprompts = 'Описание: Allows the game to show purchase/premium prompts again',
+		showwaypoints = 'Описание: Shows all currently set waypoints',
+		simulationradius = 'Задать the simulation radius.',
+		sitcat = 'Убирает network ownership from cats',
+		sitwalk = 'Меняет твой/твою character sit while still being able to walk',
+		solaraexplorer = 'Открывает SolaraDEX by Iflorisme',
+		spamspeed = 'How quickly you spam (по умолчанию 1)',
+		spamtime = 'Spams the time by given скорость',
+		spawnpoint = 'Задаёт точку, в которой ты будешь появляться',
+		spin = 'Spins твоего персонажа',
+		spoofjumppower = 'Описание: Spoofs your JumpPower on the Client',
+		spoofspeed = 'Описание: Spoofs your WalkSpeed on the Client',
+		staffwatch = 'Уведомить: if a staff member of the game joins the сервер',
+		stareat = 'Stare / look at игрока',
+		stopanimations = 'Останавливает running animations',
+		strengthen = 'Меняет твой/твою character more dense (CustomPhysicalProperties)',
+		team = 'Описание: Changes your team. Sometimes fools localscripts.',
+		teleporttool = 'Даёт тебе a teleport инструменты',
+		thawunanchored = 'Описание: Thaws unanchored parts',
+		thirdp = 'Allows камеру to go into third person',
+		togglefullscreen = 'Переключает fullscreen',
+		togglekeepiy = 'Переключает keepiy',
+		toggleswim = 'Переключает swimming',
+		toolinvisible = 'Делает тебя / позволяет invisible to other игроков and able to use инструменты',
+		tpposition = 'Телепортирует к certain coordinates',
+		tpunanchored = 'Teleports unanchored parts to игрока',
+		tpwalk = 'Телепортирует к your move direction (aka cframe скорость which is used in scripts)',
+		tweenfly = 'Полёт через Tween',
+		tweengoto = 'Tween to игрока (bypasses some anti cheats)',
+		tweengotocam = 'Tweens you to the location of your камеру',
+		tweengotomodel = 'Tweens твоего персонажа to a model or multiple models',
+		tweengotopart = 'Tweens твоего персонажа to a part or multiple parts',
+		tweengotopartclass = 'Tweens твоего персонажа to a part or multiple parts based on classname',
+		tweenoffset = 'Описание: Tween offset (bypasses some anti cheats)',
+		tweenspeed = 'Sets how fast all tween commands go (по умолчанию 1)',
+		tweentpposition = 'Описание: Tween to coordinates (bypasses some anti cheats)',
+		tweenwaypoint = 'Tweens игрока to a waypoint',
+		unallowcustomanim = 'Описание: Doesn\\\'t let you use custom animation packs instead',
+		unautoclick = 'Описание: Turns off autoclick',
+		unautojump = 'Выключает autojump',
+		unautokeypress = 'Останавливает autokeypress',
+		unbackpack = 'Останавливает being a backpack',
+		unblow = 'Останавливает blowing it.',
+		unbubblechat = 'Выключает bubblechat command',
+		uncarpet = 'Описание: Undoes carpet',
+		uncframefly = 'Выключает cfly',
+		unchokeon = 'Останавливает the choking.',
+		unclickfling = 'Описание: Turn off clickfling',
+		unclimb = 'Описание: Destroy the truss.',
+		undance = 'Останавливает dance animations',
+		undupetools = 'Останавливает dropping items',
+		unedgejump = 'Выключает edgejump',
+		unflyfling = 'Выключает flyfling command',
+		unflyjump = 'Выключает flyjump',
+		unfreezeanims = 'Описание: Unfreezes your animations / plays your animations',
+		ungrabtools = 'Выключает grabtools',
+		unguidelete = 'Выключает guidelete',
+		unhairdresser = 'Останавливает the hairdressing',
+		unhideguis = 'Описание: Undoes hideguis',
+		unhovername = 'Описание: Turns off hovername',
+		unhug = 'Останавливает the hugging.',
+		uninfinitejump = 'Выключает infjump',
+		uninstantproximityprompts = 'Описание: Undo the cooldown removal',
+		uninvisibleparts = 'Описание: Makes parts affected by invisparts return to normal',
+		unjerk = 'Останавливает the shanagian',
+		unlocate = 'Убирает locate',
+		unlockworkspace = 'Описание: Unlocks the whole workspace',
+		unloopbring = 'Описание: Undoes loopbring',
+		unloopfullbright = 'Описание: Unloops fullbright',
+		unloopjumppower = 'Описание: Turns off loopjumppower',
+		unloopnobgui = 'Выключает loopnobgui',
+		unloopoof = 'Останавливает the oof chaos',
+		unloopspeed = 'Описание: Turns off loopspeed',
+		unloopxray = 'Описание: Unloops xray',
+		unmarble = 'Описание: Turns you back from being a marble',
+		unmuteboombox = 'Описание: Unmutes someones boombox',
+		unnoclip = 'Выключает noclip',
+		unnorotate = 'Включает AutoRotate',
+		unnosit = 'Выключает nosit',
+		unpartesp = 'Убирает partesp',
+		unplatformstand = 'Выключает PlatformStand',
+		unpmspam = 'Описание: Turns off pm spam',
+		unreach = 'Описание: Turns off reach',
+		unshowguis = 'Описание: Undoes showguis',
+		unsitwalk = 'Описание: unsitwalk, reverts your original animations',
+		unspamtime = 'Останавливает spamming the time',
+		unspin = 'Выключает spin',
+		unstaffwatch = 'Описание: Disable Staffwatch',
+		unstareat = 'Выключает stareat',
+		unstrengthen = 'Описание: Sets your characters CustomPhysicalProperties to default',
+		untpwalk = 'Описание: Undoes tpwalk / teleportwalk',
+		untweenfly = 'Выключает tweenfly',
+		unuse2022materials = 'Выключает 2022 material textures',
+		unvehiclefly = 'Выключает полёт транспорта',
+		unwalkfling = 'Флинг people while walking around.',
+		unwalkto = 'Останавливает following игрока',
+		unweaken = 'Описание: Sets your characters CustomPhysicalProperties to default',
+		use2022materials = 'Включает 2022 material textures',
+		usetools = 'Activates all инструменты in your backpack at the same time',
+		vehicleclip = 'Включает vehicle collision',
+		vehiclefly = 'Полёт на транспорте',
+		vehicleflyspeed = 'Скорость полёта транспорта',
+		vehiclegoto = 'Go to игрока while in a vehicle',
+		vehiclenoclip = 'Описание: Turns off vehicle collision',
+		viewpart = 'Показать a part',
+		volume = 'Описание: Adjusts your game volume on a scale of 0 to 10',
+		walkfling = 'Флинг people while walking around.',
+		walkto = 'Follow игрока',
+		walktoposition = 'Делает тебя / позволяет walk to a coordinate',
+		walktowaypoint = 'Walks игрока to a waypoint',
+		walltp = 'Описание: Teleports you above/over any wall you run into',
+		waypointpos = 'Ставит waypoint по координатам',
+		weaken = 'Меняет твой/твою character less dense',
+		-- IYP_RU_EXTRA_END
 	}
 	for k, v in pairs(ru) do
 		CMD_DESC_RU[k] = v
@@ -7026,16 +7742,19 @@ do
 	for i = 1, #CMDs do
 		local primary = cmdPrimaryKey(CMDs[i].NAME)
 		local eng = tostring(CMDs[i].DESC or "")
-		if not CMD_DESC_RU[primary] or CMD_DESC_RU[primary] == "" then
+		if not CMD_DESC_RU[primary] or CMD_DESC_RU[primary] == "" or not looksRussian(CMD_DESC_RU[primary]) then
 			if eng ~= "" then
-				CMD_DESC_RU[primary] = autoRuDesc(eng)
+				local tr = autoRuDesc(eng)
+				if looksRussian(tr) then
+					CMD_DESC_RU[primary] = tr
+				end
 			end
 		end
 		local ruText = CMD_DESC_RU[primary]
-		if ruText and ruText ~= "" then
+		if ruText and ruText ~= "" and looksRussian(ruText) then
 			for part in string.gmatch(CMDs[i].NAME:lower(), "[^%s/%[%]]+") do
 				if not part:find("%[") and part ~= "" then
-					if not CMD_DESC_RU[part] or CMD_DESC_RU[part] == "" then
+					if not CMD_DESC_RU[part] or CMD_DESC_RU[part] == "" or not looksRussian(CMD_DESC_RU[part]) then
 						CMD_DESC_RU[part] = ruText
 					end
 				end
@@ -7044,17 +7763,61 @@ do
 	end
 end
 
+favCmds = favCmds or {}
+
+-- Packed into one local to stay under Luau's 200-register main-chunk limit
+local FavCmds = {}
+function FavCmds.is(name)
+	local key = cmdPrimaryKey(name)
+	for i = 1, #(favCmds or {}) do
+		if favCmds[i] == key then return true, i end
+	end
+	return false, nil
+end
+function FavCmds.apply(btn)
+	local title = tostring(btn:GetAttribute("Title") or btn.Text)
+	local fav = FavCmds.is(title)
+	btn.LayoutOrder = fav and 1 or (100 + (btn:GetAttribute("CmdIndex") or 0))
+	local label = btn:FindFirstChild("Label")
+	if label then
+		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
+	end
+end
+function FavCmds.toggle(name)
+	local key = cmdPrimaryKey(name)
+	if key == "" then return end
+	local isFav, idx = FavCmds.is(key)
+	if isFav then
+		table.remove(favCmds, idx)
+		notify(T("favorites"), T("removeFavorite") .. ": " .. key)
+	else
+		table.insert(favCmds, key)
+		notify(T("favorites"), T("addFavorite") .. ": " .. key)
+	end
+	for _, child in pairs(CMDsF:GetChildren()) do
+		if child:IsA("TextButton") and child.Name == "CMD" then
+			FavCmds.apply(child)
+		end
+	end
+	updatesaves()
+end
+
+isFavoriteCmd = FavCmds.is
+applyFavoriteStyle = FavCmds.apply
+toggleFavoriteCmd = FavCmds.toggle
+
 for i = 1, #CMDs do
     local newcmd = Example:Clone()
     newcmd.Parent = CMDsF
     newcmd.Visible = false
     newcmd.Text = CMDs[i].NAME
+    newcmd:SetAttribute("Title", CMDs[i].NAME)
+    newcmd:SetAttribute("CmdIndex", i)
     newcmd.Name = "CMD"
-    newcmd.LayoutOrder = 100 + i
     styleCmdRow(newcmd)
+    applyFavoriteStyle(newcmd)
     table.insert(text1, newcmd)
     if CMDs[i].DESC ~= "" then
-        newcmd:SetAttribute("Title", CMDs[i].NAME)
         newcmd:SetAttribute("Desc", CMDs[i].DESC)
         -- Register aliases of the same command for RU lookup
         local primary = cmdPrimaryKey(CMDs[i].NAME)
@@ -7068,6 +7831,7 @@ for i = 1, #CMDs do
         newcmd.MouseButton1Down:Connect(function()
             if not IsOnMobile and newcmd.Visible and not newcmd:GetAttribute("Disabled") then
                 cmdSelectionPainted = true
+
                 selectedCmdButton = newcmd
                 for idx, b in ipairs(visibleCmdButtons) do
                     if b == newcmd then selectedCmdIndex = idx break end
@@ -7077,6 +7841,11 @@ for i = 1, #CMDs do
             end
         end)
     end
+    newcmd.MouseButton2Click:Connect(function()
+        if newcmd.Visible and not newcmd:GetAttribute("Disabled") then
+            toggleFavoriteCmd(newcmd:GetAttribute("Title") or newcmd.Text)
+        end
+    end)
 end
 
 IndexContents("", true)
@@ -8295,6 +9064,11 @@ function refreshbinds()
             end)
         end
     end
+    pcall(function()
+        if Keybinds and Keybinds:FindFirstChild("ButtonLabel") then
+            Keybinds.ButtonLabel.Text = T("editKeybinds") .. " (x" .. #binds .. ")"
+        end
+    end)
 end
 
 refreshbinds()
@@ -8422,15 +9196,39 @@ BindTriggerSelect.MouseButton1Click:Connect(function()
 end)
 
 newToggle = false
+function updateKbToggleLabel()
+	if not CreateToggle then return end
+	CreateToggle.Text = T("keybindToggle")
+	CreateToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	if newToggle then
+		CreateToggle.BackgroundColor3 = ACCENT
+	else
+		CreateToggle.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+	end
+end
 local function setKeybindToggleMode(enabled)
     newToggle = enabled == true
-    On_2.BackgroundTransparency = newToggle and 0 or 1
-    Cmdbar_3.Visible = newToggle
-    Cmdbar_3Box.View.Visible = newToggle
-    -- Click TP / Delete stay pinned to the bottom; only Command 2 appears above.
-    Toggles.Position = UDim2.new(0, 142, 1, -56)
+    if Cmdbar_3Box and Cmdbar_3Box.View then
+        Cmdbar_3Box.View.Visible = newToggle
+        Cmdbar_3Box.View.ZIndex = 34
+    end
+    if Cmdbar_3 then
+        Cmdbar_3.Visible = true
+        Cmdbar_3.ZIndex = 35
+    end
+	updateKbToggleLabel()
+    if type(layoutKbEditor) == "function" then layoutKbEditor() end
+    if type(refreshKbCmdPicker) == "function" then refreshKbCmdPicker() end
+    if newToggle then
+        if type(setKbActiveField) == "function" then setKbActiveField("cmd2") end
+        task.defer(function()
+            pcall(function() Cmdbar_3:CaptureFocus() end)
+        end)
+    else
+        if type(setKbActiveField) == "function" then setKbActiveField("cmd1") end
+    end
 end
-On_2.MouseButton1Click:Connect(function()
+CreateToggle.MouseButton1Click:Connect(function()
     setKeybindToggleMode(not newToggle)
 end)
 setKeybindToggleMode(false)
@@ -8440,9 +9238,9 @@ Add_2.MouseButton1Click:Connect(function()
         if string.find(Cmdbar_2.Text, "\\\\") or string.find(Cmdbar_3.Text, "\\\\") then
             notify('Keybind Error','Only use one backslash to keybind multiple commands into one keybind or command')
         else
-            if newToggle and Cmdbar_3.Text ~= '' and Cmdbar_2.text ~= '' then
+            if newToggle and Cmdbar_3.Text ~= '' and Cmdbar_2.Text ~= '' then
                 addbind(Cmdbar_2.Text,keyPressed,false,Cmdbar_3.Text)
-            elseif not newToggle and Cmdbar_2.text ~= '' then
+            elseif not newToggle and Cmdbar_2.Text ~= '' then
                 addbind(Cmdbar_2.Text,keyPressed,bindChosenKeyUp)
             else
                 return
@@ -8545,6 +9343,310 @@ ClickDelete.Select.MouseButton1Click:Connect(function()
         end
     end
 end)
+
+-- Keybind command picker (separate scope — Luau 200-local register limit)
+;(function()
+local KB_POPULAR = {fly=1, esp=2, god=3, godmode=3, reload=4, noclip=5, cfly=6, re=7, float=8, freecam=9}
+local kbRows = {}
+local kbActiveField = "cmd1"
+local kbTopSuggest = nil
+local kbTabConn = nil
+local KB_FOOTER_H = 56
+
+local function getActiveCmdBox()
+	if kbActiveField == "cmd2" and newToggle and Cmdbar_3 then
+		return Cmdbar_3
+	end
+	return Cmdbar_2
+end
+
+function setKbActiveField(field)
+	kbActiveField = (field == "cmd2") and "cmd2" or "cmd1"
+	if type(refreshKbCmdPicker) == "function" then
+		refreshKbCmdPicker()
+	end
+end
+
+local function lastBackslashPos(text)
+	local subPos = 0
+	local pos = 1
+	local findRes = string.find(text, "\\", pos, true)
+	while findRes do
+		subPos = findRes
+		pos = findRes + 1
+		findRes = string.find(text, "\\", pos, true)
+	end
+	return subPos
+end
+
+local function kbActiveSegment(text)
+	text = text or ""
+	if text:sub(-1) == "\\" then return "" end
+	return text:sub(lastBackslashPos(text) + 1)
+end
+
+local function kbFillSegment(box, primary)
+	if not box or not primary or primary == "" then return end
+	local cur = box.Text or ""
+	local subPos = lastBackslashPos(cur)
+	box.Text = cur:sub(1, subPos) .. primary .. " "
+	box.CursorPosition = #box.Text + 1
+end
+
+local function shortKbDesc(title, desc)
+	local d = getLocalizedDesc(title, desc)
+	if not d or d == "" then d = T("noDesc") end
+	if #d > 52 then
+		d = d:sub(1, 50) .. "…"
+	end
+	return d
+end
+
+local function buildRanked(query)
+	local ranked = {}
+	local q = (query or ""):match("^(%S+)") or (query or "")
+	for i = 1, #CMDs do
+		local cmd = CMDs[i]
+		local name = cmd and cmd.NAME
+		if name and name ~= "" then
+			local primary = cmdPrimaryKey(name)
+			if primary ~= "" then
+				local score = commandScore(name, q)
+				if q == "" then
+					if type(isFavoriteCmd) == "function" and isFavoriteCmd(primary) then
+						score = score + 2000
+					elseif KB_POPULAR[primary] then
+						score = score + 1000 - KB_POPULAR[primary]
+					end
+				else
+					local loc = getLocalizedDesc(name, cmd.DESC or "")
+					if loc:lower():find(q:lower(), 1, true) then
+						score = score + 50
+					end
+				end
+				if score > 0 then
+					ranked[#ranked + 1] = {
+						primary = primary,
+						name = name,
+						desc = cmd.DESC or "",
+						score = score,
+					}
+				end
+			end
+		end
+	end
+	table.sort(ranked, function(a, b)
+		if a.score == b.score then
+			return a.primary < b.primary
+		end
+		return a.score > b.score
+	end)
+	return ranked
+end
+
+local function resetKbRowVisual(row)
+	if not row then return end
+	row.BackgroundTransparency = 1
+	row.BackgroundColor3 = ROW_PURPLE
+end
+
+local function updateKbGhost()
+	if not KbCmdGhost then return end
+	if kbActiveField == "cmd2" then
+		KbCmdGhost.Text = ""
+		return
+	end
+	local box = Cmdbar_2
+	local cur = box and box.Text or ""
+	local seg = kbActiveSegment(cur)
+	if seg ~= "" and not seg:find("%s") and kbTopSuggest and kbTopSuggest.primary then
+		local first = kbTopSuggest.primary
+		local word = seg:match("^(%S+)") or seg
+		if first:lower():sub(1, #word) == word:lower() then
+			local prefix = cur:sub(1, lastBackslashPos(cur))
+			KbCmdGhost.Text = prefix .. word .. first:sub(#word + 1)
+			return
+		end
+	end
+	KbCmdGhost.Text = ""
+end
+
+local function fillKbRow(row, item)
+	local nameLbl = row:FindFirstChild("NameLbl")
+	local descLbl = row:FindFirstChild("DescLbl")
+	if nameLbl then
+		nameLbl.Text = item.primary
+		if type(isFavoriteCmd) == "function" and isFavoriteCmd(item.primary) then
+			nameLbl.TextColor3 = Color3.fromRGB(255, 214, 102)
+		else
+			nameLbl.TextColor3 = Color3.fromRGB(244, 244, 248)
+		end
+	end
+	if descLbl then
+		descLbl.Text = shortKbDesc(item.name, item.desc)
+	end
+	row:SetAttribute("Primary", item.primary)
+end
+
+local function wireKbRowHover(row)
+	if row:GetAttribute("KbHoverWired") then return end
+	row:SetAttribute("KbHoverWired", true)
+	row.MouseEnter:Connect(function()
+		row.BackgroundTransparency = 0.88
+		row.BackgroundColor3 = ROW_PURPLE_SOFT
+	end)
+	row.MouseLeave:Connect(function()
+		resetKbRowVisual(row)
+	end)
+end
+
+local function onKbRowClick(row)
+	local primary = row:GetAttribute("Primary")
+	if not primary or primary == "" then return end
+	kbFillSegment(getActiveCmdBox(), primary)
+	if type(refreshKbCmdPicker) == "function" then
+		refreshKbCmdPicker()
+	end
+end
+
+function refreshKbCmdPicker()
+	if not KbCmdList or not KbCmdRowTemplate then return end
+	local box = getActiveCmdBox()
+	local full = box and box.Text or ""
+	local query = kbActiveSegment(full)
+	local ranked = buildRanked(query)
+	local shown = 0
+	local y = 0
+
+	for i = 1, #kbRows do
+		kbRows[i].Visible = false
+		resetKbRowVisual(kbRows[i])
+	end
+
+	for _, item in ipairs(ranked) do
+		shown += 1
+		local row = kbRows[shown]
+		if not row then
+			row = KbCmdRowTemplate:Clone()
+			row.Name = "KbRow"
+			row.Parent = KbCmdList
+			row.Text = ""
+			wireKbRowHover(row)
+			row.MouseButton1Click:Connect(function()
+				onKbRowClick(row)
+			end)
+			kbRows[shown] = row
+		end
+		fillKbRow(row, item)
+		resetKbRowVisual(row)
+		row.Visible = true
+		row.Position = UDim2.new(0, 4, 0, y)
+		row.Size = UDim2.new(1, -12, 0, KB_ROW_H)
+		y += KB_ROW_H
+	end
+
+	KbCmdList.CanvasSize = UDim2.new(0, 0, 0, math.max(y, KB_ROW_H))
+	if KbCmdEmpty then
+		KbCmdEmpty.Visible = shown == 0
+		KbCmdEmpty.Text = shown == 0 and T("keybindNoMatch") or T("keybindBrowseHint")
+		KbCmdEmpty.ZIndex = 33
+	end
+	kbTopSuggest = ranked[1]
+	updateKbGhost()
+end
+
+function layoutKbEditor()
+	local footerH = KB_FOOTER_H
+	local listY = 40
+	local toggleOn = newToggle == true
+	if Cmdbar_3Box and Cmdbar_3Box.View then
+		Cmdbar_3Box.View.Position = UDim2.new(0, 142, 0, 38)
+		Cmdbar_3Box.View.Size = UDim2.new(1, -152, 0, 24)
+		Cmdbar_3Box.View.ZIndex = 34
+		Cmdbar_3Box.View.Visible = toggleOn
+	end
+	if Cmdbar_3 then
+		Cmdbar_3.Position = UDim2.new(0, 4, 0, 0)
+		Cmdbar_3.Size = UDim2.new(1, -8, 1, 0)
+		Cmdbar_3.ZIndex = 35
+		Cmdbar_3.Visible = true
+	end
+	if toggleOn then
+		listY = 68
+	end
+	local listH = math.max(80, KB_EDITOR_BODY_H - listY - footerH - 6)
+	if KbCmdList then
+		KbCmdList.Position = UDim2.new(0, 142, 0, listY)
+		KbCmdList.Size = UDim2.new(1, -152, 0, listH)
+		KbCmdList.ZIndex = 32
+	end
+	if Toggles then
+		Toggles.Position = UDim2.new(0, 142, 1, -footerH)
+	end
+end
+
+local function completeKbTop()
+	local box = getActiveCmdBox()
+	if not box or not kbTopSuggest or not kbTopSuggest.primary then return end
+	local seg = kbActiveSegment(box.Text)
+	if seg:find("%s") then return end
+	local first = kbTopSuggest.primary
+	if seg == "" or first:lower():sub(1, #seg) == seg:lower() then
+		kbFillSegment(box, first)
+		refreshKbCmdPicker()
+	end
+end
+
+local function hookKbTabComplete(box)
+	if kbTabConn then
+		pcall(function() kbTabConn:Disconnect() end)
+		kbTabConn = nil
+	end
+	kbTabConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not box:IsFocused() then
+			if kbTabConn then kbTabConn:Disconnect() kbTabConn = nil end
+			return
+		end
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.Tab then
+			completeKbTop()
+		elseif input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
+			local seg = kbActiveSegment(box.Text or "")
+			if (seg == "" or not seg:find("%s")) and kbTopSuggest and kbTopSuggest.primary then
+				if seg == "" or kbTopSuggest.primary:lower():sub(1, #seg) == seg:lower() then
+					kbFillSegment(box, kbTopSuggest.primary)
+					refreshKbCmdPicker()
+				end
+			end
+		end
+	end)
+end
+
+Cmdbar_2:GetPropertyChangedSignal("Text"):Connect(function()
+	if kbActiveField ~= "cmd1" and Cmdbar_2:IsFocused() then
+		kbActiveField = "cmd1"
+	end
+	refreshKbCmdPicker()
+end)
+Cmdbar_3:GetPropertyChangedSignal("Text"):Connect(function()
+	if kbActiveField ~= "cmd2" and Cmdbar_3:IsFocused() then
+		kbActiveField = "cmd2"
+	end
+	refreshKbCmdPicker()
+end)
+Cmdbar_2.Focused:Connect(function()
+	kbActiveField = "cmd1"
+	hookKbTabComplete(Cmdbar_2)
+	refreshKbCmdPicker()
+end)
+Cmdbar_3.Focused:Connect(function()
+	kbActiveField = "cmd2"
+	hookKbTabComplete(Cmdbar_3)
+	refreshKbCmdPicker()
+end)
+
+layoutKbEditor()
+end)()
 
 local function clicktpFunc()
     pcall(function()
@@ -10111,6 +11213,18 @@ function NOFLY()
     end
     pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
 end
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_NOFLY = NOFLY
+end)
+IYR_ADD_RESET_HOOK(function()
+	FLYING = false
+	flying = false
+	pcall(NOFLY)
+	pcall(function()
+		if type(unmobilefly) == "function" then unmobilefly(Players.LocalPlayer) end
+	end)
+end)
 
 local velocityHandlerName = randomString()
 local gyroHandlerName = randomString()
@@ -10287,7 +11401,10 @@ addcmd('cframefly', {'cfly'}, function(args, speaker)
     -- credit to peyton#9148 (apeyton)
     execCmd('untweenfly\\unfly\\unvfly\\uncfly')
     CFing = true
-    
+    if args[1] and tonumber(args[1]) then
+        CFspeed = tonumber(args[1])
+    end
+
     local char = speaker.Character or speaker.CharacterAdded:Wait()
     local humanoid = char:FindFirstChildOfClass('Humanoid')
     local root = char:WaitForChild("HumanoidRootPart")
@@ -10296,21 +11413,44 @@ addcmd('cframefly', {'cfly'}, function(args, speaker)
     humanoid.PlatformStand = true
     root.Anchored = true
 
+    local controlModule
+    pcall(function()
+        controlModule = require(speaker.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    end)
+
     if CFloop then CFloop:Disconnect() end
 
     CFloop = RunService.Heartbeat:Connect(function(dt)
         if not (char and char.Parent and root and head) then return end
 
         local cam = workspace.CurrentCamera
-        local move = humanoid.MoveDirection
         local speed = CFspeed * 50
-
         local camLook = cam.CFrame.LookVector
 
+        local dir = Vector3.zero
+        if controlModule then
+            pcall(function()
+                dir = controlModule:GetMoveVector()
+            end)
+        end
+        if dir.Magnitude < 0.01 then
+            local x, z = 0, 0
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then z -= 1 end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then z += 1 end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then x -= 1 end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then x += 1 end
+            if x ~= 0 or z ~= 0 then
+                dir = Vector3.new(x, 0, z)
+                if dir.Magnitude > 1 then dir = dir.Unit end
+            end
+        end
+
         local velocity = Vector3.zero
-        if move.Magnitude > 0 then
-            -- MoveDirection is already world-space (camera-relative input resolved by Humanoid)
-            velocity = move * speed * dt
+        if dir.Magnitude > 0 then
+            local moveDir = cam.CFrame.RightVector * dir.X - cam.CFrame.LookVector * dir.Z
+            if moveDir.Magnitude > 0 then
+                velocity = moveDir.Unit * speed * dt
+            end
         end
 
         root.CFrame = root.CFrame + velocity
@@ -10337,6 +11477,22 @@ addcmd('uncframefly', {'uncfly'}, function(args, speaker)
 
     execCmd("grav " .. lastGravity)
     lastGravity = workspace.Gravity
+end)
+
+IYR_ADD_RESET_HOOK(function()
+	CFing = false
+	if CFloop then
+		pcall(function() CFloop:Disconnect() end)
+		CFloop = nil
+	end
+	pcall(function()
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+		local root = char:FindFirstChild("HumanoidRootPart")
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		if root then root.Anchored = false end
+		if humanoid then humanoid.PlatformStand = false end
+	end)
 end)
 
 addcmd('cframeflyspeed', {'cflyspeed'}, function(args, speaker)
@@ -10423,6 +11579,20 @@ addcmd('unfloat',{'nofloat','unplatform','noplatform'},function(args, speaker)
         eDown:Disconnect()
         floatDied:Disconnect()
     end
+end)
+
+IYR_ADD_RESET_HOOK(function()
+	Floating = false
+	pcall(function()
+		if FloatingFunc then FloatingFunc:Disconnect() end
+	end)
+	FloatingFunc = nil
+	pcall(function()
+		local char = Players.LocalPlayer.Character
+		if char and floatName and char:FindFirstChild(floatName) then
+			char:FindFirstChild(floatName):Destroy()
+		end
+	end)
 end)
 
 addcmd('togglefloat',{},function(args, speaker)
@@ -12025,11 +13195,16 @@ function clearAllESP()
         removeESP(names[i])
     end
     for _, v in pairs(COREGUI:GetChildren()) do
-        if typeof(v.Name) == "string" and string.sub(v.Name, -4) == "_ESP" then
+        local n = tostring(v.Name)
+        if string.sub(n, -4) == "_ESP" or string.sub(n, -5) == "_CHMS" or string.sub(n, -3) == "_LC" then
             v:Destroy()
         end
     end
 end
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_CLEAR_ESP = clearAllESP
+end)
 
 function updateESP(playerName, esp)
     if type(esp) ~= "table" or esp.fallback or not esp.box then return end
@@ -12188,6 +13363,25 @@ end)
 
 local espParts = {}
 local partEspTrigger = nil
+IYR_ADD_RESET_HOOK(function()
+	CHMSenabled = false
+	ESPenabled = false
+	pcall(function()
+		if partEspTrigger then
+			partEspTrigger:Disconnect()
+			partEspTrigger = nil
+		end
+	end)
+	espParts = {}
+	pcall(function()
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v:IsA("BoxHandleAdornment") and string.sub(tostring(v.Name), -5) == "_PESP" then
+				v:Destroy()
+			end
+		end
+	end)
+	pcall(clearAllESP)
+end)
 function partAdded(part)
     if #espParts > 0 then
         if FindInTable(espParts,part.Name:lower()) then
@@ -12588,6 +13782,15 @@ function StopFreecam()
     workspace.Camera.FieldOfView = 70
     fcRunning = false
 end
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_STOP_FREECAM = StopFreecam
+end)
+IYR_ADD_RESET_HOOK(function()
+	pcall(StopFreecam)
+	fcRunning = false
+	pcall(function() RunService:UnbindFromRenderStep("Freecam") end)
+end)
 
 addcmd('freecam',{'fc'},function(args, speaker)
     StartFreecam()
@@ -13519,33 +14722,172 @@ addcmd("refresh", {"re"}, function(args, speaker)
     refresh(speaker)
 end)
 
-addcmd("god", {}, function(args, speaker)
-    permadeath(speaker)
-    local Cam = workspace.CurrentCamera
-    local Char, Pos = speaker.Character, Cam.CFrame
-    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-    local nHuman = Human:Clone()
-    nHuman.Parent = char
-    speaker.Character = nil
-    nHuman:SetStateEnabled(15, false)
-    nHuman:SetStateEnabled(1, false)
-    nHuman:SetStateEnabled(0, false)
-    nHuman.BreakJointsOnDeath = true
-    Human:Destroy()
-    speaker.Character = char
-    Cam.CameraSubject = nHuman
-    Cam.CFrame = task.wait() and pos
-    nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-    local Script = Char:FindFirstChild("Animate")
-    if Script then
-        Script.Disabled = true
-        task.wait()
-        Script.Disabled = false
-    end
-    nHuman.Health = nHuman.MaxHealth
-end)
+-- Godmode in nested scope: main chunk is near Luau's 200-local register limit
+;(function()
+	local godEnabled = false
+	local godProtectConns = {}
+	local godCharAdded = nil
+	local godHeartbeat = nil
 
-local invisRunning = false
+	local function stopGodProtect()
+		for i = 1, #godProtectConns do
+			pcall(function() godProtectConns[i]:Disconnect() end)
+		end
+		godProtectConns = {}
+		if godHeartbeat then
+			pcall(function() godHeartbeat:Disconnect() end)
+			godHeartbeat = nil
+		end
+	end
+
+	local function disableGodMode()
+		godEnabled = false
+		stopGodProtect()
+		if godCharAdded then
+			pcall(function() godCharAdded:Disconnect() end)
+			godCharAdded = nil
+		end
+	end
+
+	local function hardenHumanoid(hum)
+		if not hum then return end
+		pcall(function()
+			hum.BreakJointsOnDeath = false
+			hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+			hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+			if hum.MaxHealth <= 0 then
+				hum.MaxHealth = 100
+			end
+			hum.Health = hum.MaxHealth
+			hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end)
+	end
+
+	local function protectGodHumanoid(hum)
+		if not hum then return end
+		stopGodProtect()
+		hardenHumanoid(hum)
+
+		godProtectConns[#godProtectConns + 1] = hum.HealthChanged:Connect(function(hp)
+			if not godEnabled or not hum.Parent then return end
+			if hp < hum.MaxHealth then
+				hum.Health = hum.MaxHealth
+			end
+		end)
+
+		godProtectConns[#godProtectConns + 1] = hum:GetPropertyChangedSignal("MaxHealth"):Connect(function()
+			if not godEnabled or not hum.Parent then return end
+			if hum.MaxHealth <= 0 then
+				hum.MaxHealth = 100
+			end
+			hum.Health = hum.MaxHealth
+		end)
+
+		godProtectConns[#godProtectConns + 1] = hum.Died:Connect(function()
+			if not godEnabled or not hum.Parent then return end
+			pcall(function()
+				hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+				hum.Health = hum.MaxHealth
+			end)
+		end)
+
+		godHeartbeat = RunService.Heartbeat:Connect(function()
+			if not godEnabled then return end
+			if hum and hum.Parent then
+				if hum.Health < hum.MaxHealth or hum.Health <= 0 then
+					hum.Health = math.max(hum.MaxHealth, 1)
+				end
+			end
+		end)
+	end
+
+	local function applyGodToCharacter(speaker)
+		local Char = speaker.Character
+		if not Char then return false end
+		local Human = Char:FindFirstChildWhichIsA("Humanoid")
+		if not Human then return false end
+
+		local Cam = workspace.CurrentCamera
+		local camCF = Cam and Cam.CFrame
+		local targetHum = Human
+
+		local ok = pcall(function()
+			local nHuman = Human:Clone()
+			nHuman.Parent = Char
+			speaker.Character = nil
+			hardenHumanoid(nHuman)
+			Human:Destroy()
+			speaker.Character = Char
+			if Cam then
+				Cam.CameraSubject = nHuman
+				task.wait()
+				if camCF then
+					Cam.CFrame = camCF
+				end
+			end
+			local anim = Char:FindFirstChild("Animate")
+			if anim then
+				anim.Disabled = true
+				task.wait()
+				anim.Disabled = false
+			end
+			nHuman.Health = nHuman.MaxHealth
+			targetHum = nHuman
+		end)
+
+		if not ok then
+			targetHum = Char:FindFirstChildWhichIsA("Humanoid") or Human
+		end
+		protectGodHumanoid(targetHum)
+		return targetHum ~= nil
+	end
+
+	local function enableGodMode(speaker)
+		if godEnabled then
+			notify("God", T("godAlready"))
+			return
+		end
+		godEnabled = true
+		applyGodToCharacter(speaker)
+
+		if godCharAdded then
+			pcall(function() godCharAdded:Disconnect() end)
+			godCharAdded = nil
+		end
+		godCharAdded = speaker.CharacterAdded:Connect(function()
+			if not godEnabled then return end
+			task.defer(function()
+				if not godEnabled then return end
+				local char = speaker.Character
+				if not char then return end
+				char:WaitForChild("Humanoid", 5)
+				if not godEnabled then return end
+				task.wait(0.1)
+				applyGodToCharacter(speaker)
+			end)
+		end)
+
+		notify("God", T("godEnabled"))
+	end
+
+	IYR_ADD_RESET_HOOK(function()
+		disableGodMode()
+	end)
+
+	addcmd("god", {"godmode"}, function(args, speaker)
+		enableGodMode(speaker)
+	end)
+
+	addcmd("ungod", {"ungodmode"}, function(args, speaker)
+		if not godEnabled then return end
+		disableGodMode()
+		notify("God", T("godDisabled"))
+	end)
+end)()
+
+;(function()
+invisRunning = false
 local invisConn, invisDiedConn
 local InvisibleCharacter, OriginalCharacter
 
@@ -13609,11 +14951,15 @@ local function makeVisible(speaker)
         if invisRoot then
             OriginalCharacter.HumanoidRootPart.CFrame = invisRoot.CFrame
         end
-        Player.Character = OriginalCharacter
+        speaker.Character = OriginalCharacter
         OriginalCharacter.Parent = workspace
     end
     cleanupInvis()
     notify('Visible', 'You are now visible to other players')
+end
+
+TurnVisible = function()
+    makeVisible(Players.LocalPlayer)
 end
 
 addcmd('invisible', {'invis'}, function(args, speaker)
@@ -13627,6 +14973,7 @@ end)
 addcmd("toggleinvis", {}, function(args, speaker)
     execCmd(invisRunning and "visible" or "invisible")
 end)
+end)()
 
 addcmd('toolinvisible',{'toolinvis','tinvis'},function(args, speaker)
     local Char  = Players.LocalPlayer.Character
@@ -18145,6 +19492,40 @@ addcmd('reloadplugin',{},function(args, speaker)
     addPlugin(pluginName)
 end)
 
+addcmd('reload', {'iyreload', 'reiy', 'refreshiy'}, function(args, speaker)
+    pcall(function()
+        local genv = (getgenv and getgenv()) or _G
+        genv.IYR_SKIP_INTRO = true
+        if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
+    end)
+    pcall(function()
+        if typeof(IYR_MAIN) == "Instance" then IYR_MAIN:Destroy() end
+        local genv = (getgenv and getgenv()) or _G
+        if typeof(genv.IYR_MAIN) == "Instance" then genv.IYR_MAIN:Destroy() end
+    end)
+    local src
+    pcall(function()
+        if readfile and isfile and isfile("iyr.lua") then
+            src = readfile("iyr.lua")
+        end
+    end)
+    if not src then
+        pcall(function()
+            src = game:HttpGet("https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/refs/heads/main/source")
+        end)
+    end
+    if src then
+        local fn, err = loadstring(src)
+        if fn then
+            task.defer(fn)
+        else
+            notify("Reload", tostring(err))
+        end
+    else
+        notify("Reload", "Could not read iyr.lua / remote source")
+    end
+end)
+
 addcmd('removecmd',{'deletecmd'},function(args, speaker)
     removecmd(args[1])
 end)
@@ -18197,30 +19578,32 @@ addcmd('toolview',{'tview'},function(args, speaker)
 end)
 
 if IsOnMobile then
-    local QuickCapture = Instance.new("TextButton")
-    local UICorner = Instance.new("UICorner")
-    QuickCapture.Name = randomString()
-    QuickCapture.Parent = PARENT
-    QuickCapture.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
-    QuickCapture.BackgroundTransparency = 0.14
-    QuickCapture.Position = UDim2.new(0.489, 0, 0, 0)
-    QuickCapture.Size = UDim2.new(0, 32, 0, 33)
-    QuickCapture.Font = Enum.Font.SourceSansBold
-    QuickCapture.Text = "IYR"
-    QuickCapture.TextColor3 = Color3.fromRGB(255, 255, 255)
-    QuickCapture.TextSize = 20
-    QuickCapture.TextWrapped = true
-    QuickCapture.ZIndex = 10
-    QuickCapture.Draggable = true
-    UICorner.Name = randomString()
-    UICorner.CornerRadius = UDim.new(0.5, 0)
-    UICorner.Parent = QuickCapture
-    QuickCapture.MouseButton1Click:Connect(function()
-        Cmdbar:CaptureFocus()
-        maximizeHolder()
-    end)
-    table.insert(shade1, QuickCapture)
-    table.insert(text1, QuickCapture)
+    (function()
+        local QuickCapture = Instance.new("TextButton")
+        local UICorner = Instance.new("UICorner")
+        QuickCapture.Name = randomString()
+        QuickCapture.Parent = PARENT
+        QuickCapture.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
+        QuickCapture.BackgroundTransparency = 0.14
+        QuickCapture.Position = UDim2.new(0.489, 0, 0, 0)
+        QuickCapture.Size = UDim2.new(0, 32, 0, 33)
+        QuickCapture.Font = Enum.Font.SourceSansBold
+        QuickCapture.Text = "IYP"
+        QuickCapture.TextColor3 = Color3.fromRGB(255, 255, 255)
+        QuickCapture.TextSize = 20
+        QuickCapture.TextWrapped = true
+        QuickCapture.ZIndex = 10
+        QuickCapture.Draggable = true
+        UICorner.Name = randomString()
+        UICorner.CornerRadius = UDim.new(0.5, 0)
+        UICorner.Parent = QuickCapture
+        QuickCapture.MouseButton1Click:Connect(function()
+            Cmdbar:CaptureFocus()
+            maximizeHolder()
+        end)
+        table.insert(shade1, QuickCapture)
+        table.insert(text1, QuickCapture)
+    end)()
 end
 
 pcall(function() Scale.Scale = math.max(Holder.AbsoluteSize.X / 1920, guiScale) end)
@@ -18487,27 +19870,27 @@ end))
 
 task.defer(function()
         pcall(function()
-        Plugins.ButtonLabel.Text = "Manage Plugins" .. " (x" .. #PluginsTable .. ")"
-        Aliases.ButtonLabel.Text = "Edit Aliases" .. " (x" .. #aliases .. ")"
-        Positions.ButtonLabel.Text = "Edit/Goto Waypoints" .. " (x" .. #WayPoints .. ")"
-        Keybinds.ButtonLabel.Text = "Edit Keybinds" .. " (x" .. #binds .. ")"
+        Plugins.ButtonLabel.Text = T("managePlugins") .. " (x" .. #PluginsTable .. ")"
+        Aliases.ButtonLabel.Text = T("editAliases") .. " (x" .. #aliases .. ")"
+        Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #WayPoints .. ")"
+        Keybinds.ButtonLabel.Text = T("editKeybinds") .. " (x" .. #binds .. ")"
         end)
         setmetatable(binds, {
             __newindex = function(_, index, value)
                 rawset(_, index, value)
-                Keybinds.ButtonLabel.Text = "Edit Keybinds" .. " (x" .. #binds .. ")"
+                Keybinds.ButtonLabel.Text = T("editKeybinds") .. " (x" .. #binds .. ")"
             end,
         })
         setmetatable(WayPoints, {
             __newindex = function(_, index, value)
                 rawset(_, index, value)
-                Positions.ButtonLabel.Text = "Edit/Goto Waypoints" .. " (x" .. #WayPoints .. ")"
+                Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #WayPoints .. ")"
             end,
         })
         setmetatable(aliases, {
             __newindex = function(_, index, value)
                 rawset(_, index, value)
-                Aliases.ButtonLabel.Text = "Edit Aliases" .. " (x" .. #aliases .. ")"
+                Aliases.ButtonLabel.Text = T("editAliases") .. " (x" .. #aliases .. ")"
             end,
         })
         setmetatable(PluginsTable, {
@@ -18548,6 +19931,18 @@ task.defer(function()
 end)
 
 task.spawn(function()
+    local genv = (getgenv and getgenv()) or _G
+    local skipIntro = genv.IYR_SKIP_INTRO == true
+    genv.IYR_SKIP_INTRO = nil
+    if skipIntro then
+        pcall(function()
+            if Logo then Logo:Destroy() end
+            if Credits then Credits:Destroy() end
+            if IntroBackground then IntroBackground:Destroy() end
+        end)
+        minimizeHolder()
+        return
+    end
     task.wait()
     Credits:TweenPosition(UDim2.new(0, 0, 0.9, 0), "Out", "Quart", 0.2)
     Logo:TweenSizeAndPosition(UDim2.new(0, 160, 0, 160), UDim2.new(0, 45, 0, LIST_Y + 4), "Out", "Quart", 0.3)
