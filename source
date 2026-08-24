@@ -398,7 +398,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     pcall(function()
         local assetsURL = "https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/"
         local logoURL = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/logo.png"
-        local logoVer = "iyp-3"
+        local logoVer = "iyp-4"
         local targetFolder = "infiniteyieldreborn/assets"
         local sourceFolder = "infiniteyield/assets"
 
@@ -473,7 +473,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '3.4'
+currentVersion = '7.4'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2168,6 +2168,7 @@ IntroBackground.Position = UDim2.new(0, 0, 0, LIST_Y)
 IntroBackground.Size = UDim2.new(1, 0, 0, LIST_H)
 IntroBackground.ZIndex = 18
 IntroBackground.ClipsDescendants = true
+table.insert(shade1, IntroBackground)
 
 Logo.Name = "Logo"
 Logo.Parent = IntroBackground
