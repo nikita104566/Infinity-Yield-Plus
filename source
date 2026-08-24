@@ -1978,8 +1978,8 @@ function styleCmdRow(btn)
 			local m = btn:FindFirstChild("Sel")
 			if m then m.Visible = false end
 		end
-		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(checkTT) == "function" then
-			checkTT()
+		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
+			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
 		end
 	end)
 	btn.MouseLeave:Connect(function()
@@ -4674,7 +4674,7 @@ eventEditor = (function()
 		Position = UDim2.new(0, 4, 0, 94),
 		Size = UDim2.new(1, -8, 1, -102),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 4,
 		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
 		ZIndex = 42,
@@ -4684,7 +4684,7 @@ eventEditor = (function()
 	local eventHolder = mk("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -4, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		AutomaticSize = Enum.AutomaticSize.None,
 		ZIndex = 42,
 	}, eventList)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, eventHolder)
@@ -5728,6 +5728,7 @@ eventEditor = (function()
 		for name in pairs(events) do names[#names + 1] = name end
 		table.sort(names)
 		local y = 0
+		local order = 0
 		local q = eventFilter:lower()
 		local visible = {}
 		for _, name in ipairs(names) do
@@ -5738,6 +5739,7 @@ eventEditor = (function()
 			local matchesQuery = q == "" or name:lower():find(q, 1, true) or cat:lower():find(q, 1, true) or (desc ~= "" and desc:find(q, 1, true))
 			if matchesCat and matchesQuery then
 				visible[#visible + 1] = name
+				order += 1
 				local en, tot = 0, #ev.commands
 				for _, cmd in ipairs(ev.commands) do
 					if getMeta(cmd).enabled ~= false then en += 1 end
@@ -5748,7 +5750,7 @@ eventEditor = (function()
 					Size = UDim2.new(1, -4, 0, 44),
 					Text = "",
 					AutoButtonColor = false,
-					LayoutOrder = y,
+					LayoutOrder = order,
 					ZIndex = 43,
 				}, eventHolder)
 				uiCorner(row, 7)
@@ -5802,7 +5804,9 @@ eventEditor = (function()
 				y += 47
 			end
 		end
-		eventList.CanvasSize = UDim2.new(0, 0, 0, math.max(y, 0))
+		local contentH = math.max(y, 0)
+		eventHolder.Size = UDim2.new(1, -4, 0, contentH)
+		eventList.CanvasSize = UDim2.new(0, 0, 0, contentH)
 		updateCountLabel()
 	end
 
@@ -6480,11 +6484,8 @@ eventEditor = (function()
 			mainScale.Scale = fit
 			main.Position = eeHiddenPos()
 			main:TweenPosition(eeOpenPos(), "InOut", "Quart", 0.45, true)
-			applyStudioLang()
 			refreshList()
-			if selectedEventName and events[selectedEventName] then
-				selectEvent(selectedEventName)
-			end
+			applyStudioLang()
 		end,
 		EE_W = EE_W,
 		EE_H = EE_H,
@@ -8789,17 +8790,12 @@ function showHelper(title, desc)
         HelperFavBtn.Visible = true
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
-    Tooltip.BackgroundTransparency = 1
-    if Title_3 then Title_3.TextTransparency = 1 end
-    if Description then Description.TextTransparency = 1 end
-    if HelperFavBtn then HelperFavBtn.TextTransparency = 1 end
+    Tooltip.BackgroundTransparency = 0
+    if Title_3 then Title_3.TextTransparency = 0 end
+    if Description then Description.TextTransparency = 0 end
+    if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
     Tooltip.Visible = true
     placeHelper()
-    local fadeIn = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-    TweenService:Create(Tooltip, fadeIn, { BackgroundTransparency = 0 }):Play()
-    if Title_3 then TweenService:Create(Title_3, fadeIn, { TextTransparency = 0 }):Play() end
-    if Description then TweenService:Create(Description, fadeIn, { TextTransparency = 0 }):Play() end
-    if HelperFavBtn then TweenService:Create(HelperFavBtn, fadeIn, { TextTransparency = 0 }):Play() end
 end
 
 function updateHintAndGhost()
@@ -10601,6 +10597,26 @@ function checkTT()
             if child:IsA("TextButton") and child.Visible and child:GetAttribute("Title") and pointIn(child) then
                 hovered = child
                 break
+            end
+        end
+    end
+    if not hovered then
+        local ok, guisAtPosition = pcall(function()
+            return COREGUI:GetGuiObjectsAtPosition(mx, my)
+        end)
+        if ok and type(guisAtPosition) == "table" then
+            for _, gui in pairs(guisAtPosition) do
+                if gui:IsA("TextButton") and gui.Parent == CMDsF and gui.Visible and gui:GetAttribute("Title") then
+                    hovered = gui
+                    break
+                end
+                if gui.Name == "Label" and gui.Parent and gui.Parent:IsA("TextButton") and gui.Parent.Parent == CMDsF then
+                    local rowBtn = gui.Parent
+                    if rowBtn.Visible and rowBtn:GetAttribute("Title") then
+                        hovered = rowBtn
+                        break
+                    end
+                end
             end
         end
     end
