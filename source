@@ -2194,6 +2194,68 @@ Credits.TextColor3 = Color3.new(1, 1, 1)
 Credits.TextTransparency = 0.15
 Credits.ZIndex = 20
 
+introDone = false
+introConn = nil
+function finishIntro()
+	if introDone then return end
+	introDone = true
+	if introConn then
+		pcall(function() introConn:Disconnect() end)
+		introConn = nil
+	end
+	pcall(function()
+		if IntroBackground then
+			IntroBackground.Visible = false
+			IntroBackground.Active = false
+		end
+		if Logo then Logo:Destroy() end
+		if Credits then Credits:Destroy() end
+		if IntroBackground then IntroBackground:Destroy() end
+	end)
+	Logo = nil
+	Credits = nil
+	IntroBackground = nil
+end
+
+do
+	local skipNow = false
+	pcall(function()
+		local genv = (getgenv and getgenv()) or _G
+		skipNow = genv.IYR_SKIP_INTRO == true
+	end)
+	if skipNow then
+		finishIntro()
+	else
+		pcall(function()
+			IntroBackground.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1
+					or input.UserInputType == Enum.UserInputType.Touch then
+					finishIntro()
+				end
+			end)
+		end)
+		local t0 = os.clock()
+		introConn = RunService.Heartbeat:Connect(function()
+			if introDone then return end
+			local elapsed = os.clock() - t0
+			if elapsed >= 0.45 then
+				local a = math.clamp((elapsed - 0.45) / 0.35, 0, 1)
+				pcall(function()
+					if Logo then Logo.ImageTransparency = a end
+					if IntroBackground then IntroBackground.BackgroundTransparency = a end
+					if Credits then Credits.TextTransparency = 0.15 + 0.85 * a end
+				end)
+			end
+			if elapsed >= 0.9 then
+				finishIntro()
+			end
+		end)
+		pcall(function()
+			task.delay(2, finishIntro)
+		end)
+	end
+end
+
 KeybindsFrame.Name = "KeybindsFrame"
 KeybindsFrame.Parent = Settings
 KeybindsFrame.Active = true
@@ -22644,46 +22706,14 @@ task.defer(function()
         end)
 end)
 
-task.spawn(function()
-    local genv = (getgenv and getgenv()) or _G
-    local skipIntro = genv.IYR_SKIP_INTRO == true
-    genv.IYR_SKIP_INTRO = nil
-    if skipIntro then
-        pcall(function()
-            if Logo then Logo:Destroy() end
-            if Credits then Credits:Destroy() end
-            if IntroBackground then IntroBackground:Destroy() end
-        end)
-        minimizeHolder()
-        return
-    end
-    pcall(function()
-        Logo.Position = UDim2.new(0, 0, 0, 0)
-        Logo.Size = UDim2.new(1, 0, 1, 0)
-        Logo.ScaleType = Enum.ScaleType.Fit
-        Credits.Position = UDim2.new(0, 8, 1, -22)
-        Credits.TextTransparency = 0.15
-        IntroBackground.Visible = true
-        IntroBackground.BackgroundTransparency = 0
-        Logo.ImageTransparency = 0
-    end)
-    task.wait(0.85)
-    local OutInfo = TweenInfo.new(2.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
-    TweenService:Create(Logo, OutInfo, {ImageTransparency = 1}):Play()
-    TweenService:Create(IntroBackground, OutInfo, {BackgroundTransparency = 1}):Play()
-    if Credits then
-        TweenService:Create(Credits, OutInfo, {TextTransparency = 1}):Play()
-    end
-    task.wait(2.45)
-    pcall(function()
-        if Logo then Logo:Destroy() end
-        if Credits then Credits:Destroy() end
-        if IntroBackground then IntroBackground:Destroy() end
-    end)
-    minimizeHolder()
+task.defer(function()
+	pcall(function()
+		local genv = (getgenv and getgenv()) or _G
+		genv.IYR_SKIP_INTRO = nil
+	end)
+	pcall(minimizeHolder)
     if IsOnMobile then
         notify("Unstable Device", "On mobile, "..BRAND_NAME.." has a lot of bugs. It's recommended to use a PC executor")
-        task.wait(3)
     end
     if PlaceId == 574746640 then
         notify("4nn1's Place", "Game Detected! Some commands were added/changed/removed")
