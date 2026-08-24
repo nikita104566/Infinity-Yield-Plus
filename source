@@ -1970,9 +1970,6 @@ function styleCmdRow(btn)
 	marker.Parent = btn
 	uiCorner(marker, 2)
 	btn.MouseEnter:Connect(function()
-		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
-			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
-		end
 		if cmdSelectionPainted and selectedCmdButton == btn then
 			setCmdRowSelected(btn, true)
 		else
@@ -1981,9 +1978,15 @@ function styleCmdRow(btn)
 			local m = btn:FindFirstChild("Sel")
 			if m then m.Visible = false end
 		end
+		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(checkTT) == "function" then
+			checkTT()
+		end
 	end)
 	btn.MouseLeave:Connect(function()
 		setCmdRowSelected(btn, cmdSelectionPainted and selectedCmdButton == btn)
+		if type(checkTT) == "function" then
+			task.defer(checkTT)
+		end
 	end)
 	return btn
 end
@@ -5799,7 +5802,7 @@ eventEditor = (function()
 				y += 47
 			end
 		end
-		eventList.CanvasSize = UDim2.new(0, 0, 0, 0)
+		eventList.CanvasSize = UDim2.new(0, 0, 0, math.max(y, 0))
 		updateCountLabel()
 	end
 
@@ -6479,6 +6482,9 @@ eventEditor = (function()
 			main:TweenPosition(eeOpenPos(), "InOut", "Quart", 0.45, true)
 			applyStudioLang()
 			refreshList()
+			if selectedEventName and events[selectedEventName] then
+				selectEvent(selectedEventName)
+			end
 		end,
 		EE_W = EE_W,
 		EE_H = EE_H,
@@ -8704,17 +8710,55 @@ function clearDescBar()
     -- DescBar disabled; kept for compatibility
 end
 
+local helperShownKey = nil
+local helperTweenToken = 0
+
+function hideHelper(instant)
+	if not Tooltip then return end
+	helperShownKey = nil
+	helperTweenToken += 1
+	if instant or not Tooltip.Visible then
+		Tooltip.Visible = false
+		Tooltip.BackgroundTransparency = 0
+		if Title_3 then Title_3.TextTransparency = 0 end
+		if Description then Description.TextTransparency = 0 end
+		if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
+		return
+	end
+	local token = helperTweenToken
+	local info = TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+	TweenService:Create(Tooltip, info, { BackgroundTransparency = 1 }):Play()
+	if Title_3 then TweenService:Create(Title_3, info, { TextTransparency = 1 }):Play() end
+	if Description then TweenService:Create(Description, info, { TextTransparency = 1 }):Play() end
+	if HelperFavBtn then TweenService:Create(HelperFavBtn, info, { TextTransparency = 1 }):Play() end
+	task.delay(0.13, function()
+		if token ~= helperTweenToken then return end
+		Tooltip.Visible = false
+		Tooltip.BackgroundTransparency = 0
+		if Title_3 then Title_3.TextTransparency = 0 end
+		if Description then Description.TextTransparency = 0 end
+		if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
+	end)
+end
+
 function showHelper(title, desc)
     if not Tooltip or SettingsOpen then
-        if Tooltip then Tooltip.Visible = false end
+        hideHelper(true)
         return
     end
     title = tostring(title or "")
     desc = getLocalizedDesc(title, desc)
     if title == "" or desc == "" or desc == T("noDesc") then
-        Tooltip.Visible = false
+        hideHelper(true)
         return
     end
+    local key = title .. "\0" .. desc
+    if Tooltip.Visible and helperShownKey == key then
+        return
+    end
+    helperShownKey = key
+    helperTweenToken += 1
+    local token = helperTweenToken
     local shortTitle = title:match("^[^%[]+") or title
     shortTitle = shortTitle:gsub("%s+$", "")
     if #shortTitle > 44 then
@@ -8728,7 +8772,6 @@ function showHelper(title, desc)
     local padX = 24
     local titleH = 28
     local gap = 6
-    local btnH = 22
     local bottomPad = 36
     local maxDescW = HELPER_W - padX
     local bounds = TextService:GetTextSize(desc, Description.TextSize, Description.Font, Vector2.new(maxDescW, 200))
@@ -8746,8 +8789,17 @@ function showHelper(title, desc)
         HelperFavBtn.Visible = true
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
+    Tooltip.BackgroundTransparency = 1
+    if Title_3 then Title_3.TextTransparency = 1 end
+    if Description then Description.TextTransparency = 1 end
+    if HelperFavBtn then HelperFavBtn.TextTransparency = 1 end
     Tooltip.Visible = true
     placeHelper()
+    local fadeIn = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+    TweenService:Create(Tooltip, fadeIn, { BackgroundTransparency = 0 }):Play()
+    if Title_3 then TweenService:Create(Title_3, fadeIn, { TextTransparency = 0 }):Play() end
+    if Description then TweenService:Create(Description, fadeIn, { TextTransparency = 0 }):Play() end
+    if HelperFavBtn then TweenService:Create(HelperFavBtn, fadeIn, { TextTransparency = 0 }):Play() end
 end
 
 function updateHintAndGhost()
@@ -10515,7 +10567,7 @@ function checkTT()
         return
     end
     if introPlaying or SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
-        Tooltip.Visible = false
+        hideHelper(true)
         return
     end
 
@@ -10525,7 +10577,7 @@ function checkTT()
     local gutter = math.max(SCROLL_GUTTER, (CMDsF.ScrollBarThickness or 6) + 10)
     if IYMouse.X >= (listPos.X + listSize.X - gutter) and IYMouse.X <= (listPos.X + listSize.X + 2)
         and IYMouse.Y >= listPos.Y and IYMouse.Y <= (listPos.Y + listSize.Y) then
-        Tooltip.Visible = false
+        hideHelper(true)
         return
     end
 
@@ -10552,42 +10604,15 @@ function checkTT()
             end
         end
     end
-    if not hovered then
-        local ok, guisAtPosition = pcall(function()
-            return COREGUI:GetGuiObjectsAtPosition(mx, my)
-        end)
-        if ok and type(guisAtPosition) == "table" then
-            for _, gui in pairs(guisAtPosition) do
-                if gui:IsA("TextButton") and gui.Parent == CMDsF and gui.Visible and gui:GetAttribute("Title") then
-                    hovered = gui
-                    break
-                end
-                if gui.Name == "Label" and gui.Parent and gui.Parent:IsA("TextButton") and gui.Parent.Parent == CMDsF then
-                    local btn = gui.Parent
-                    if btn.Visible and btn:GetAttribute("Title") then
-                        hovered = btn
-                        break
-                    end
-                end
-            end
-            if not hovered then
-                for _, gui in pairs(guisAtPosition) do
-                    if gui == Tooltip or (gui.Parent and gui:IsDescendantOf(Tooltip)) then
-                        return
-                    end
-                end
-            end
-        end
-    end
 
     if hovered then
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
         return
     end
-    if Tooltip.Visible and pointIn(Tooltip) then
+    if HelperFavBtn and HelperFavBtn.Visible and pointIn(HelperFavBtn) then
         return
     end
-    Tooltip.Visible = false
+    hideHelper()
 end
 
 function FindInTable(tbl,val)
