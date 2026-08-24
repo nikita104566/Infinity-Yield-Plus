@@ -2196,6 +2196,8 @@ Credits.ZIndex = 20
 
 introDone = false
 introConn = nil
+introT0 = os.clock()
+introHoldUntil = nil
 function finishIntro()
 	if introDone then return end
 	introDone = true
@@ -2217,6 +2219,23 @@ function finishIntro()
 	IntroBackground = nil
 end
 
+function startIntroReveal()
+	if introDone then
+		if type(minimizeHolder) == "function" then
+			pcall(minimizeHolder)
+		end
+		return
+	end
+	local shown = os.clock() - (introT0 or os.clock())
+	introHoldUntil = os.clock() + math.max(0, 1.7 - shown)
+	if type(maximizeHolder) == "function" then
+		pcall(maximizeHolder)
+	end
+	pcall(function()
+		task.delay(6, finishIntro)
+	end)
+end
+
 do
 	local skipNow = false
 	pcall(function()
@@ -2226,32 +2245,26 @@ do
 	if skipNow then
 		finishIntro()
 	else
-		pcall(function()
-			IntroBackground.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1
-					or input.UserInputType == Enum.UserInputType.Touch then
-					finishIntro()
-				end
-			end)
-		end)
-		local t0 = os.clock()
 		introConn = RunService.Heartbeat:Connect(function()
 			if introDone then return end
-			local elapsed = os.clock() - t0
-			if elapsed >= 0.45 then
-				local a = math.clamp((elapsed - 0.45) / 0.35, 0, 1)
-				pcall(function()
-					if Logo then Logo.ImageTransparency = a end
-					if IntroBackground then IntroBackground.BackgroundTransparency = a end
-					if Credits then Credits.TextTransparency = 0.15 + 0.85 * a end
-				end)
+			if not introHoldUntil then
+				if os.clock() - (introT0 or os.clock()) > 8 then
+					introHoldUntil = os.clock()
+				end
+				return
 			end
-			if elapsed >= 0.9 then
+			local now = os.clock()
+			if now < introHoldUntil then return end
+			local a = math.clamp((now - introHoldUntil) / 2.0, 0, 1)
+			local e = 1 - math.cos(a * math.pi * 0.5)
+			pcall(function()
+				if Logo then Logo.ImageTransparency = e end
+				if IntroBackground then IntroBackground.BackgroundTransparency = e end
+				if Credits then Credits.TextTransparency = 0.15 + 0.85 * e end
+			end)
+			if a >= 1 then
 				finishIntro()
 			end
-		end)
-		pcall(function()
-			task.delay(2, finishIntro)
 		end)
 	end
 end
@@ -10300,10 +10313,92 @@ function FavCmds.apply(btn)
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
 	end
 end
+function FavCmds.find(key)
+	if not CMDsF then return nil end
+	for _, child in pairs(CMDsF:GetChildren()) do
+		if child:IsA("TextButton") and child.Name ~= "IYR_SUGGEST" then
+			if cmdPrimaryKey(child:GetAttribute("Title") or child.Text) == key then
+				return child
+			end
+		end
+	end
+	return nil
+end
+function FavCmds.fly(btn, fromAbs, fromSize, adding)
+	if not (btn and Holder and fromAbs and TweenService) then return end
+	pcall(function()
+		for _, g in pairs(Holder:GetChildren()) do
+			if g.Name == "IYR_FAV_GHOST" then g:Destroy() end
+		end
+	end)
+	local ghost = btn:Clone()
+	ghost.Name = "IYR_FAV_GHOST"
+	ghost.Parent = Holder
+	ghost.Visible = true
+	ghost.Active = false
+	ghost.AutoButtonColor = false
+	ghost.ZIndex = 24
+	local hs = Holder.AbsolutePosition
+	local w = (fromSize and fromSize.X) or btn.AbsoluteSize.X
+	local h = (fromSize and fromSize.Y) or btn.AbsoluteSize.Y
+	ghost.Size = UDim2.fromOffset(w, h)
+	ghost.Position = UDim2.fromOffset(fromAbs.X - hs.X, fromAbs.Y - hs.Y)
+	local label = btn:FindFirstChild("Label")
+	if label then label.TextTransparency = 1 end
+	btn.BackgroundTransparency = 1
+	local gold = Color3.fromRGB(255, 214, 102)
+	local ghostLabel = ghost:FindFirstChild("Label")
+	if ghostLabel and adding then
+		ghostLabel.TextColor3 = gold
+	end
+	task.defer(function()
+		pcall(function()
+			RunService.Heartbeat:Wait()
+		end)
+		if introDone == false and IntroBackground and IntroBackground.Parent then
+			if label then label.TextTransparency = 0 end
+			btn.BackgroundTransparency = 1
+			pcall(function() ghost:Destroy() end)
+			FavCmds.apply(btn)
+			return
+		end
+		if not (btn and btn.Parent) then
+			pcall(function() ghost:Destroy() end)
+			return
+		end
+		local to = btn.AbsolutePosition
+		local hs2 = Holder.AbsolutePosition
+		local dx = to.X - fromAbs.X
+		local dy = to.Y - fromAbs.Y
+		if (dx * dx + dy * dy) < 64 then
+			pcall(function() ghost:Destroy() end)
+			if label then label.TextTransparency = 0 end
+			FavCmds.apply(btn)
+			return
+		end
+		local info = TweenInfo.new(0.34, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local move = TweenService:Create(ghost, info, {
+			Position = UDim2.fromOffset(to.X - hs2.X, to.Y - hs2.Y),
+		})
+		move:Play()
+		move.Completed:Connect(function()
+			pcall(function() ghost:Destroy() end)
+			if label then
+				label.TextTransparency = 0
+			end
+			FavCmds.apply(btn)
+			setCmdRowSelected(btn, false)
+		end)
+	end)
+end
 function FavCmds.toggle(name)
 	local key = cmdPrimaryKey(name)
 	if key == "" then return end
 	local isFav, idx = FavCmds.is(key)
+	local btn = FavCmds.find(key)
+	local fromAbs = btn and btn.AbsolutePosition
+	local fromSize = btn and btn.AbsoluteSize
+	local hadFavHeader = cmdFavHeader and cmdFavHeader.Visible
 	if isFav then
 		table.remove(favCmds, idx)
 		notify(T("favorites"), T("removeFavorite") .. ": " .. key)
@@ -10319,6 +10414,22 @@ function FavCmds.toggle(name)
 				FavCmds.apply(child)
 			end
 		end
+	end
+	btn = btn or FavCmds.find(key)
+	if btn and fromAbs then
+		FavCmds.fly(btn, fromAbs, fromSize, not isFav)
+	end
+	if cmdFavHeader and cmdFavHeader.Visible and not hadFavHeader then
+		cmdFavHeader.TextTransparency = 1
+		TweenService:Create(cmdFavHeader, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+			TextTransparency = 0,
+		}):Play()
+	end
+	if cmdAllHeader and cmdAllHeader.Visible and not hadFavHeader then
+		cmdAllHeader.TextTransparency = 1
+		TweenService:Create(cmdAllHeader, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+			TextTransparency = 0,
+		}):Play()
 	end
 	updatesaves()
 end
@@ -22711,7 +22822,11 @@ task.defer(function()
 		local genv = (getgenv and getgenv()) or _G
 		genv.IYR_SKIP_INTRO = nil
 	end)
-	pcall(minimizeHolder)
+	pcall(function()
+		if type(startIntroReveal) == "function" then
+			startIntroReveal()
+		end
+	end)
     if IsOnMobile then
         notify("Unstable Device", "On mobile, "..BRAND_NAME.." has a lot of bugs. It's recommended to use a PC executor")
     end
