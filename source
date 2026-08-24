@@ -42,10 +42,6 @@ end)() and not (_G.IY_DEBUG == true) then
 			if old then old:Destroy() end
 		end
 	end)
-	pcall(function()
-		local genv = (getgenv and getgenv()) or _G
-		genv.IYR_SKIP_INTRO = true
-	end)
 end
 
 pcall(function() getgenv().IY_LOADED = true end)
@@ -2177,20 +2173,41 @@ Logo.Position = UDim2.new(0, 0, 0, 0)
 Logo.Size = UDim2.new(1, 0, 1, 0)
 Logo.ScaleType = Enum.ScaleType.Crop
 Logo.Image = getcustomasset("IYR.LOL/assets/logo.png")
-Logo.ImageTransparency = 1
+Logo.ImageTransparency = 0
 Logo.ZIndex = 19
 
-local INTRO_FADE_IN = 0.25
 local INTRO_HOLD = 1.0
 local INTRO_FADE_OUT = 0.85
+local INTRO_AUTOHIDE = 1.5
 
+introPlaying = true
 introDone = false
 introConn = nil
-introReadyAt = nil
-introCreatedAt = os.clock()
+introStartedAt = os.clock()
+introCommandsReady = false
+introFadeStart = nil
+introMaximized = false
+function holderHovered()
+	if not (Holder and IYMouse) then return false end
+	local p = Holder.AbsolutePosition
+	local s = Holder.AbsoluteSize
+	return IYMouse.X >= p.X and IYMouse.X <= p.X + s.X
+		and IYMouse.Y >= p.Y and IYMouse.Y <= p.Y + s.Y
+end
+function scheduleIntroMinimize()
+	task.delay(INTRO_AUTOHIDE, function()
+		if StayOpen then return end
+		if Cmdbar and Cmdbar:IsFocused() then return end
+		if holderHovered() then return end
+		if type(minimizeHolder) == "function" then
+			pcall(minimizeHolder)
+		end
+	end)
+end
 function finishIntro()
 	if introDone then return end
 	introDone = true
+	introPlaying = false
 	if introConn then
 		pcall(function() introConn:Disconnect() end)
 		introConn = nil
@@ -2205,31 +2222,19 @@ function finishIntro()
 	end)
 	Logo = nil
 	IntroBackground = nil
+	task.spawn(function()
+		local t0 = os.clock()
+		while not introCommandsReady and os.clock() - t0 < 6 do
+			task.wait(0.05)
+		end
+		scheduleIntroMinimize()
+	end)
 end
 
 function startIntroReveal()
-	if introDone then
-		if type(minimizeHolder) == "function" then
-			pcall(minimizeHolder)
-		end
-		return
-	end
-	if introReadyAt then return end
-	introReadyAt = os.clock()
 	if type(maximizeHolder) == "function" then
 		pcall(maximizeHolder)
 	end
-	pcall(function()
-		if IntroBackground then
-			IntroBackground.BackgroundTransparency = 0
-		end
-		if Logo then
-			Logo.ImageTransparency = 1
-		end
-	end)
-	pcall(function()
-		task.delay(INTRO_FADE_IN + INTRO_HOLD + INTRO_FADE_OUT + 1.5, finishIntro)
-	end)
 end
 
 do
@@ -2237,43 +2242,38 @@ do
 	pcall(function()
 		local genv = (getgenv and getgenv()) or _G
 		skipNow = genv.IYR_SKIP_INTRO == true
+		genv.IYR_SKIP_INTRO = nil
 	end)
 	if skipNow then
 		finishIntro()
 	else
 		introConn = RunService.Heartbeat:Connect(function()
 			if introDone then return end
-			if not introReadyAt then
-				if os.clock() - introCreatedAt > 12 then
-					finishIntro()
-				end
-				return
+			if not introMaximized and type(maximizeHolder) == "function" then
+				introMaximized = true
+				pcall(maximizeHolder)
 			end
-			local t = os.clock() - introReadyAt
-			local total = INTRO_FADE_IN + INTRO_HOLD + INTRO_FADE_OUT
-			local function ease(x)
-				return 1 - math.cos(math.clamp(x, 0, 1) * math.pi * 0.5)
-			end
-			if t < INTRO_FADE_IN then
-				local e = ease(t / INTRO_FADE_IN)
-				pcall(function()
-					if Logo then Logo.ImageTransparency = 1 - e end
-					if IntroBackground then IntroBackground.BackgroundTransparency = 0 end
-				end)
-			elseif t < INTRO_FADE_IN + INTRO_HOLD then
+			if (os.clock() - introStartedAt) < INTRO_HOLD or not introCommandsReady then
 				pcall(function()
 					if Logo then Logo.ImageTransparency = 0 end
 					if IntroBackground then IntroBackground.BackgroundTransparency = 0 end
 				end)
-			elseif t < total then
-				local e = ease((t - INTRO_FADE_IN - INTRO_HOLD) / INTRO_FADE_OUT)
-				pcall(function()
-					if Logo then Logo.ImageTransparency = e end
-					if IntroBackground then IntroBackground.BackgroundTransparency = e end
-				end)
-			else
+				return
+			end
+			if introFadeStart == nil then
+				introFadeStart = os.clock()
+			end
+			local e = 1 - math.cos(math.clamp((os.clock() - introFadeStart) / INTRO_FADE_OUT, 0, 1) * math.pi * 0.5)
+			pcall(function()
+				if Logo then Logo.ImageTransparency = e end
+				if IntroBackground then IntroBackground.BackgroundTransparency = e end
+			end)
+			if e >= 1 then
 				finishIntro()
 			end
+		end)
+		pcall(function()
+			task.delay(8, finishIntro)
 		end)
 	end
 end
@@ -7236,7 +7236,7 @@ else
 end
 
 function maximizeHolder()
-	if StayOpen == false then
+	if introPlaying or StayOpen == false then
 		Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, -PANEL_H), "InOut", "Quart", 0.2, true, nil)
 		TweenService:Create(Holder, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
 		TweenService:Create(Title, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
@@ -7246,6 +7246,7 @@ end
 
 minimizeNum = -28
 function minimizeHolder()
+	if introPlaying then return end
 	if StayOpen == false then
 		Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, minimizeNum), "InOut", "Quart", 0.5, true, nil)
 		TweenService:Create(Holder, TweenInfo.new(0.5), { BackgroundTransparency = 0.55 }):Play()
@@ -7255,6 +7256,7 @@ function minimizeHolder()
 end
 
 function cmdbarHolder()
+    if introPlaying then return end
     if StayOpen == false then
         Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, CMDBAR_PEEK), "InOut", "Quart", 0.5, true, nil)
         if Tooltip then Tooltip.Visible = false end
@@ -7444,7 +7446,7 @@ Holder.MouseLeave:Connect(function()
     if not Cmdbar:IsFocused() then
         local reqTime = tick()
         lastMinimizeReq = reqTime
-        task.wait(1)
+        task.wait(1.5)
         if lastMinimizeReq ~= reqTime then return end
         if not Cmdbar:IsFocused() then
             minimizeHolder()
@@ -9006,7 +9008,10 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     applyCmdSelection()
 
     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
-    if not Ianim then
+    introCommandsReady = true
+    if introPlaying then
+        -- Keep the panel open while the splash covers the list
+    elseif not Ianim then
         if indexnum == 0 then
             if not cmdbar then
                 minimizeHolder()
