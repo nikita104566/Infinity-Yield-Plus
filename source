@@ -1984,9 +1984,19 @@ function styleCmdRow(btn)
 	end)
 	btn.MouseLeave:Connect(function()
 		setCmdRowSelected(btn, cmdSelectionPainted and selectedCmdButton == btn)
-		if type(checkTT) == "function" then
-			task.defer(checkTT)
-		end
+		task.defer(function()
+			if HelperFavBtn and HelperFavBtn.Visible then
+				local p = HelperFavBtn.AbsolutePosition
+				local s = HelperFavBtn.AbsoluteSize
+				local mx, my = IYMouse.X, IYMouse.Y
+				if mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y then
+					return
+				end
+			end
+			if type(hideHelper) == "function" then
+				hideHelper()
+			end
+		end)
 	end)
 	return btn
 end
@@ -5137,6 +5147,19 @@ eventEditor = (function()
 		return ev.descEn
 	end
 
+	local catKeys = {
+		All = "eeCatAll",
+		Character = "eeCatCharacter",
+		Players = "eeCatPlayers",
+		Chat = "eeCatChat",
+		Input = "eeCatInput",
+		World = "eeCatWorld",
+		Session = "eeCatSession",
+	}
+	local function categoryText(cat)
+		return T(catKeys[cat] or cat)
+	end
+
 	local function refreshHistory()
 		for _, c in ipairs(histHolder:GetChildren()) do
 			if c:IsA("Frame") then c:Destroy() end
@@ -5811,19 +5834,7 @@ eventEditor = (function()
 	end
 
 	local cats = { "All", "Character", "Players", "Chat", "Input", "World", "Session" }
-	local catKeys = {
-		All = "eeCatAll",
-		Character = "eeCatCharacter",
-		Players = "eeCatPlayers",
-		Chat = "eeCatChat",
-		Input = "eeCatInput",
-		World = "eeCatWorld",
-		Session = "eeCatSession",
-	}
 	local catButtons = {}
-	local function categoryText(cat)
-		return T(catKeys[cat] or cat)
-	end
 	local function styleCategories()
 		for catName, catButton in pairs(catButtons) do
 			local active = catName == eventCategory
@@ -8689,21 +8700,21 @@ function placeHelper()
     end
     local hp = Holder.AbsolutePosition
     local hs = Holder.AbsoluteSize
-    local tw = math.min(HELPER_W, math.max(168, hs.X - 16))
+    local tw = Tooltip.AbsoluteSize.X
+    if tw < 1 then tw = HELPER_W end
     local th = Tooltip.AbsoluteSize.Y
-    if th < 56 then th = 64 end
+    if th < 1 then th = 96 end
 
-    local mx = IYMouse.X + 14
-    local my = IYMouse.Y + 14
-    local minX = hp.X + 8
-    local maxX = hp.X + hs.X - tw - 8
+    -- Place left of the command panel so the popup does not cover rows / steal hover
+    local gap = 10
+    local x = hp.X - tw - gap
+    if x < 8 then
+        x = math.max(8, hp.X - tw - 4)
+    end
     local minY = hp.Y + TITLE_H + 4
     local maxY = hp.Y + hs.Y - th - 8
-    if maxX < minX then maxX = minX end
     if maxY < minY then maxY = minY end
-    local x = math.clamp(mx, minX, maxX)
-    local y = math.clamp(my, minY, maxY)
-    Tooltip.Size = UDim2.new(0, tw, 0, th)
+    local y = math.clamp(IYMouse.Y - 12, minY, maxY)
     Tooltip.Position = UDim2.fromOffset(math.floor(x), math.floor(y))
 end
 
@@ -8712,45 +8723,26 @@ function clearDescBar()
 end
 
 local helperShownKey = nil
-local helperTweenToken = 0
 
-function hideHelper(instant)
+function hideHelper()
 	if not Tooltip then return end
 	helperShownKey = nil
-	helperTweenToken += 1
-	if instant or not Tooltip.Visible then
-		Tooltip.Visible = false
-		Tooltip.BackgroundTransparency = 0
-		if Title_3 then Title_3.TextTransparency = 0 end
-		if Description then Description.TextTransparency = 0 end
-		if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
-		return
-	end
-	local token = helperTweenToken
-	local info = TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-	TweenService:Create(Tooltip, info, { BackgroundTransparency = 1 }):Play()
-	if Title_3 then TweenService:Create(Title_3, info, { TextTransparency = 1 }):Play() end
-	if Description then TweenService:Create(Description, info, { TextTransparency = 1 }):Play() end
-	if HelperFavBtn then TweenService:Create(HelperFavBtn, info, { TextTransparency = 1 }):Play() end
-	task.delay(0.13, function()
-		if token ~= helperTweenToken then return end
-		Tooltip.Visible = false
-		Tooltip.BackgroundTransparency = 0
-		if Title_3 then Title_3.TextTransparency = 0 end
-		if Description then Description.TextTransparency = 0 end
-		if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
-	end)
+	Tooltip.Visible = false
+	Tooltip.BackgroundTransparency = 0
+	if Title_3 then Title_3.TextTransparency = 0 end
+	if Description then Description.TextTransparency = 0 end
+	if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
 end
 
 function showHelper(title, desc)
     if not Tooltip or SettingsOpen then
-        hideHelper(true)
+        hideHelper()
         return
     end
     title = tostring(title or "")
     desc = getLocalizedDesc(title, desc)
     if title == "" or desc == "" or desc == T("noDesc") then
-        hideHelper(true)
+        hideHelper()
         return
     end
     local key = title .. "\0" .. desc
@@ -8758,8 +8750,6 @@ function showHelper(title, desc)
         return
     end
     helperShownKey = key
-    helperTweenToken += 1
-    local token = helperTweenToken
     local shortTitle = title:match("^[^%[]+") or title
     shortTitle = shortTitle:gsub("%s+$", "")
     if #shortTitle > 44 then
@@ -8788,12 +8778,12 @@ function showHelper(title, desc)
         HelperFavBtn.TextColor3 = fav and Color3.fromRGB(186, 182, 204) or Color3.fromRGB(255, 214, 102)
         HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
         HelperFavBtn.Visible = true
+        HelperFavBtn.TextTransparency = 0
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
     Tooltip.BackgroundTransparency = 0
     if Title_3 then Title_3.TextTransparency = 0 end
     if Description then Description.TextTransparency = 0 end
-    if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
     Tooltip.Visible = true
     placeHelper()
 end
@@ -10563,7 +10553,7 @@ function checkTT()
         return
     end
     if introPlaying or SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
-        hideHelper(true)
+        hideHelper()
         return
     end
 
@@ -10573,7 +10563,7 @@ function checkTT()
     local gutter = math.max(SCROLL_GUTTER, (CMDsF.ScrollBarThickness or 6) + 10)
     if IYMouse.X >= (listPos.X + listSize.X - gutter) and IYMouse.X <= (listPos.X + listSize.X + 2)
         and IYMouse.Y >= listPos.Y and IYMouse.Y <= (listPos.Y + listSize.Y) then
-        hideHelper(true)
+        hideHelper()
         return
     end
 
