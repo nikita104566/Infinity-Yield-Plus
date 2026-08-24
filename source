@@ -1970,6 +1970,9 @@ function styleCmdRow(btn)
 	marker.Parent = btn
 	uiCorner(marker, 2)
 	btn.MouseEnter:Connect(function()
+		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
+			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
+		end
 		if cmdSelectionPainted and selectedCmdButton == btn then
 			setCmdRowSelected(btn, true)
 		else
@@ -2156,7 +2159,7 @@ end)
 
 IntroBackground.Name = "IntroBackground"
 IntroBackground.Parent = Holder
-IntroBackground.Active = true
+IntroBackground.Active = false
 IntroBackground.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
 IntroBackground.BorderSizePixel = 0
 IntroBackground.Position = UDim2.new(0, 0, 0, LIST_Y)
@@ -2262,6 +2265,9 @@ do
 			end
 			if introFadeStart == nil then
 				introFadeStart = os.clock()
+				pcall(function()
+					if IntroBackground then IntroBackground.Active = false end
+				end)
 			end
 			local e = 1 - math.cos(math.clamp((os.clock() - introFadeStart) / INTRO_FADE_OUT, 0, 1) * math.pi * 0.5)
 			pcall(function()
@@ -10508,7 +10514,7 @@ function checkTT()
     if not (Holder and Holder.Parent and Tooltip) then
         return
     end
-    if SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
+    if introPlaying or SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
         Tooltip.Visible = false
         return
     end
@@ -10523,25 +10529,53 @@ function checkTT()
         return
     end
 
-    local ok, guisAtPosition = pcall(function()
-        return COREGUI:GetGuiObjectsAtPosition(IYMouse.X, IYMouse.Y)
-    end)
-    if not ok or type(guisAtPosition) ~= "table" then
-        Tooltip.Visible = false
-        return
+    local mx, my = IYMouse.X, IYMouse.Y
+    local function pointIn(gui)
+        if not (gui and gui.Parent) then return false end
+        local p = gui.AbsolutePosition
+        local s = gui.AbsoluteSize
+        return mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y
     end
 
     local hovered
-    for _, gui in pairs(guisAtPosition) do
-        if gui:IsA("TextButton") and gui.Parent == CMDsF and gui.Visible and gui:GetAttribute("Title") then
-            hovered = gui
+    for _, btn in ipairs(visibleCmdButtons) do
+        if btn and btn.Visible and btn:GetAttribute("Title") and pointIn(btn) then
+            hovered = btn
             break
         end
-        if gui.Name == "Label" and gui.Parent and gui.Parent:IsA("TextButton") and gui.Parent.Parent == CMDsF then
-            local btn = gui.Parent
-            if btn.Visible and btn:GetAttribute("Title") then
-                hovered = btn
+    end
+    if not hovered then
+        for _, child in pairs(CMDsF:GetChildren()) do
+            if child:IsA("TextButton") and child.Visible and child:GetAttribute("Title") and pointIn(child) then
+                hovered = child
                 break
+            end
+        end
+    end
+    if not hovered then
+        local ok, guisAtPosition = pcall(function()
+            return COREGUI:GetGuiObjectsAtPosition(mx, my)
+        end)
+        if ok and type(guisAtPosition) == "table" then
+            for _, gui in pairs(guisAtPosition) do
+                if gui:IsA("TextButton") and gui.Parent == CMDsF and gui.Visible and gui:GetAttribute("Title") then
+                    hovered = gui
+                    break
+                end
+                if gui.Name == "Label" and gui.Parent and gui.Parent:IsA("TextButton") and gui.Parent.Parent == CMDsF then
+                    local btn = gui.Parent
+                    if btn.Visible and btn:GetAttribute("Title") then
+                        hovered = btn
+                        break
+                    end
+                end
+            end
+            if not hovered then
+                for _, gui in pairs(guisAtPosition) do
+                    if gui == Tooltip or (gui.Parent and gui:IsDescendantOf(Tooltip)) then
+                        return
+                    end
+                end
             end
         end
     end
@@ -10550,10 +10584,8 @@ function checkTT()
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
         return
     end
-    for _, gui in pairs(guisAtPosition) do
-        if gui == Tooltip or (gui.Parent and gui:IsDescendantOf(Tooltip)) then
-            return
-        end
+    if Tooltip.Visible and pointIn(Tooltip) then
+        return
     end
     Tooltip.Visible = false
 end
