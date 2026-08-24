@@ -1985,15 +1985,9 @@ function styleCmdRow(btn)
 	btn.MouseLeave:Connect(function()
 		setCmdRowSelected(btn, cmdSelectionPainted and selectedCmdButton == btn)
 		task.defer(function()
-			if HelperFavBtn and HelperFavBtn.Visible then
-				local p = HelperFavBtn.AbsolutePosition
-				local s = HelperFavBtn.AbsoluteSize
-				local mx, my = IYMouse.X, IYMouse.Y
-				if mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y then
-					return
-				end
-			end
-			if type(hideHelper) == "function" then
+			if type(checkTT) == "function" then
+				checkTT()
+			elseif type(hideHelper) == "function" then
 				hideHelper()
 			end
 		end)
@@ -2087,7 +2081,7 @@ PinImage.Image = getcustomasset("IYR.LOL/assets/pin.png")
 
 Tooltip.Name = randomString()
 Tooltip.Parent = ScaledHolder
-Tooltip.Active = true
+Tooltip.Active = false
 Tooltip.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 Tooltip.BackgroundTransparency = 0
 Tooltip.BorderSizePixel = 0
@@ -2238,6 +2232,11 @@ function finishIntro()
 	end)
 	Logo = nil
 	IntroBackground = nil
+	task.defer(function()
+		if type(checkTT) == "function" then
+			checkTT()
+		end
+	end)
 	task.spawn(function()
 		local t0 = os.clock()
 		while not introCommandsReady and os.clock() - t0 < 6 do
@@ -8698,23 +8697,36 @@ function placeHelper()
     if not Tooltip or not Tooltip.Visible or not Holder then
         return
     end
-    local hp = Holder.AbsolutePosition
-    local hs = Holder.AbsoluteSize
-    local tw = Tooltip.AbsoluteSize.X
+    -- Use laid-out Size from showHelper; never rewrite height (AbsoluteSize can lag / clip text)
+    local tw = Tooltip.Size.X.Offset
     if tw < 1 then tw = HELPER_W end
-    local th = Tooltip.AbsoluteSize.Y
+    local th = Tooltip.Size.Y.Offset
     if th < 1 then th = 96 end
 
-    -- Place left of the command panel so the popup does not cover rows / steal hover
-    local gap = 10
-    local x = hp.X - tw - gap
-    if x < 8 then
-        x = math.max(8, hp.X - tw - 4)
+    local gap = 16
+    local x = IYMouse.X + gap
+    local y = IYMouse.Y + gap
+
+    local parent = Tooltip.Parent
+    if parent then
+        local pp = parent.AbsolutePosition
+        local ps = parent.AbsoluteSize
+        local minX = pp.X + 8
+        local minY = pp.Y + 8
+        local maxX = pp.X + ps.X - tw - 8
+        local maxY = pp.Y + ps.Y - th - 8
+        if maxX < minX then maxX = minX end
+        if maxY < minY then maxY = minY end
+        -- If it would go past the right edge, flip to the left of the cursor
+        if x > maxX then
+            x = IYMouse.X - tw - gap
+        end
+        if y > maxY then
+            y = IYMouse.Y - th - gap
+        end
+        x = math.clamp(x, minX, maxX)
+        y = math.clamp(y, minY, maxY)
     end
-    local minY = hp.Y + TITLE_H + 4
-    local maxY = hp.Y + hs.Y - th - 8
-    if maxY < minY then maxY = minY end
-    local y = math.clamp(IYMouse.Y - 12, minY, maxY)
     Tooltip.Position = UDim2.fromOffset(math.floor(x), math.floor(y))
 end
 
@@ -8735,7 +8747,7 @@ function hideHelper()
 end
 
 function showHelper(title, desc)
-    if not Tooltip or SettingsOpen then
+    if not Tooltip or SettingsOpen or introPlaying then
         hideHelper()
         return
     end
@@ -8747,6 +8759,7 @@ function showHelper(title, desc)
     end
     local key = title .. "\0" .. desc
     if Tooltip.Visible and helperShownKey == key then
+        placeHelper()
         return
     end
     helperShownKey = key
@@ -8779,6 +8792,7 @@ function showHelper(title, desc)
         HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
         HelperFavBtn.Visible = true
         HelperFavBtn.TextTransparency = 0
+        HelperFavBtn.Active = true
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
     Tooltip.BackgroundTransparency = 0
