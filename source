@@ -398,7 +398,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     pcall(function()
         local assetsURL = "https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/"
         local logoURL = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/logo.png"
-        local logoVer = "iyp-4"
+        local logoVer = "iyp-5"
         local targetFolder = "infiniteyieldreborn/assets"
         local sourceFolder = "infiniteyield/assets"
 
@@ -1151,7 +1151,6 @@ Title_3 = Instance.new("TextLabel")
 Description = Instance.new("TextLabel")
 IntroBackground = Instance.new("Frame")
 Logo = Instance.new("ImageLabel")
-Credits = Instance.new("TextBox")
 KeybindsFrame = Instance.new("Frame")
 Close = Instance.new("TextButton")
 Add = Instance.new("TextButton")
@@ -2176,28 +2175,19 @@ Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
 Logo.Position = UDim2.new(0, 0, 0, 0)
 Logo.Size = UDim2.new(1, 0, 1, 0)
-Logo.ScaleType = Enum.ScaleType.Fit
+Logo.ScaleType = Enum.ScaleType.Crop
 Logo.Image = getcustomasset("IYR.LOL/assets/logo.png")
-Logo.ImageTransparency = 0
+Logo.ImageTransparency = 1
 Logo.ZIndex = 19
 
-Credits.Name = "Credits"
-Credits.Parent = IntroBackground
-Credits.BackgroundTransparency = 1
-Credits.BorderSizePixel = 0
-Credits.Position = UDim2.new(0, 8, 1, -22)
-Credits.Size = UDim2.new(1, -16, 0, 18)
-Credits.Font = UI_FONT
-Credits.TextSize = 12
-Credits.Text = BRAND_NAME
-Credits.TextColor3 = Color3.new(1, 1, 1)
-Credits.TextTransparency = 0.15
-Credits.ZIndex = 20
+local INTRO_FADE_IN = 0.25
+local INTRO_HOLD = 1.0
+local INTRO_FADE_OUT = 0.85
 
 introDone = false
 introConn = nil
-introT0 = os.clock()
-introHoldUntil = nil
+introReadyAt = nil
+introCreatedAt = os.clock()
 function finishIntro()
 	if introDone then return end
 	introDone = true
@@ -2211,11 +2201,9 @@ function finishIntro()
 			IntroBackground.Active = false
 		end
 		if Logo then Logo:Destroy() end
-		if Credits then Credits:Destroy() end
 		if IntroBackground then IntroBackground:Destroy() end
 	end)
 	Logo = nil
-	Credits = nil
 	IntroBackground = nil
 end
 
@@ -2226,13 +2214,21 @@ function startIntroReveal()
 		end
 		return
 	end
-	local shown = os.clock() - (introT0 or os.clock())
-	introHoldUntil = os.clock() + math.max(0, 1.7 - shown)
+	if introReadyAt then return end
+	introReadyAt = os.clock()
 	if type(maximizeHolder) == "function" then
 		pcall(maximizeHolder)
 	end
 	pcall(function()
-		task.delay(6, finishIntro)
+		if IntroBackground then
+			IntroBackground.BackgroundTransparency = 0
+		end
+		if Logo then
+			Logo.ImageTransparency = 1
+		end
+	end)
+	pcall(function()
+		task.delay(INTRO_FADE_IN + INTRO_HOLD + INTRO_FADE_OUT + 1.5, finishIntro)
 	end)
 end
 
@@ -2247,22 +2243,35 @@ do
 	else
 		introConn = RunService.Heartbeat:Connect(function()
 			if introDone then return end
-			if not introHoldUntil then
-				if os.clock() - (introT0 or os.clock()) > 8 then
-					introHoldUntil = os.clock()
+			if not introReadyAt then
+				if os.clock() - introCreatedAt > 12 then
+					finishIntro()
 				end
 				return
 			end
-			local now = os.clock()
-			if now < introHoldUntil then return end
-			local a = math.clamp((now - introHoldUntil) / 2.0, 0, 1)
-			local e = 1 - math.cos(a * math.pi * 0.5)
-			pcall(function()
-				if Logo then Logo.ImageTransparency = e end
-				if IntroBackground then IntroBackground.BackgroundTransparency = e end
-				if Credits then Credits.TextTransparency = 0.15 + 0.85 * e end
-			end)
-			if a >= 1 then
+			local t = os.clock() - introReadyAt
+			local total = INTRO_FADE_IN + INTRO_HOLD + INTRO_FADE_OUT
+			local function ease(x)
+				return 1 - math.cos(math.clamp(x, 0, 1) * math.pi * 0.5)
+			end
+			if t < INTRO_FADE_IN then
+				local e = ease(t / INTRO_FADE_IN)
+				pcall(function()
+					if Logo then Logo.ImageTransparency = 1 - e end
+					if IntroBackground then IntroBackground.BackgroundTransparency = 0 end
+				end)
+			elseif t < INTRO_FADE_IN + INTRO_HOLD then
+				pcall(function()
+					if Logo then Logo.ImageTransparency = 0 end
+					if IntroBackground then IntroBackground.BackgroundTransparency = 0 end
+				end)
+			elseif t < total then
+				local e = ease((t - INTRO_FADE_IN - INTRO_HOLD) / INTRO_FADE_OUT)
+				pcall(function()
+					if Logo then Logo.ImageTransparency = e end
+					if IntroBackground then IntroBackground.BackgroundTransparency = e end
+				end)
+			else
 				finishIntro()
 			end
 		end)
