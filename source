@@ -303,22 +303,95 @@ local iyrassets = {
     ["IYR.LOL/assets/settings.png"] = "rbxassetid://1204397029"
 }
 
+IYP_ICON_B64 = {
+	["settings"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAACA0lEQVR4nO1by47DIAy0LS6r/P+nRnvcVQ6RoioBP8aQCubWxPZMwQaTpkQLCwsLC/OCexPu++9f7f62/XTVJDQ55E2zr7VBQmhyyEjyo9571zx0APbO6ZqhgVHErZls2aPjpWbAfjPqx7UeGfHE4+UWj4DW/YyB0MT18IpVhMX2tPcIu/paeS087BX2WXsW4qd69cSIrgXFYuwRpL1vjYMCe5w0o3618YpuxUDsBIWS4CmNWpwssNcRtQ+P5heaHOJ1bHVymUBmn9Dk4FGzcZcxGl/02sMR51OQRYSmVCyDOGQAduCsP6FXNnCvWfMskrWYqEziCIGWTFvvlnUBpa9YgmiDev2O69ovdo0R2YIZvUq34vSobYt20QYd/fDSAotWockh3/QEOENriQR+S1l0WwRR2yDCNn0b3EDbjKWFRfOEGqHsrU2DHj+OsNXhTsTIs8ArToMEPhOg1hMNOOIcERPpNJGDUGgQ3rKFitdxZE+AfB4pNDnE4xRpbCI8NU4vT6EkoJqaM05WiYlXUG0mPm2un2sDU7O7i4vIgkIgoF5e0MZBZQRbjL3trGbPf7LJaKHdJbAZAl9fgfPM1tXXypu6BmwNgqx3/zRxPbziFXN3rUcz9MTj5eaRP4sh3vOJngiFvryfj2ooNBBveNAqNDnkbem6/jGysLCwsLBAvfAP67HjWN3HzukAAAAASUVORK5CYII=",
+	["info"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABX0lEQVR4nO2bsQ7DIAxE7duq/P+noo7tFCmK0iYYY0DnN1bBd7iGksQVSZIkSZKEFY0WLOX9ubtm215hvnSGCY9MiM488YhE6AoT75kIlQnXd+Q+oR5B7gy3mO0Z2yUB/wx6lmovHe1hqueu7a2pI40cY1jHWbWbElAuDNSKzxID4oCH8X+fe+m6JKAE/M63UOsPrcEjz+1XXOnXJAHe4i3jvOO5JqA4l/7ZtHclPfWr1oCjS9/LIyyBV+GJb1gCz/jtW31ByIGQo6M2v55nihrPEHIg5EDIgZADIQdCDoQcCDm4u+B8iJj9xqj24AYhB0IOLINmXQYWX1j5/v8OtydCK1SB1Q+eXrhaFTz1ixaRWaqgxQciX0L0oPXBCmoFZ18KQ16OlkFV4KELy6BfSyEqEb+0wvoDdqg7RHaoe4R2qLvEjtD2CR6h7hQ9QtsrfIa2W3yV/wskSZIkifDyBYvR9A8MWcC3AAAAAElFTkSuQmCC",
+	["theme"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABwUlEQVR4nO2aS4vEIAyAk7CXpf//p8ocZ9nDQBmszVuL+S4DYhKT+IhTAYqiKIqiKIqi2BHMNtja633X5zh+08aFqzg9Kxi4otOZwSB4iPNRenHF9Z25TyA4MRq0ZbBRel0D0C4G6blmo2wQPMD5kT7rvoAW4Z5xL8dHuj3t0lOcP7f37GhnAmqEegYlU3QUKI6TVzNBkwCSCvQMS/tpMnxul+odgVIBbkYlmbzrP5K3LkUCI1Lnz+0eld30Y/AbbiY9g5AWgOaw6UTwPQ5JUAk2h2ARuEtCslm6BqAlTH/uMdezrV0GGBEATpa0VR1HJ6dv6BI4DJnUtFv4gSA+RYr2tph1wlCk8sxMLjcDVnR2SgBmXamXDkAb7PLe5/xyAWgn50dH4P9vRhAoo97uyXA2SIkNbaFGMIFVjsDUAEjXdtZ1mSSdPZZBBJZ7CsHmkFXB7FlgtU9SAc//5FcopEhjWLNLSzc1TUGU9l2gh+XM1ujymnWkFdQsBU6RwymWPO8QqBG6G8zdgLQPICK+RCM4oB2YJJNRn+ERnNj6hciHrd8IZdUF3hclggCibnMRehES2PKl6FPeChdFURQF7MsfHRWMI6PQUl4AAAAASUVORK5CYII=",
+	["keybinds"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA7UlEQVR4nO3YSw6DMAxFUfOUSZX9LxV12M5RK2LkfMD3TDGOQ0wQMQMAAAAAAEAum/eGfX9/bHG1vprnpadN3luneiRdQWu9iky2mpa6tytJPO/YaN565R1g5clfqU+WnCy50nuz+dWSveOHdsB+stMer/eOn9IBs1Y64vMsS06WnCw5WXIlKpF3Q+odP6wD6sl3+Hi9d/yUDqjOInrHT3kFRv82Rz0UWZDRZwZR4xULNuJ3OfJhy5KTJVeiE97t/FBRExx9VPZvPO8CbE9cVc/CKCLJqlrqVmSylbTWqx5JZ7tLnQAAAAAAADbDF9EIgCavVIm8AAAAAElFTkSuQmCC",
+	["aliases"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABVklEQVR4nO2awY7DMAhEh9Feqvz/p6Ieu+q1arxrGwxOeNcKAwNOgx2gKIqiKIqiKIo7IkiI6vN19ttxPOSyAmgjcS8hBJslbi0EsXHyFvaCwD3cu9c9ng0CQ2ar8d9EzvyMiCC9Bj0B9TAS/KffkTXYa/BXEJGMxPLj5bB3D4/w9jG7JkcNW/vwrBVbLWolTu86hBGtxD0JeQ9Qp30f8TyhxSIRlQ8TQJ2rtLoLGF396O4hbj4LEIvxrnjv+sTGWDwviAC8uuA2s4Dq82Xll1HVG3ktbiW+9DxAvwRhMc6OMlMUrnZozWwsMmo404pRByjfkBljrzO9re4FNFE1t5wFopGrXHBsdy+gRn+lswgCySACEciKk+P00+ARLAKRgEgRiCREiUAkIkIEIhmrRSASslIEIimrRCASs0IEIjneIhAb8CnC7hPoJb5GKYqiKIqiKLA5v79Q4ChVd6UgAAAAAElFTkSuQmCC",
+	["waypoints"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABkElEQVR4nO2Zva7DMAiFAXWp/P6PGnW8Vx2yRPnBNhxIwyd1aoI5GExCiIqiKIqiKIpnwhGLLsvn7+i/1t5QnziD6MhgcEbhyEAIJRdvaWcP9jB65fDZjs7cmyIAy4GAEcctbYWUwKzDiENQLI3t7disiL37Lc8EySweEQQhJ6zT16sc2MLIdjc0zo5mzMha4YegNn09+32aACwXItFBkFkDPSmpFdfzsjQbMCEQRzW//jTXeyAUxFY0+jU4PABZEHo4ErXwtsYjWuCXF4H41niPaNSZILMGetqSVlRPK73dk2C7cBjdDYQCOBIZ0QrZypB1aqLWeJETUad6itdh613yHJTK6I1aB2YzwXtKLARgNAiIMmJLY1qHrTLGoryYbnr4WXUZIWMQvfx2H0Yyw16Gz6a+2rbp+a1hhcmRGQEI8SmnwtprbhGAZrhjXoerkDO9E19U6qcbif30l6E2sYPezxVCIK5KAZ36K0xgLN4XLBF6OIJeULOzyNmgUABnAh8xFS6UXaAoiqIoioIc+QccRvDSzktq1wAAAABJRU5ErkJggg==",
+	["plugins"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAyklEQVR4nO3ZsQ6DMBRD0YuVpeL/PxV1bCeWVlRNSGgV+8w8E5EwRIaIiIiI8LTUDmzb/XH2pet6W36V/0o1wT0W9ylndP6pD7B1WtxR3uj8LidgRuWK/6xll0fn74Q5YU6YE+aEOWFOmBPmhDlhTpgT5krrYO/r69X5O2FOI6+nNXmj87ucgLXTIo9yRudHxJuFSukFOkgvQHqBv1FaB9MLTEKYE+aEOWFOmBPmhDlhTpgT5oS50jqYXmAS+vbB9AKkF4iIiIhgJk8902/bSiCEPAAAAABJRU5ErkJggg==",
+	["events"] = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABVUlEQVR4nO2aS27EMAxDGaKbIvc/qtFli1kE6GI6cVtLZCK9AyQmRTn+BGiapmmaxoExPj6z37nBVPy+v6eMjSieBsJUbJkEDEHfWxnwjKzqyw1QV19qgIN42xa4vQHjRfUz+19igEv0D4jisHL1Uw1wFG/XAtkTYJoByrW+3IBhGn1pC+wm1Q83wDn6B1t29A8DVrTGCjOJRNyqH2bAFaIfZsCYjPbDkP+asqKNNlyk+lHP3bCQv1bkTMjZhGqfgFmeCYoUb7cXmGXlhEqYMFv91V+TNyxmdoBnrVLqZmiWiLUEYUjmQoow4Lu47O0zIeAnkdGfPNsEvCJ6D0GYoNpAEWIeIpXHZsx+4W92i/GjgT4B6rMDojiEGbe+HR4n/X/bm6EZVGeGRHEIA5Qnxsx6kWKdf5kEKGHl6ksT4CBe9n+Ai/gUA5zEyhnmf4s0TdM0KMYXiQmkgDOc+EQAAAAASUVORK5CYII=",
+}
+
+local function iypB64Decode(data)
+	local b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	data = tostring(data or ""):gsub("[^" .. b .. "=]", "")
+	return (data:gsub(".", function(x)
+		if x == "=" then return "" end
+		local r, f = "", (b:find(x) - 1)
+		for i = 6, 1, -1 do
+			r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and "1" or "0")
+		end
+		return r
+	end):gsub("%d%d%d?%d?%d?%d?%d?%d?", function(x)
+		if #x ~= 8 then return "" end
+		local c = 0
+		for i = 1, 8 do
+			c = c + (x:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
+		end
+		return string.char(c)
+	end))
+end
+
+local function installIypIcons()
+	if not (makefolder and writefile and isfolder) then return end
+	local folder = "infiniteyieldreborn/assets"
+	pcall(function()
+		if not isfolder("infiniteyieldreborn") then makefolder("infiniteyieldreborn") end
+		if not isfolder(folder) then makefolder(folder) end
+	end)
+	local verPath = folder .. "/iyp-icons.ver"
+	local ver = "iyp-icons-1"
+	local need = true
+	pcall(function()
+		if isfile and isfile(verPath) and readfile(verPath) == ver then
+			need = false
+		end
+	end)
+	if not need then return end
+	for name, blob in pairs(IYP_ICON_B64) do
+		local bin = iypB64Decode(blob)
+		if type(bin) == "string" and #bin > 100 then
+			pcall(writefile, folder .. "/iyp-" .. name .. ".png", bin)
+		end
+	end
+	pcall(writefile, verPath, ver)
+end
+
+local function getiypicon(name)
+	local path = "infiniteyieldreborn/assets/iyp-" .. tostring(name) .. ".png"
+	if waxgetcustomasset and isfile and isfile(path) then
+		local ok, result = pcall(waxgetcustomasset, path)
+		if ok and type(result) == "string" and result ~= "" then
+			return result
+		end
+	end
+	return ""
+end
+
+installIypIcons()
+
+
 local function getcustomasset(asset)
+    local fallback = iyrassets[asset]
     local fileName = tostring(asset or ""):match("([^/\\]+)$") or asset
     local localPath = "infiniteyieldreborn/assets/" .. tostring(fileName)
-    if waxgetcustomasset then
-        if isfile and isfile(localPath) then
+
+    -- Only use executor getcustomasset for real on-disk files.
+    -- Never pass fake paths like "IYR.LOL/assets/..." — they can return
+    -- empty/broken content ids and hide icons forever.
+    if waxgetcustomasset and isfile and readfile and isfile(localPath) then
+        local okData, data = pcall(readfile, localPath)
+        if okData and type(data) == "string" and #data > 200 and not string.match(data, "^%s*<") then
             local ok, result = pcall(waxgetcustomasset, localPath)
-            if ok and result ~= nil and result ~= "" then
+            if ok and type(result) == "string" and result ~= "" then
                 return result
             end
         end
-        local ok, result = pcall(waxgetcustomasset, asset)
-        if ok and result ~= nil and result ~= "" then
-            return result
-        end
     end
-    return iyrassets[asset]
+
+    return fallback
 end
 
 if makefolder and isfolder and writefile and isfile and readfile then
@@ -328,6 +401,10 @@ if makefolder and isfolder and writefile and isfile and readfile then
         local logoVer = "iyp-3"
         local targetFolder = "infiniteyieldreborn/assets"
         local sourceFolder = "infiniteyield/assets"
+
+        local function looksLikeAsset(content)
+            return type(content) == "string" and #content > 200 and not string.match(content, "^%s*<")
+        end
 
         if not isfolder("infiniteyieldreborn") then makefolder("infiniteyieldreborn") end
         if not isfolder(targetFolder) then makefolder(targetFolder) end
@@ -339,13 +416,24 @@ if makefolder and isfolder and writefile and isfile and readfile then
 
             if not isfile(localTarget) then
                 if isfile(localSource) then
-                    writefile(localTarget, readfile(localSource))
+                    local ok, content = pcall(readfile, localSource)
+                    if ok and looksLikeAsset(content) then
+                        writefile(localTarget, content)
+                    end
                 else
                     local downloadURL = assetsURL .. "assets/" .. fileName
                     local success, content = pcall(function() return game:HttpGet(downloadURL) end)
-                    if success then
+                    if success and looksLikeAsset(content) then
                         writefile(localTarget, content)
                     end
+                end
+            elseif isfile(localTarget) then
+                -- Drop tiny/HTML junk left by failed downloads so rbxassetid fallback wins
+                local ok, content = pcall(readfile, localTarget)
+                if not (ok and looksLikeAsset(content)) then
+                    pcall(function()
+                        if delfile then delfile(localTarget) end
+                    end)
                 end
             end
         end
@@ -360,7 +448,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
                 for _, candidate in ipairs({ "logo.png", "iyp-logo.png", "assets/logo-splash.png" }) do
                     if isfile(candidate) then
                         local ok, data = pcall(readfile, candidate)
-                        if ok and type(data) == "string" and #data > 1000 then
+                        if ok and looksLikeAsset(data) and #data > 1000 then
                             content = data
                             break
                         end
@@ -368,7 +456,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
                 end
                 if not content then
                     local ok, data = pcall(function() return game:HttpGet(logoURL) end)
-                    if ok and type(data) == "string" and #data > 1000 then
+                    if ok and looksLikeAsset(data) and #data > 1000 then
                         content = data
                     end
                 end
@@ -860,7 +948,7 @@ Dark = Instance.new("Frame")
 Cmdbar = Instance.new("TextBox")
 CMDsF = Instance.new("ScrollingFrame")
 cmdListLayout = Instance.new("UIListLayout")
-SettingsButton = Instance.new("ImageButton")
+SettingsButton = Instance.new("TextButton")
 ColorsButton = Instance.new("ImageButton")
 Settings = Instance.new("Frame")
 Prefix = Instance.new("TextLabel")
@@ -1079,36 +1167,52 @@ Title.Font = UI_FONT_MED
 Title.TextSize = 14
 Title.TextTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
-uiPad(Title, 12, 0, 50, 0)
+uiPad(Title, 12, 0, 78, 0)
 
 BrandLabel = Instance.new("TextLabel")
 BrandLabel.Name = "Brand"
 BrandLabel.Parent = Title
 BrandLabel.BackgroundTransparency = 1
 BrandLabel.Position = UDim2.new(0, 0, 0, 0)
-BrandLabel.Size = UDim2.new(1, -56, 1, 0)
+BrandLabel.Size = UDim2.new(0, 0, 1, 0)
+BrandLabel.AutomaticSize = Enum.AutomaticSize.X
 BrandLabel.Font = UI_FONT_MED
 BrandLabel.TextSize = 14
 BrandLabel.TextXAlignment = Enum.TextXAlignment.Left
 BrandLabel.TextColor3 = Color3.fromRGB(245, 245, 247)
 BrandLabel.ZIndex = 11
 BrandLabel.RichText = false
-BrandLabel.TextTruncate = Enum.TextTruncate.AtEnd
+BrandLabel.TextTruncate = Enum.TextTruncate.None
 
 VersionLabel = Instance.new("TextLabel")
 VersionLabel.Name = "Version"
 VersionLabel.Parent = Title
 VersionLabel.BackgroundTransparency = 1
-VersionLabel.Position = UDim2.new(1, -52, 0, 0)
-VersionLabel.Size = UDim2.new(0, 48, 1, 0)
+VersionLabel.Position = UDim2.new(0, 0, 0, 0)
+VersionLabel.Size = UDim2.new(0, 0, 1, 0)
+VersionLabel.AutomaticSize = Enum.AutomaticSize.X
 VersionLabel.Font = UI_FONT
-VersionLabel.TextSize = 12
-VersionLabel.TextXAlignment = Enum.TextXAlignment.Right
+VersionLabel.TextSize = 11
+VersionLabel.TextXAlignment = Enum.TextXAlignment.Left
 VersionLabel.TextYAlignment = Enum.TextYAlignment.Center
 VersionLabel.TextColor3 = Color3.fromRGB(140, 136, 158)
 VersionLabel.ZIndex = 11
-VersionLabel.Text = tostring(currentVersion)
-VersionLabel.TextTruncate = Enum.TextTruncate.AtEnd
+VersionLabel.Text = "· " .. tostring(currentVersion)
+VersionLabel.TextTruncate = Enum.TextTruncate.None
+
+local function layoutBrandVersion()
+	local gap = 6
+	local brandW = BrandLabel.AbsoluteSize.X
+	if brandW < 1 then
+		brandW = BrandLabel.TextBounds.X
+	end
+	VersionLabel.Position = UDim2.new(0, math.floor(brandW + gap), 0, 0)
+end
+
+BrandLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutBrandVersion)
+BrandLabel:GetPropertyChangedSignal("Text"):Connect(function()
+	task.defer(layoutBrandVersion)
+end)
 
 SubLabel = Instance.new("TextLabel")
 SubLabel.Name = "Sub"
@@ -1133,9 +1237,10 @@ function setBrandTitle(name)
 	local base = tostring(name or BRAND_NAME)
 	BrandLabel.Text = base
 	if VersionLabel then
-		VersionLabel.Text = tostring(currentVersion)
+		VersionLabel.Text = "· " .. tostring(currentVersion)
 	end
-	Title.Text = base .. "  " .. tostring(currentVersion)
+	Title.Text = base .. " · " .. tostring(currentVersion)
+	task.defer(layoutBrandVersion)
 end
 
 local brandName = BRAND_NAME
@@ -1285,19 +1390,41 @@ cmdListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SettingsButton.Name = "SettingsButton"
 SettingsButton.Parent = Holder
 SettingsButton.BackgroundTransparency = 1
-SettingsButton.Position = UDim2.new(1, -26, 0, 7)
+SettingsButton.AutoButtonColor = true
+SettingsButton.Position = UDim2.new(1, -24, 0, 7)
 SettingsButton.Size = UDim2.new(0, 18, 0, 18)
-SettingsButton.Image = getcustomasset("IYR.LOL/assets/settings.png")
-SettingsButton.ZIndex = 12
+SettingsButton.Text = ""
+SettingsButton.ZIndex = 30
+do
+    local icon = Instance.new("ImageLabel")
+    icon.Name = "Icon"
+    icon.Parent = SettingsButton
+    icon.BackgroundTransparency = 1
+    icon.Size = UDim2.new(1, 0, 1, 0)
+    icon.Image = getiypicon("settings")
+    icon.ScaleType = Enum.ScaleType.Fit
+    icon.ZIndex = 31
+end
 
-ReferenceButton = Instance.new("ImageButton")
+ReferenceButton = Instance.new("TextButton")
 ReferenceButton.Name = "ReferenceButton"
 ReferenceButton.Parent = Holder
 ReferenceButton.BackgroundTransparency = 1
-ReferenceButton.Position = UDim2.new(1, -48, 0, 8)
+ReferenceButton.AutoButtonColor = true
+ReferenceButton.Position = UDim2.new(1, -46, 0, 8)
 ReferenceButton.Size = UDim2.new(0, 16, 0, 16)
-ReferenceButton.Image = getcustomasset("IYR.LOL/assets/reference.png")
-ReferenceButton.ZIndex = 12
+ReferenceButton.Text = ""
+ReferenceButton.ZIndex = 30
+do
+    local icon = Instance.new("ImageLabel")
+    icon.Name = "Icon"
+    icon.Parent = ReferenceButton
+    icon.BackgroundTransparency = 1
+    icon.Size = UDim2.new(1, 0, 1, 0)
+    icon.Image = getiypicon("info")
+    icon.ScaleType = Enum.ScaleType.Fit
+    icon.ZIndex = 31
+end
 
 Settings.Name = "Settings"
 Settings.Parent = Holder
@@ -1360,7 +1487,7 @@ PrefixBox.ZIndex = 24
 table.insert(shade3,PrefixBox)
 table.insert(text2,PrefixBox)
 
-function makeSettingsButton(name,iconID,off)
+function makeSettingsButton(name,iconID,off,glyph)
     local button = Instance.new("TextButton")
     button.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
     button.BorderSizePixel = 0
@@ -1374,13 +1501,9 @@ function makeSettingsButton(name,iconID,off)
     icon.Position = UDim2.new(0,5,0,5)
     icon.Size = UDim2.new(0,16,0,16)
     icon.BackgroundTransparency = 1
-    icon.Image = iconID
+    icon.Image = (type(iconID) == "string" and iconID) or ""
+    icon.ScaleType = Enum.ScaleType.Fit
     icon.ZIndex = 24
-    if off then
-        icon.ScaleType = Enum.ScaleType.Crop
-        icon.ImageRectSize = Vector2.new(16,16)
-        icon.ImageRectOffset = Vector2.new(off,0)
-    end
     local label = Instance.new("TextLabel")
     label.Name = "ButtonLabel"
     label.Parent = button
@@ -1406,19 +1529,19 @@ function makeSettingsButton(name,iconID,off)
     return button
 end
 
-ColorsButton = makeSettingsButton("Edit Theme",getcustomasset("IYR.LOL/assets/edittheme.png"))
+ColorsButton = makeSettingsButton("Edit Theme", getiypicon("theme"))
 ColorsButton.Position = UDim2.new(0, 5, 0, 104)
 ColorsButton.Size = UDim2.new(1, -10, 0, 28)
 ColorsButton.Name = "Colors"
 ColorsButton.Parent = SettingsHolder
 
-Keybinds = makeSettingsButton("Edit Keybinds",getcustomasset("IYR.LOL/assets/editkeybinds.png"))
+Keybinds = makeSettingsButton("Edit Keybinds", getiypicon("keybinds"))
 Keybinds.Position = UDim2.new(0, 5, 0, 136)
 Keybinds.Size = UDim2.new(1, -10, 0, 28)
 Keybinds.Name = "Keybinds"
 Keybinds.Parent = SettingsHolder
 
-Aliases = makeSettingsButton("Edit Aliases",getcustomasset("IYR.LOL/assets/editaliases.png"))
+Aliases = makeSettingsButton("Edit Aliases", getiypicon("aliases"))
 Aliases.Position = UDim2.new(0, 5, 0, 168)
 Aliases.Size = UDim2.new(1, -10, 0, 28)
 Aliases.Name = "Aliases"
@@ -1500,19 +1623,19 @@ table.insert(shade3, LanguageValue)
 table.insert(text1, LanguageValue)
 uiCorner(LanguageValue, 4)
 
-Positions = makeSettingsButton("Edit/Goto Waypoints",getcustomasset("IYR.LOL/assets/editwaypoints.png"))
+Positions = makeSettingsButton("Edit/Goto Waypoints", getiypicon("waypoints"))
 Positions.Position = UDim2.new(0, 5, 0, 200)
 Positions.Size = UDim2.new(1, -10, 0, 28)
 Positions.Name = "Waypoints"
 Positions.Parent = SettingsHolder
 
-EventBind = makeSettingsButton("Edit Event Binds",getcustomasset("IYR.LOL/assets/bindsandplugins.png"),759)
+EventBind = makeSettingsButton("Edit Event Binds", getiypicon("events"))
 EventBind.Position = UDim2.new(0, 5, 0, 264)
 EventBind.Size = UDim2.new(1, -10, 0, 28)
 EventBind.Name = "EventBinds"
 EventBind.Parent = SettingsHolder
 
-Plugins = makeSettingsButton("Manage Plugins",getcustomasset("IYR.LOL/assets/bindsandplugins.png"),743)
+Plugins = makeSettingsButton("Manage Plugins", getiypicon("plugins"))
 Plugins.Position = UDim2.new(0, 5, 0, 232)
 Plugins.Size = UDim2.new(1, -10, 0, 28)
 Plugins.Name = "Plugins"
@@ -1805,30 +1928,32 @@ IntroBackground.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
 IntroBackground.BorderSizePixel = 0
 IntroBackground.Position = UDim2.new(0, 0, 0, LIST_Y)
 IntroBackground.Size = UDim2.new(1, 0, 0, LIST_H)
-IntroBackground.ZIndex = 10
+IntroBackground.ZIndex = 18
+IntroBackground.ClipsDescendants = true
 
 Logo.Name = "Logo"
-Logo.Parent = Holder
+Logo.Parent = IntroBackground
 Logo.BackgroundTransparency = 1
 Logo.BorderSizePixel = 0
-Logo.Position = UDim2.new(0, 125, 0, 127)
-Logo.Size = UDim2.new(0, 10, 0, 10)
+Logo.Position = UDim2.new(0, 0, 0, 0)
+Logo.Size = UDim2.new(1, 0, 1, 0)
 Logo.ScaleType = Enum.ScaleType.Fit
 Logo.Image = getcustomasset("IYR.LOL/assets/logo.png")
 Logo.ImageTransparency = 0
-Logo.ZIndex = 10
+Logo.ZIndex = 19
 
 Credits.Name = "Credits"
-Credits.Parent = Holder
+Credits.Parent = IntroBackground
 Credits.BackgroundTransparency = 1
 Credits.BorderSizePixel = 0
-Credits.Position = UDim2.new(0, 0, 0.9, 30)
-Credits.Size = UDim2.new(0, 250, 0, 20)
+Credits.Position = UDim2.new(0, 8, 1, -22)
+Credits.Size = UDim2.new(1, -16, 0, 18)
 Credits.Font = UI_FONT
-Credits.TextSize = 14
+Credits.TextSize = 12
 Credits.Text = BRAND_NAME
 Credits.TextColor3 = Color3.new(1, 1, 1)
-Credits.ZIndex = 10
+Credits.TextTransparency = 0.15
+Credits.ZIndex = 20
 
 KeybindsFrame.Name = "KeybindsFrame"
 KeybindsFrame.Parent = Settings
@@ -19943,18 +20068,29 @@ task.spawn(function()
         minimizeHolder()
         return
     end
-    task.wait()
-    Credits:TweenPosition(UDim2.new(0, 0, 0.9, 0), "Out", "Quart", 0.2)
-    Logo:TweenSizeAndPosition(UDim2.new(0, 160, 0, 160), UDim2.new(0, 45, 0, LIST_Y + 4), "Out", "Quart", 0.3)
-    task.wait(1)
-    local OutInfo = TweenInfo.new(1.6809, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+    pcall(function()
+        Logo.Position = UDim2.new(0, 0, 0, 0)
+        Logo.Size = UDim2.new(1, 0, 1, 0)
+        Logo.ScaleType = Enum.ScaleType.Fit
+        Credits.Position = UDim2.new(0, 8, 1, -22)
+        Credits.TextTransparency = 0.15
+        IntroBackground.Visible = true
+        IntroBackground.BackgroundTransparency = 0
+        Logo.ImageTransparency = 0
+    end)
+    task.wait(0.85)
+    local OutInfo = TweenInfo.new(2.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
     TweenService:Create(Logo, OutInfo, {ImageTransparency = 1}):Play()
     TweenService:Create(IntroBackground, OutInfo, {BackgroundTransparency = 1}):Play()
-    Credits:TweenPosition(UDim2.new(0, 0, 0.9, 30), "Out", "Quart", 0.2)
-    task.wait(0.2)
-    Logo:Destroy()
-    Credits:Destroy()
-    IntroBackground:Destroy()
+    if Credits then
+        TweenService:Create(Credits, OutInfo, {TextTransparency = 1}):Play()
+    end
+    task.wait(2.45)
+    pcall(function()
+        if Logo then Logo:Destroy() end
+        if Credits then Credits:Destroy() end
+        if IntroBackground then IntroBackground:Destroy() end
+    end)
     minimizeHolder()
     if IsOnMobile then
         notify("Unstable Device", "On mobile, "..BRAND_NAME.." has a lot of bugs. It's recommended to use a PC executor")
