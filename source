@@ -2151,18 +2151,9 @@ HelperFavBtn.Text = ""
 HelperFavBtn.TextColor3 = Color3.fromRGB(255, 214, 102)
 HelperFavBtn.AutoButtonColor = false
 HelperFavBtn.ZIndex = 28
-HelperFavBtn.Visible = true
+HelperFavBtn.Visible = false
+HelperFavBtn.Active = false
 uiCorner(HelperFavBtn, 6)
-table.insert(text1, HelperFavBtn)
-HelperFavBtn.MouseButton1Click:Connect(function()
-    local title = Tooltip:GetAttribute("CmdTitle")
-    if title and title ~= "" and type(toggleFavoriteCmd) == "function" then
-        toggleFavoriteCmd(title)
-        if type(showHelper) == "function" then
-            showHelper(title, Tooltip:GetAttribute("CmdDesc"))
-        end
-    end
-end)
 
 IntroBackground.Name = "IntroBackground"
 IntroBackground.Parent = Holder
@@ -2187,8 +2178,8 @@ Logo.ImageTransparency = 0
 Logo.ZIndex = 19
 
 local INTRO_HOLD = 1.0
-local INTRO_FADE_OUT = 0.85
-local INTRO_AUTOHIDE = 1.5
+local INTRO_FADE_OUT = 0.6
+local INTRO_AUTOHIDE = 0.45
 
 introPlaying = true
 introDone = false
@@ -2205,10 +2196,10 @@ function holderHovered()
 		and IYMouse.Y >= p.Y and IYMouse.Y <= p.Y + s.Y
 end
 function scheduleIntroMinimize()
+	-- After splash: collapse quickly unless pinned open or typing a command
 	task.delay(INTRO_AUTOHIDE, function()
 		if StayOpen then return end
 		if Cmdbar and Cmdbar:IsFocused() then return end
-		if holderHovered() then return end
 		if type(minimizeHolder) == "function" then
 			pcall(minimizeHolder)
 		end
@@ -2237,13 +2228,8 @@ function finishIntro()
 			checkTT()
 		end
 	end)
-	task.spawn(function()
-		local t0 = os.clock()
-		while not introCommandsReady and os.clock() - t0 < 6 do
-			task.wait(0.05)
-		end
-		scheduleIntroMinimize()
-	end)
+	-- Do not wait again for commands (that caused a long post-logo hang)
+	scheduleIntroMinimize()
 end
 
 function startIntroReveal()
@@ -8743,7 +8729,6 @@ function hideHelper()
 	Tooltip.BackgroundTransparency = 0
 	if Title_3 then Title_3.TextTransparency = 0 end
 	if Description then Description.TextTransparency = 0 end
-	if HelperFavBtn then HelperFavBtn.TextTransparency = 0 end
 end
 
 function showHelper(title, desc)
@@ -8776,7 +8761,7 @@ function showHelper(title, desc)
     local padX = 24
     local titleH = 28
     local gap = 6
-    local bottomPad = 36
+    local bottomPad = 12
     local maxDescW = HELPER_W - padX
     local bounds = TextService:GetTextSize(desc, Description.TextSize, Description.Font, Vector2.new(maxDescW, 200))
     local descH = math.clamp(math.ceil(bounds.Y) + 2, 16, 72)
@@ -8786,13 +8771,8 @@ function showHelper(title, desc)
         HelperAccent.Position = UDim2.new(0, 12, 0, titleH - 1)
     end
     if HelperFavBtn then
-        local fav = type(isFavoriteCmd) == "function" and isFavoriteCmd(title)
-        HelperFavBtn.Text = fav and T("removeFavorite") or T("addFavorite")
-        HelperFavBtn.TextColor3 = fav and Color3.fromRGB(186, 182, 204) or Color3.fromRGB(255, 214, 102)
-        HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
-        HelperFavBtn.Visible = true
-        HelperFavBtn.TextTransparency = 0
-        HelperFavBtn.Active = true
+        HelperFavBtn.Visible = false
+        HelperFavBtn.Active = false
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
     Tooltip.BackgroundTransparency = 0
@@ -10627,9 +10607,6 @@ function checkTT()
 
     if hovered then
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
-        return
-    end
-    if HelperFavBtn and HelperFavBtn.Visible and pointIn(HelperFavBtn) then
         return
     end
     hideHelper()
