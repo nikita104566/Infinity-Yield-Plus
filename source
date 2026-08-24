@@ -473,7 +473,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.3.5'
+currentVersion = '3.4'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -513,7 +513,7 @@ UI_L = {
 		editKeybinds = "Edit Keybinds",
 		editAliases = "Edit Aliases",
 		editWaypoints = "Edit/Goto Waypoints",
-		editEvents = "Edit Event Binds",
+		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
 		noDesc = "No description",
 		outdated = "Outdated",
@@ -543,6 +543,7 @@ UI_L = {
 		keybindToggle = "Create Toggle",
 		keybindToggleOn = "Create Toggle",
 		favorites = "Favorites",
+		allCommands = "Commands",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
 		refTitle = "Reference",
@@ -563,11 +564,93 @@ UI_L = {
 		refHistoryText = "While focused on the command bar, you can use the up and down arrow keys to browse recently used commands",
 		refAutoHeader = "Autocomplete in the Command Bar",
 		refAutoText = "While focused on the command bar, you can use the tab key to insert the top suggested command into the command bar.",
-		refEventsHeader = "Using Event Binds",
-		refEventsIntro = "Use event binds to set up commands that get executed when certain events happen. You can edit the conditions for an event command to run (such as which player triggers it).",
-		refEventsArgs = "Some events may send arguments; you can use them in your event command by using $ followed by the argument number ($1, $2, etc). You can find out the order and types of these arguments by looking at the settings of the event command.",
+		refEventsHeader = "Using Automation Studio",
+		refEventsIntro = "Automation Studio runs workflows when Roblox signals fire (spawn, chat, tools, prompts, intervals, and more). Each workflow has conditions, timing (delay/cooldown), chance, and max runs.",
+		refEventsArgs = "$1/$2 are event args in order. Named aliases ($player, $message, …) map to the same values. Globals: $me, $place, $job, $time, $event. Chain with \\ . Inspector shows a per-event example.",
 		refExample = "Example:",
-		refEventsEx = "Setting up 'goto $1' on the OnChatted event will teleport you to any player that chats.",
+		refEventsEx = "OnChatted: $1/$player = who chatted, $2/$message = text. Command: goto $player. Use Preview to see substitution without running.",
+		autoStudio = "Automation Studio",
+		autoPaused = "Automations paused",
+		autoResumed = "Automations resumed",
+		eeSearch = "  Search events...",
+		eeSelectEvent = "Select an event",
+		eeNoFlows = "No workflows yet\nAdd a command below to create one.",
+		eePickEvent = "Select an event to view its workflows.",
+		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
+		eeEmptyCommand = "Type a command first",
+		eeNoEventsMatch = "No events match this filter.",
+		eeAdd = "+ Add",
+		eeInspector = "Inspector",
+		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
+		eeInspEventHint = "No workflow selected.\nAdd a command below, or select a workflow card to edit it.",
+		eeFlowCount = "%d/%d on",
+		eeCatAll = "All",
+		eeCatCharacter = "Character",
+		eeCatPlayers = "Players",
+		eeCatChat = "Chat",
+		eeCatInput = "Input",
+		eeCatWorld = "World",
+		eeCatSession = "Session",
+		eeTestEvent = "Test Event",
+		eeClear = "Clear",
+		eeUndo = "Undo",
+		eePresets = "Presets",
+		eeExport = "Export",
+		eeImport = "Import",
+		eePause = "Pause",
+		eeResume = "Resume",
+		eeHistory = "History",
+		eeRunHistory = "Run History",
+		eeImportTitle = "Import Automation JSON",
+		eeCancel = "Cancel",
+		eeApply = "Apply",
+		eeOn = "On",
+		eeOff = "Off",
+		eeCopy = "Copy",
+		eePreview = "Preview",
+		eeRun = "Run",
+		eeUp = "Up",
+		eeDown = "Down",
+		eeDel = "Del",
+		eePresetCurrent = "Add to current event",
+		eePresetPack = "Add safe pack",
+		eeClearConfirm = "Clear all workflows for this event?",
+		eeConfirm = "Confirm",
+		eeImportBad = "Invalid JSON — nothing imported",
+		eeNothingUndo = "Nothing to undo",
+		eeUndoOk = "Undo applied",
+		eeCleared = "Cleared",
+		eeExported = "Exported to clipboard",
+		eeNoClip = "Clipboard unavailable",
+		eeImported = "Import applied",
+		eePresetsAdded = "Presets added",
+		eeSkipPaused = "Automations are paused",
+		eeSkipOff = "Workflow is off",
+		eeSkipFilters = "Conditions did not match",
+		eeSkipOnce = "Workflow already ran once",
+		eeSkipMax = "Run limit reached",
+		eeSkipCooldown = "Cooldown is active",
+		eeSkipChance = "Chance roll did not pass",
+		eeSkipNone = "No workflows ran",
+		eeForceHint = "Shift+click Test to force",
+		eeTestFired = "Test fired ",
+		eeVarTitle = "Event variables",
+		eeVarBody = "$1, $2 — arguments in order. Named aliases ($player, $message, …) are the same args.",
+		eeVarChat = "OnChatted: $1/$player = who chatted, $2/$message = text. Example: goto $player",
+		eeVarGlobal = "Globals: $me, $place, $job, $time, $event. Chain: cmd1\\cmd2",
+		eeAlways = "always",
+		eeMeOnly = "Me only",
+		eeInvert = "Invert",
+		eeCommand = "Command",
+		eeTiming = "Timing",
+		eeExecution = "Execution",
+		eeConditions = "Conditions",
+		eeValidation = "Validation",
+		eeRuntime = "Runtime",
+		eeEmpty = "(empty)",
+		eeWorkflowInsp = "Workflow inspector",
+		eeYes = "yes",
+		eeNo = "no",
 		refCase_all = "- includes everyone",
 		refCase_others = "- includes everyone except you",
 		refCase_me = "- includes your player only",
@@ -601,7 +684,7 @@ UI_L = {
 		editKeybinds = "Клавиши",
 		editAliases = "Алиасы",
 		editWaypoints = "Точки / телепорт",
-		editEvents = "События",
+		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
 		noDesc = "Нет описания",
 		outdated = "Устарело",
@@ -631,6 +714,7 @@ UI_L = {
 		keybindToggle = "Создать тоггл",
 		keybindToggleOn = "Создать тоггл",
 		favorites = "Избранное",
+		allCommands = "Команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
 		refTitle = "Справка",
@@ -651,11 +735,93 @@ UI_L = {
 		refHistoryText = "Когда фокус в поле команды, стрелки ↑↓ листают недавно использованные команды",
 		refAutoHeader = "Автодополнение",
 		refAutoText = "Когда фокус в поле команды, Tab подставляет верхнюю подсказку в строку",
-		refEventsHeader = "Привязки событий",
-		refEventsIntro = "Привязки событий запускают команды при определённых событиях. Можно настроить условия (например, какой игрок их вызывает).",
-		refEventsArgs = "Некоторые события передают аргументы: в команде используй $ и номер ($1, $2 и т.д.). Порядок и типы аргументов смотри в настройках события.",
+		refEventsHeader = "Automation Studio",
+		refEventsIntro = "Automation Studio запускает workflow по сигналам Roblox (спавн, чат, инструменты, промпты, интервалы и др.). У каждого workflow — условия, delay/cooldown, шанс и лимит запусков.",
+		refEventsArgs = "$1/$2 — аргументы события по порядку. Имена ($player, $message, …) — те же значения. Глобальные: $me, $place, $job, $time, $event. Цепочка через \\ . В Inspector — пример для события.",
 		refExample = "Пример:",
-		refEventsEx = "Команда «goto $1» на событии OnChatted телепортирует тебя к игроку, который написал в чат.",
+		refEventsEx = "OnChatted: $1/$player = кто написал, $2/$message = текст. Команда: goto $player. Preview показывает подстановку без запуска.",
+		autoStudio = "Automation Studio",
+		autoPaused = "Автоматизации на паузе",
+		autoResumed = "Автоматизации возобновлены",
+		eeSearch = "  Поиск событий...",
+		eeSelectEvent = "Выбери событие",
+		eeNoFlows = "Пока нет workflow\nДобавь команду ниже.",
+		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
+		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
+		eeEmptyCommand = "Сначала введи команду",
+		eeNoEventsMatch = "Нет событий по этому фильтру.",
+		eeAdd = "+ Доб.",
+		eeInspector = "Инспектор",
+		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
+		eeInspEventHint = "Workflow не выбран.\nДобавь команду ниже или выбери карточку для редактирования.",
+		eeFlowCount = "%d/%d вкл.",
+		eeCatAll = "Все",
+		eeCatCharacter = "Персонаж",
+		eeCatPlayers = "Игроки",
+		eeCatChat = "Чат",
+		eeCatInput = "Ввод",
+		eeCatWorld = "Мир",
+		eeCatSession = "Сессия",
+		eeTestEvent = "Тест",
+		eeClear = "Очист.",
+		eeUndo = "Отмена",
+		eePresets = "Пресеты",
+		eeExport = "Экспорт",
+		eeImport = "Импорт",
+		eePause = "Пауза",
+		eeResume = "Продолжить",
+		eeHistory = "Журнал",
+		eeRunHistory = "История запусков",
+		eeImportTitle = "Импорт JSON автоматизаций",
+		eeCancel = "Отмена",
+		eeApply = "Применить",
+		eeOn = "Вкл",
+		eeOff = "Выкл",
+		eeCopy = "Копия",
+		eePreview = "Preview",
+		eeRun = "Run",
+		eeUp = "Вверх",
+		eeDown = "Вниз",
+		eeDel = "Удал",
+		eePresetCurrent = "В текущее событие",
+		eePresetPack = "Безопасный набор",
+		eeClearConfirm = "Очистить все workflow этого события?",
+		eeConfirm = "Подтвердить",
+		eeImportBad = "Некорректный JSON — ничего не импортировано",
+		eeNothingUndo = "Нечего отменять",
+		eeUndoOk = "Отмена применена",
+		eeCleared = "Очищено",
+		eeExported = "Скопировано в буфер",
+		eeNoClip = "Буфер недоступен",
+		eeImported = "Импорт применён",
+		eePresetsAdded = "Пресеты добавлены",
+		eeSkipPaused = "Автоматизации на паузе",
+		eeSkipOff = "Workflow выключен",
+		eeSkipFilters = "Условия не совпали",
+		eeSkipOnce = "Workflow уже запускался",
+		eeSkipMax = "Достигнут лимит запусков",
+		eeSkipCooldown = "Cooldown ещё активен",
+		eeSkipChance = "Проверка шанса не пройдена",
+		eeSkipNone = "Ничего не запустилось",
+		eeForceHint = "Shift+клик по Тест — принудительно",
+		eeTestFired = "Тест: ",
+		eeVarTitle = "Переменные события",
+		eeVarBody = "$1, $2 — аргументы по порядку. Имена ($player, $message, …) — те же аргументы.",
+		eeVarChat = "OnChatted: $1/$player = кто написал, $2/$message = текст. Пример: goto $player",
+		eeVarGlobal = "Глобальные: $me, $place, $job, $time, $event. Цепочка: cmd1\\cmd2",
+		eeAlways = "всегда",
+		eeMeOnly = "Только я",
+		eeInvert = "Инверсия",
+		eeCommand = "Команда",
+		eeTiming = "Тайминг",
+		eeExecution = "Запуск",
+		eeConditions = "Условия",
+		eeValidation = "Проверка",
+		eeRuntime = "Runtime",
+		eeEmpty = "(пусто)",
+		eeWorkflowInsp = "Инспектор workflow",
+		eeYes = "да",
+		eeNo = "нет",
 		refCase_all = "— все игроки",
 		refCase_others = "— все, кроме тебя",
 		refCase_me = "— только ты",
@@ -872,7 +1038,17 @@ function applyUiLanguage()
 	if Positions and Positions:FindFirstChild("ButtonLabel") then
 		Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #(WayPoints or {}) .. ")"
 	end
-	if EventBind and EventBind:FindFirstChild("ButtonLabel") then EventBind.ButtonLabel.Text = T("editEvents") end
+	if EventBind and EventBind:FindFirstChild("ButtonLabel") then
+		local tot = 0
+		if eventEditor and type(eventEditor.GetCounts) == "function" then
+			local _, total = eventEditor.GetCounts()
+			tot = total or 0
+		end
+		EventBind.ButtonLabel.Text = T("editEvents") .. " (x" .. tostring(tot) .. ")"
+	end
+	if eventEditor and type(eventEditor.ApplyLang) == "function" then
+		pcall(eventEditor.ApplyLang)
+	end
 	if Plugins and Plugins:FindFirstChild("ButtonLabel") then Plugins.ButtonLabel.Text = T("managePlugins") end
 	if type(applyReferenceLanguage) == "function" then
 		applyReferenceLanguage()
@@ -883,6 +1059,8 @@ function applyUiLanguage()
 	if type(refreshKbCmdPicker) == "function" then
 		refreshKbCmdPicker()
 	end
+	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
@@ -1387,6 +1565,40 @@ cmdListLayout.Parent = CMDsF
 cmdListLayout.Padding = UDim.new(0, 3)
 cmdListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+cmdFavHeader = Instance.new("TextLabel")
+cmdFavHeader.Name = "IYR_FAV_HDR"
+cmdFavHeader.Parent = CMDsF
+cmdFavHeader.BackgroundTransparency = 1
+cmdFavHeader.BorderSizePixel = 0
+cmdFavHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 16)
+cmdFavHeader.Font = UI_FONT_MED
+cmdFavHeader.TextSize = 11
+cmdFavHeader.TextXAlignment = Enum.TextXAlignment.Left
+cmdFavHeader.TextYAlignment = Enum.TextYAlignment.Bottom
+cmdFavHeader.TextColor3 = Color3.fromRGB(255, 214, 102)
+cmdFavHeader.Text = T("favorites")
+cmdFavHeader.TextTruncate = Enum.TextTruncate.AtEnd
+cmdFavHeader.ZIndex = 11
+cmdFavHeader.Visible = false
+cmdFavHeader.LayoutOrder = 1
+
+cmdAllHeader = Instance.new("TextLabel")
+cmdAllHeader.Name = "IYR_ALL_HDR"
+cmdAllHeader.Parent = CMDsF
+cmdAllHeader.BackgroundTransparency = 1
+cmdAllHeader.BorderSizePixel = 0
+cmdAllHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 20)
+cmdAllHeader.Font = UI_FONT_MED
+cmdAllHeader.TextSize = 11
+cmdAllHeader.TextXAlignment = Enum.TextXAlignment.Left
+cmdAllHeader.TextYAlignment = Enum.TextYAlignment.Bottom
+cmdAllHeader.TextColor3 = Color3.fromRGB(154, 148, 176)
+cmdAllHeader.Text = T("allCommands")
+cmdAllHeader.TextTruncate = Enum.TextTruncate.AtEnd
+cmdAllHeader.ZIndex = 11
+cmdAllHeader.Visible = false
+cmdAllHeader.LayoutOrder = 500
+
 SettingsButton.Name = "SettingsButton"
 SettingsButton.Parent = Holder
 SettingsButton.BackgroundTransparency = 1
@@ -1864,7 +2076,7 @@ PinImage.Image = getcustomasset("IYR.LOL/assets/pin.png")
 
 Tooltip.Name = randomString()
 Tooltip.Parent = ScaledHolder
-Tooltip.Active = false
+Tooltip.Active = true
 Tooltip.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 Tooltip.BackgroundTransparency = 0
 Tooltip.BorderSizePixel = 0
@@ -1920,6 +2132,32 @@ Description.TextXAlignment = Enum.TextXAlignment.Left
 Description.TextYAlignment = Enum.TextYAlignment.Top
 Description.ZIndex = 26
 table.insert(text1,Description)
+
+HelperFavBtn = Instance.new("TextButton")
+HelperFavBtn.Name = "HelperFavBtn"
+HelperFavBtn.Parent = Tooltip
+HelperFavBtn.BackgroundColor3 = Color3.fromRGB(42, 38, 58)
+HelperFavBtn.BorderSizePixel = 0
+HelperFavBtn.Position = UDim2.new(0, 12, 1, -30)
+HelperFavBtn.Size = UDim2.new(1, -24, 0, 22)
+HelperFavBtn.Font = UI_FONT
+HelperFavBtn.TextSize = 11
+HelperFavBtn.Text = ""
+HelperFavBtn.TextColor3 = Color3.fromRGB(255, 214, 102)
+HelperFavBtn.AutoButtonColor = false
+HelperFavBtn.ZIndex = 28
+HelperFavBtn.Visible = true
+uiCorner(HelperFavBtn, 6)
+table.insert(text1, HelperFavBtn)
+HelperFavBtn.MouseButton1Click:Connect(function()
+    local title = Tooltip:GetAttribute("CmdTitle")
+    if title and title ~= "" and type(toggleFavoriteCmd) == "function" then
+        toggleFavoriteCmd(title)
+        if type(showHelper) == "function" then
+            showHelper(title, Tooltip:GetAttribute("CmdDesc"))
+        end
+    end
+end)
 
 IntroBackground.Name = "IntroBackground"
 IntroBackground.Parent = Holder
@@ -3596,532 +3834,2564 @@ dragGUI(PluginEditor)
 dragGUI(ToPartFrame)
 
 eventEditor = (function()
-    local events = {}
-
-    local function registerEvent(name,sets)
-        events[name] = {
-            commands = {},
-            sets = sets or {}
-        }
-    end
-
-    local onEdited = nil
-
-    local function fireEvent(name,...)
-        local args = {...}
-        local event = events[name]
-        if event then
-            for i,cmd in pairs(event.commands) do
-                local metCondition = true
-                for idx,set in pairs(event.sets) do
-                    local argVal = args[idx]
-                    local cmdSet = cmd[2] and cmd[2][idx]
-                    local condType = set.Type
-                    if condType == "Player" then
-                        if cmdSet == 0 then
-                            metCondition = metCondition and (tostring(Players.LocalPlayer) == argVal)
-                        elseif cmdSet ~= 1 then
-                            metCondition = metCondition and table.find(getPlayer(cmdSet,Players.LocalPlayer),argVal)
-                        end
-                    elseif condType == "String" then
-                        if cmdSet ~= 0 and type(argVal) == "string" then
-                            metCondition = metCondition and string.find(argVal:lower(), tostring(cmdSet):lower())
-                        end
-                    elseif condType == "Number" then
-                        if cmdSet ~= 0 then
-                            metCondition = metCondition and tonumber(argVal)<=tonumber(cmdSet)
-                        end
-                    end
-                    if not metCondition then break end
-                end
-
-                if metCondition then
-                    task.spawn(function()
-                        local ok = pcall(function()
-                        local cmdStr = cmd[1]
-                            for count, arg in pairs(args) do
-                                cmdStr = tostring(cmdStr):gsub("%$" .. count, tostring(arg))
-                        end
-                        task.wait(cmd[3] or 0)
-                        execCmd(cmdStr)
-                        end)
-                    end)
-                end
-            end
-        end
-    end
-
-    local main = create({
-        {1,"Frame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BackgroundTransparency=1,BorderSizePixel=0,Name="EventEditor",Position=UDim2.new(0.5,-175,0,-500),Size=UDim2.new(0,350,0,20),ZIndex=10,}},
-        {2,"Frame",{BackgroundColor3=currentShade2,BorderSizePixel=0,Name="TopBar",Parent={1},Size=UDim2.new(1,0,0,20),ZIndex=10,}},
-        {3,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={2},Position=UDim2.new(0,0,0,0),Size=UDim2.new(1,0,0.95,0),Text="Event Editor",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=Enum.TextXAlignment.Center,ZIndex=10,}},
-        {4,"TextButton",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Close",Parent={2},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,ZIndex=10,}},
-        {5,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image=getcustomasset("IYR.LOL/assets/close.png"),Parent={4},Position=UDim2.new(0,5,0,5),Size=UDim2.new(0,10,0,10),ZIndex=10,}},
-        {6,"Frame",{BackgroundColor3=currentShade1,BorderSizePixel=0,Name="Content",Parent={1},Position=UDim2.new(0,0,0,20),Size=UDim2.new(1,0,0,202),ZIndex=10,}},
-        {7,"ScrollingFrame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,BottomImage="rbxasset://textures/ui/Scroll/scroll-middle.png",CanvasSize=UDim2.new(0,0,0,100),Name="List",Parent={6},Position=UDim2.new(0,5,0,5),ScrollBarImageColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),ScrollBarThickness=8,Size=UDim2.new(1,-10,1,-10),TopImage="rbxasset://textures/ui/Scroll/scroll-middle.png",ZIndex=10,}},
-        {8,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Name="Holder",Parent={7},Size=UDim2.new(1,0,1,0),ZIndex=10,}},
-        {9,"UIListLayout",{Parent={8},SortOrder=2,}},
-        {10,"Frame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BackgroundTransparency=1,BorderColor3=Color3.new(0.3137255012989,0.3137255012989,0.3137255012989),BorderSizePixel=0,ClipsDescendants=true,Name="Settings",Parent={6},Position=UDim2.new(1,0,0,0),Size=UDim2.new(0,150,1,0),ZIndex=10,}},
-        {11,"Frame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),Name="Slider",Parent={10},Position=UDim2.new(0,-150,0,0),Size=UDim2.new(1,0,1,0),ZIndex=10,}},
-        {12,"Frame",{BackgroundColor3=Color3.new(0.23529413342476,0.23529413342476,0.23529413342476),BorderColor3=Color3.new(0.3137255012989,0.3137255012989,0.3137255012989),BorderSizePixel=0,Name="Line",Parent={11},Size=UDim2.new(0,1,1,0),ZIndex=10,}},
-        {13,"ScrollingFrame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,BottomImage="rbxasset://textures/ui/Scroll/scroll-middle.png",CanvasSize=UDim2.new(0,0,0,100),Name="List",Parent={11},Position=UDim2.new(0,0,0,25),ScrollBarImageColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),ScrollBarThickness=8,Size=UDim2.new(1,0,1,-25),TopImage="rbxasset://textures/ui/Scroll/scroll-middle.png",ZIndex=10,}},
-        {14,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Name="Holder",Parent={13},Size=UDim2.new(1,0,1,0),ZIndex=10,}},
-        {15,"UIListLayout",{Parent={14},SortOrder=2,}},
-        {16,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={11},Size=UDim2.new(1,0,0,20),Text="Event Settings",TextColor3=Color3.new(1,1,1),TextSize=14,ZIndex=10,}},
-        {17,"TextButton",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),Font=3,Name="Close",BorderSizePixel=0,Parent={11},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),Text="<",TextColor3=Color3.new(1,1,1),TextSize=18,ZIndex=10,}},
-        {18,"Folder",{Name="Templates",Parent={10},}},
-        {19,"Frame",{BackgroundColor3=Color3.new(0.19607844948769,0.19607844948769,0.19607844948769),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),Name="Players",Parent={18},Position=UDim2.new(0,0,0,25),Size=UDim2.new(1,0,0,86),Visible=false,ZIndex=10,}},
-        {20,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={19},Size=UDim2.new(1,0,0,20),Text="Choose Players",TextColor3=Color3.new(1,1,1),TextSize=14,ZIndex=10,}},
-        {21,"TextLabel",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Any",Parent={19},Position=UDim2.new(0,5,0,42),Size=UDim2.new(1,-10,0,20),Text="Any Player",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {22,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="Button",Parent={21},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {23,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={22},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {24,"TextLabel",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Me",Parent={19},Position=UDim2.new(0,5,0,20),Size=UDim2.new(1,-10,0,20),Text="Me Only",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {25,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="Button",Parent={24},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {26,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={25},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {27,"TextBox",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,ClearTextOnFocus=false,Font=3,Name="Custom",Parent={19},PlaceholderColor3=Color3.new(0.47058826684952,0.47058826684952,0.47058826684952),PlaceholderText="Custom Player Set",Position=UDim2.new(0,5,0,64),Size=UDim2.new(1,-35,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {28,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="CustomButton",Parent={19},Position=UDim2.new(1,-25,0,64),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {29,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={28},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {30,"Frame",{BackgroundColor3=Color3.new(0.19607844948769,0.19607844948769,0.19607844948769),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),Name="Strings",Parent={18},Position=UDim2.new(0,0,0,25),Size=UDim2.new(1,0,0,64),Visible=false,ZIndex=10,}},
-        {31,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={30},Size=UDim2.new(1,0,0,20),Text="Choose String",TextColor3=Color3.new(1,1,1),TextSize=14,ZIndex=10,}},
-        {32,"TextLabel",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Any",Parent={30},Position=UDim2.new(0,5,0,20),Size=UDim2.new(1,-10,0,20),Text="Any String",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {33,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="Button",Parent={32},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {34,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={33},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {54,"Frame",{BackgroundColor3=Color3.new(0.19607844948769,0.19607844948769,0.19607844948769),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),Name="Numbers",Parent={18},Position=UDim2.new(0,0,0,25),Size=UDim2.new(1,0,0,64),Visible=false,ZIndex=10,}},
-        {55,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={54},Size=UDim2.new(1,0,0,20),Text="Choose String",TextColor3=Color3.new(1,1,1),TextSize=14,ZIndex=10,}},
-        {56,"TextLabel",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Any",Parent={54},Position=UDim2.new(0,5,0,20),Size=UDim2.new(1,-10,0,20),Text="Any Number",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {57,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="Button",Parent={56},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {58,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={57},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {59,"TextBox",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,ClearTextOnFocus=false,Font=3,Name="Custom",Parent={54},PlaceholderColor3=Color3.new(0.47058826684952,0.47058826684952,0.47058826684952),PlaceholderText="Number",Position=UDim2.new(0,5,0,42),Size=UDim2.new(1,-35,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {60,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="CustomButton",Parent={54},Position=UDim2.new(1,-25,0,42),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {61,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={60},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {35,"TextBox",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,ClearTextOnFocus=false,Font=3,Name="Custom",Parent={30},PlaceholderColor3=Color3.new(0.47058826684952,0.47058826684952,0.47058826684952),PlaceholderText="Match String",Position=UDim2.new(0,5,0,42),Size=UDim2.new(1,-35,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {36,"Frame",{BackgroundColor3=Color3.new(0.30588236451149,0.30588236451149,0.3098039329052),BorderSizePixel=0,Name="CustomButton",Parent={30},Position=UDim2.new(1,-25,0,42),Size=UDim2.new(0,20,0,20),ZIndex=10,}},
-        {37,"TextButton",{BackgroundColor3=Color3.new(0.58823531866074,0.58823531866074,0.59215688705444),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="On",Parent={36},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,ZIndex=10,}},
-        {38,"Frame",{BackgroundColor3=Color3.new(0.19607844948769,0.19607844948769,0.19607844948769),BackgroundTransparency=1,BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),Name="DelayEditor",Parent={18},Position=UDim2.new(0,0,0,25),Size=UDim2.new(1,0,0,24),Visible=false,ZIndex=10,}},
-        {39,"TextBox",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BorderColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,Font=3,Name="Secs",Parent={38},PlaceholderColor3=Color3.new(0.47058826684952,0.47058826684952,0.47058826684952),Position=UDim2.new(0,60,0,2),Size=UDim2.new(1,-65,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {40,"TextLabel",{BackgroundColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Label",Parent={39},Position=UDim2.new(0,-55,0,0),Size=UDim2.new(1,0,1,0),Text="Delay (s):",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {41,"Frame",{BackgroundColor3=currentShade1,BorderSizePixel=0,ClipsDescendants=true,Name="EventTemplate",Parent={6},Size=UDim2.new(1,0,0,20),Visible=false,ZIndex=10,}},
-        {42,"TextButton",{BackgroundColor3=currentText1,BackgroundTransparency=1,Font=3,Name="Expand",Parent={41},Size=UDim2.new(0,20,0,20),Text=">",TextColor3=Color3.new(1,1,1),TextSize=18,ZIndex=10,}},
-        {43,"TextLabel",{BackgroundColor3=currentText1,BackgroundTransparency=1,Font=3,Name="EventName",Parent={41},Position=UDim2.new(0,25,0,0),Size=UDim2.new(1,-25,0,20),Text="OnSpawn",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {44,"Frame",{BackgroundColor3=Color3.new(0.19607844948769,0.19607844948769,0.19607844948769),BorderSizePixel=0,BackgroundTransparency=1,ClipsDescendants=true,Name="Cmds",Parent={41},Position=UDim2.new(0,0,0,20),Size=UDim2.new(1,0,1,-20),ZIndex=10,}},
-        {45,"Frame",{BackgroundColor3=Color3.new(0.14117647707462,0.14117647707462,0.14509804546833),BorderColor3=Color3.new(0.1803921610117,0.1803921610117,0.1843137294054),Name="Add",Parent={44},Position=UDim2.new(0,0,1,-20),Size=UDim2.new(1,0,0,20),ZIndex=10,}},
-        {46,"TextBox",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClearTextOnFocus=false,Font=3,Parent={45},PlaceholderColor3=Color3.new(0.7843137383461,0.7843137383461,0.7843137383461),PlaceholderText="Add new command",Position=UDim2.new(0,5,0,0),Size=UDim2.new(1,-10,1,0),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {47,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Name="Holder",Parent={44},Size=UDim2.new(1,0,1,-20),ZIndex=10,}},
-        {48,"UIListLayout",{Parent={47},SortOrder=2,}},
-        {49,"Frame",{currentShade1,BorderSizePixel=0,ClipsDescendants=true,Name="CmdTemplate",Parent={6},Size=UDim2.new(1,0,0,20),Visible=false,ZIndex=10,}},
-        {50,"TextBox",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClearTextOnFocus=false,Font=3,Parent={49},PlaceholderColor3=Color3.new(1,1,1),Position=UDim2.new(0,5,0,0),Size=UDim2.new(1,-45,0,20),Text="a\\b\\c\\d",TextColor3=currentText1,TextSize=14,TextXAlignment=0,ZIndex=10,}},
-        {51,"TextButton",{BackgroundColor3=currentShade1,BorderSizePixel=0,Font=3,Name="Delete",Parent={49},Position=UDim2.new(1,-20,0,0),Size=UDim2.new(0,20,0,20),Text="X",TextColor3=Color3.new(1,1,1),TextSize=18,ZIndex=10,}},
-        {52,"TextButton",{BackgroundColor3=currentShade1,BorderSizePixel=0,Font=3,Name="Settings",Parent={49},Position=UDim2.new(1,-40,0,0),Size=UDim2.new(0,20,0,20),Text="",TextColor3=Color3.new(1,1,1),TextSize=18,ZIndex=10,}},
-        {53,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image=getcustomasset("IYR.LOL/assets/settings.png"),Parent={52},Position=UDim2.new(0,2,0,2),Size=UDim2.new(0,16,0,16),ZIndex=10,}},
-    })
-    main.Name = randomString()
-    local mainFrame = main:WaitForChild("Content")
-    local eventList = mainFrame:WaitForChild("List")
-    local eventListHolder = eventList:WaitForChild("Holder")
-    local cmdTemplate = mainFrame:WaitForChild("CmdTemplate")
-    local eventTemplate = mainFrame:WaitForChild("EventTemplate")
-    local settingsFrame = mainFrame:WaitForChild("Settings"):WaitForChild("Slider")
-    local settingsTemplates = mainFrame.Settings:WaitForChild("Templates")
-    local settingsList = settingsFrame:WaitForChild("List"):WaitForChild("Holder")
-    table.insert(shade2,main.TopBar) table.insert(shade1,mainFrame) table.insert(shade2,eventTemplate)
-    table.insert(text1,eventTemplate.EventName) table.insert(shade1,eventTemplate.Cmds.Add) table.insert(shade1,cmdTemplate)
-    table.insert(text1,cmdTemplate.TextBox) table.insert(shade2,cmdTemplate.Delete) table.insert(shade2,cmdTemplate.Settings)
-    table.insert(scroll,mainFrame.List) table.insert(shade1,settingsFrame) table.insert(shade2,settingsFrame.Line)
-    table.insert(shade2,settingsFrame.Close) table.insert(scroll,settingsFrame.List) table.insert(shade2,settingsTemplates.DelayEditor.Secs)
-    table.insert(text1,settingsTemplates.DelayEditor.Secs) table.insert(text1,settingsTemplates.DelayEditor.Secs.Label) table.insert(text1,settingsTemplates.Players.Title)
-    table.insert(shade3,settingsTemplates.Players.CustomButton) table.insert(shade2,settingsTemplates.Players.Custom) table.insert(text1,settingsTemplates.Players.Custom)
-    table.insert(shade3,settingsTemplates.Players.Any.Button) table.insert(shade3,settingsTemplates.Players.Me.Button) table.insert(text1,settingsTemplates.Players.Any)
-    table.insert(text1,settingsTemplates.Players.Me) table.insert(text1,settingsTemplates.Strings.Title) table.insert(text1,settingsTemplates.Strings.Any)
-    table.insert(shade3,settingsTemplates.Strings.Any.Button) table.insert(shade3,settingsTemplates.Strings.CustomButton) table.insert(text1,settingsTemplates.Strings.Custom)
-    table.insert(shade2,settingsTemplates.Strings.Custom)
-    table.insert(text1,settingsTemplates.Players.Me) table.insert(text1,settingsTemplates.Numbers.Title) table.insert(text1,settingsTemplates.Numbers.Any)
-    table.insert(shade3,settingsTemplates.Numbers.Any.Button) table.insert(shade3,settingsTemplates.Numbers.CustomButton) table.insert(text1,settingsTemplates.Numbers.Custom)
-    table.insert(shade2,settingsTemplates.Numbers.Custom)
-
-    local tweenInf = TweenInfo.new(0.25,Enum.EasingStyle.Quart,Enum.EasingDirection.Out)
-
-    local currentlyEditingCmd = nil
-
-    settingsFrame:WaitForChild("Close").MouseButton1Click:Connect(function()
-        settingsFrame:TweenPosition(UDim2.new(0,-150,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.25,true)
-    end)
-
-    local function resizeList()
-        local size = 0
-
-        for i,v in pairs(eventListHolder:GetChildren()) do
-            if v.Name == "EventTemplate" then
-                size += 20
-                if v.Expand.Rotation == 90 then
-                    size += 20*(1+(#events[v.EventName:GetAttribute("RawName")].commands or 0))
-                end
-            end
-        end
-
-        TweenService:Create(eventList,tweenInf,{CanvasSize = UDim2.new(0,0,0,size)}):Play()
-
-        if size > eventList.AbsoluteSize.Y then
-            eventListHolder.Size = UDim2.new(1,-8,1,0)
-        else
-            eventListHolder.Size = UDim2.new(1,0,1,0)
-        end
-    end
-
-    local function resizeSettingsList()
-        local size = 0
-
-        for i,v in pairs(settingsList:GetChildren()) do
-            if v:IsA("Frame") then
-                size += v.AbsoluteSize.Y
-            end
-        end
-
-        settingsList.Parent.CanvasSize = UDim2.new(0,0,0,size)
-
-        if size > settingsList.Parent.AbsoluteSize.Y then
-            settingsList.Size = UDim2.new(1,-8,1,0)
-        else
-            settingsList.Size = UDim2.new(1,0,1,0)
-        end
-    end
-
-    local function setupCheckbox(button,callback)
-        local enabled = button.On.BackgroundTransparency == 0
-
-        local function update()
-            button.On.BackgroundTransparency = (enabled and 0 or 1)
-        end
-
-        button.On.MouseButton1Click:Connect(function()
-            enabled = not enabled
-            update()
-            if callback then callback(enabled) end
-        end)
-
-        return {
-            Toggle = function(nocall) enabled = not enabled update() if not nocall and callback then callback(enabled) end end,
-            Enable = function(nocall) if enabled then return end enabled = true update()if not nocall and callback then callback(enabled) end end,
-            Disable = function(nocall) if not enabled then return end enabled = false update()if not nocall and callback then callback(enabled) end end,
-            IsEnabled = function() return enabled end
-        }
-    end
-
-    local function openSettingsEditor(event,cmd)
-        currentlyEditingCmd = cmd
-
-        for i,v in pairs(settingsList:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
-
-        local delayEditor = settingsTemplates.DelayEditor:Clone()
-        delayEditor.Secs.FocusLost:Connect(function()
-            cmd[3] = tonumber(delayEditor.Secs.Text) or 0
-            delayEditor.Secs.Text = cmd[3]
-            if onEdited then onEdited() end
-        end)
-        delayEditor.Secs.Text = cmd[3]
-        delayEditor.Visible = true
-        table.insert(shade2,delayEditor.Secs)
-        table.insert(text1,delayEditor.Secs)
-        table.insert(text1,delayEditor.Secs.Label)
-        delayEditor.Parent = settingsList
-
-        for i,v in pairs(event.sets) do
-            if v.Type == "Player" then
-                local template = settingsTemplates.Players:Clone()
-                template.Title.Text = v.Name or "Player"
-
-                local me,any,custom
-
-                me = setupCheckbox(template.Me.Button,function(on)
-                    if not on then return end
-                    any.Disable()
-                    custom.Disable()
-                    cmd[2][i] = 0
-                    if onEdited then onEdited() end
-                end)
-
-                any = setupCheckbox(template.Any.Button,function(on)
-                    if not on then return end
-                    me.Disable()
-                    custom.Disable()
-                    cmd[2][i] = 1
-                    if onEdited then onEdited() end
-                end)
-
-                local customTextBox = template.Custom
-                custom = setupCheckbox(template.CustomButton,function(on)
-                    if not on then return end
-                    me.Disable()
-                    any.Disable()
-                    cmd[2][i] = customTextBox.Text
-                    if onEdited then onEdited() end
-                end)
-
-                ViewportTextBox.convert(customTextBox)
-                customTextBox.FocusLost:Connect(function()
-                    if custom:IsEnabled() then
-                        cmd[2][i] = customTextBox.Text
-                        if onEdited then onEdited() end
-                    end
-                end)
-
-                local cVal = cmd[2][i]
-                if cVal == 0 then
-                    me:Enable()
-                elseif cVal == 1 then
-                    any:Enable()
-                else
-                    custom:Enable()
-                    customTextBox.Text = cVal
-                end
-
-                template.Visible = true
-                table.insert(text1,template.Title)
-                table.insert(shade3,template.CustomButton)
-                table.insert(shade3,template.Any.Button)
-                table.insert(shade3,template.Me.Button)
-                table.insert(text1,template.Any)
-                table.insert(text1,template.Me)
-                template.Parent = settingsList
-            elseif v.Type == "String" then
-                local template = settingsTemplates.Strings:Clone()
-                template.Title.Text = v.Name or "String"
-
-                local any,custom
-
-                any = setupCheckbox(template.Any.Button,function(on)
-                    if not on then return end
-                    custom.Disable()
-                    cmd[2][i] = 0
-                    if onEdited then onEdited() end
-                end)
-
-                local customTextBox = template.Custom
-                custom = setupCheckbox(template.CustomButton,function(on)
-                    if not on then return end
-                    any.Disable()
-                    cmd[2][i] = customTextBox.Text
-                    if onEdited then onEdited() end
-                end)
-
-                ViewportTextBox.convert(customTextBox)
-                customTextBox.FocusLost:Connect(function()
-                    if custom:IsEnabled() then
-                        cmd[2][i] = customTextBox.Text
-                        if onEdited then onEdited() end
-                    end
-                end)
-
-                local cVal = cmd[2][i]
-                if cVal == 0 then
-                    any:Enable()
-                else
-                    custom:Enable()
-                    customTextBox.Text = cVal
-                end
-
-                template.Visible = true
-                table.insert(text1,template.Title)
-                table.insert(text1,template.Any)
-                table.insert(shade3,template.Any.Button)
-                table.insert(shade3,template.CustomButton)
-                template.Parent = settingsList
-            elseif v.Type == "Number" then
-                local template = settingsTemplates.Numbers:Clone()
-                template.Title.Text = v.Name or "Number"
-
-                local any,custom
-
-                any = setupCheckbox(template.Any.Button,function(on)
-                    if not on then return end
-                    custom.Disable()
-                    cmd[2][i] = 0
-                    if onEdited then onEdited() end
-                end)
-
-                local customTextBox = template.Custom
-                custom = setupCheckbox(template.CustomButton,function(on)
-                    if not on then return end
-                    any.Disable()
-                    cmd[2][i] = customTextBox.Text
-                    if onEdited then onEdited() end
-                end)
-
-                ViewportTextBox.convert(customTextBox)
-                customTextBox.FocusLost:Connect(function()
-                    cmd[2][i] = tonumber(customTextBox.Text) or 0
-                    customTextBox.Text = cmd[2][i]
-                    if custom:IsEnabled() then
-                        if onEdited then onEdited() end
-                    end
-                end)
-
-                local cVal = cmd[2][i]
-                if cVal == 0 then
-                    any:Enable()
-                else
-                    custom:Enable()
-                    customTextBox.Text = cVal
-                end
-
-                template.Visible = true
-                table.insert(text1,template.Title)
-                table.insert(text1,template.Any)
-                table.insert(shade3,template.Any.Button)
-                table.insert(shade3,template.CustomButton)
-                template.Parent = settingsList
-            end
-        end
-        resizeSettingsList()
-        settingsFrame:TweenPosition(UDim2.new(0,0,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.25,true)
-    end
-
-    local function defaultSettings(ev)
-        local res = {}
-
-        for i,v in pairs(ev.sets) do
-            if v.Type == "Player" then
-                res[#res+1] = v.Default or 0
-            elseif v.Type == "String" then
-                res[#res+1] = v.Default or 0
-            elseif v.Type == "Number" then
-                res[#res+1] = v.Default or 0
-            end
-        end
-
-        return res
-    end
-
-    local function refreshList()
-        for i,v in pairs(eventListHolder:GetChildren()) do if v:IsA("Frame") then v:Destroy() end end
-
-        for name,event in pairs(events) do
-            local eventF = eventTemplate:Clone()
-            eventF.EventName.Text = name
-            eventF.Visible = true
-            eventF.EventName:SetAttribute("RawName", name)
-            table.insert(shade2,eventF)
-            table.insert(text1,eventF.EventName)
-            table.insert(shade1,eventF.Cmds.Add)
-
-            local expanded = false
-            eventF.Expand.MouseButton1Down:Connect(function()
-                expanded = not expanded
-                eventF:TweenSize(UDim2.new(1,0,0,20 + (expanded and 20*#eventF.Cmds.Holder:GetChildren() or 0)),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.25,true)
-                eventF.Expand.Rotation = expanded and 90 or 0
-                resizeList()
-            end)
-
-            local function refreshCommands()
-                for i,v in pairs(eventF.Cmds.Holder:GetChildren()) do
-                    if v.Name == "CmdTemplate" then
-                        v:Destroy()
-                    end
-                end
-
-                eventF.EventName.Text = name..(#event.commands > 0 and " ("..#event.commands..")" or "")
-
-                for i,cmd in pairs(event.commands) do
-                    local cmdF = cmdTemplate:Clone()
-                    local cmdTextBox = cmdF.TextBox
-                    ViewportTextBox.convert(cmdTextBox)
-                    cmdTextBox.Text = cmd[1]
-                    cmdF.Visible = true
-                    table.insert(shade1,cmdF)
-                    table.insert(shade2,cmdF.Delete)
-                    table.insert(shade2,cmdF.Settings)
-
-                    cmdTextBox.FocusLost:Connect(function()
-                        event.commands[i] = {cmdTextBox.Text,cmd[2],cmd[3]}
-                        if onEdited then onEdited() end
-                    end)
-
-                    cmdF.Settings.MouseButton1Click:Connect(function()
-                        openSettingsEditor(event,cmd)
-                    end)
-
-                    cmdF.Delete.MouseButton1Click:Connect(function()
-                        table.remove(event.commands,i)
-                        refreshCommands()
-                        resizeList()
-
-                        if currentlyEditingCmd == cmd then
-                            settingsFrame:TweenPosition(UDim2.new(0,-150,0,0),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.25,true)
-                        end
-                        if onEdited then onEdited() end
-                    end)
-
-                    cmdF.Parent = eventF.Cmds.Holder
-                end
-
-                eventF:TweenSize(UDim2.new(1,0,0,20 + (expanded and 20*#eventF.Cmds.Holder:GetChildren() or 0)),Enum.EasingDirection.Out,Enum.EasingStyle.Quart,0.25,true)
-            end
-
-            local newBox = eventF.Cmds.Add.TextBox
-            ViewportTextBox.convert(newBox)
-            newBox.FocusLost:Connect(function(enter)
-                if enter then
-                    event.commands[#event.commands+1] = {newBox.Text,defaultSettings(event),0}
-                    newBox.Text = ""
-
-                    refreshCommands()
-                    resizeList()
-                    if onEdited then onEdited() end
-                end
-            end)
-
-            --eventF:GetPropertyChangedSignal("AbsoluteSize"):Connect(resizeList)
-
-            eventF.Parent = eventListHolder
-
-            refreshCommands()
-        end
-
-        resizeList()
-    end
-
-    local function saveData()
-        local result = {}
-        for i,v in pairs(events) do
-            result[i] = v.commands
-        end
-        return HttpService:JSONEncode(result)
-    end
-
-    local function loadData(str)
-        local data = HttpService:JSONDecode(str)
-        for i,v in pairs(data) do
-            if events[i] then
-                events[i].commands = v
-            end
-        end
-    end
-
-    local function addCmd(event,data)
-        table.insert(events[event].commands,data)
-    end
-
-    local function setOnEdited(f)
-        if type(f) == "function" then
-            onEdited = f
-        end
-    end
-
-    main.TopBar.Close.MouseButton1Click:Connect(function()
-        main:TweenPosition(UDim2.new(0.5,-175,0,-500), "InOut", "Quart", 0.5, true, nil)
-    end)
-    dragGUI(main)
-    main.Parent = ScaledHolder
-
-    return {
-        RegisterEvent = registerEvent,
-        FireEvent = fireEvent,
-        Refresh = refreshList,
-        SaveData = saveData,
-        LoadData = loadData,
-        AddCmd = addCmd,
-        Frame = main,
-        SetOnEdited = setOnEdited
-    }
+	local EE_W, EE_H, EE_TITLE = 840, 548, 40
+	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 204, 228, 8, 44
+	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
+	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
+	local EE_COL_BOTTOM = EE_GAP + EE_FOOTER_H
+	local EE_FLOW_TOP, EE_ADD_RESERVE = 88, 52
+	local EE_FLOW_REST = EE_FLOW_TOP + EE_ADD_RESERVE
+	local EE_BG = Color3.fromRGB(12, 12, 17)
+	local EE_PANEL = Color3.fromRGB(18, 18, 25)
+	local EE_SURFACE = Color3.fromRGB(25, 25, 34)
+	local EE_SURFACE_HOVER = Color3.fromRGB(32, 31, 43)
+	local EE_BORDER = Color3.fromRGB(47, 45, 62)
+	local EE_MUTED = Color3.fromRGB(145, 142, 164)
+	local EE_ACCENT = ACCENT or Color3.fromRGB(167, 139, 250)
+	local EE_PRIMARY = Color3.fromRGB(82, 63, 132)
+	local events = {}
+	local onEdited = nil
+	local masterPaused = false
+	local fireDepth = 0
+	local lastFireTick = 0
+	local history = {}
+	local pendingTasks = {}
+	local runtime = setmetatable({}, { __mode = "k" })
+	local selectedEventName = nil
+	local selectedCmd = nil
+	local eventFilter = ""
+	local eventCategory = "All"
+	local undoHistory = {}
+	local forceTest = false
+	local lastSkipReasons = {}
+	local eeCloseToken = 0
+	local connections = {}
+	local cancelPendingFor
+
+	local function deepCopy(v)
+		if type(v) ~= "table" then return v end
+		local t = {}
+		for k, val in pairs(v) do
+			t[k] = deepCopy(val)
+		end
+		return t
+	end
+
+	local function snapshotCmds()
+		local snap = {}
+		for name, ev in pairs(events) do
+			snap[name] = deepCopy(ev.commands)
+		end
+		return snap
+	end
+
+	local function pushUndo()
+		undoHistory[#undoHistory + 1] = snapshotCmds()
+		while #undoHistory > 5 do
+			table.remove(undoHistory, 1)
+		end
+	end
+
+	local function applySnap(snap)
+		if type(snap) ~= "table" then return end
+		if cancelPendingFor then cancelPendingFor(nil) end
+		for name, ev in pairs(events) do
+			if snap[name] then
+				ev.commands = deepCopy(snap[name])
+			end
+		end
+		runtime = setmetatable({}, { __mode = "k" })
+	end
+
+	local function applyInvert(filter, ok)
+		if type(filter) == "table" and filter.invert then
+			return not ok
+		end
+		return ok
+	end
+
+	local function findPlayerByArg(argVal)
+		local name = tostring(argVal or "")
+		local lp = Players.LocalPlayer
+		if name == "" then return nil end
+		if lp and (name == lp.Name or name == tostring(lp)) then return lp end
+		local plr = Players:FindFirstChild(name)
+		if plr then return plr end
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p.Name == name or p.DisplayName == name then return p end
+		end
+		return nil
+	end
+
+	local function testArgsFor(ev)
+		local args = {}
+		for i, set in ipairs(ev.sets or {}) do
+			if set.Type == "Player" then
+				args[i] = Players.LocalPlayer and Players.LocalPlayer.Name or "Player"
+			elseif set.Type == "String" then
+				args[i] = "hello"
+			elseif set.Type == "Number" then
+				args[i] = 50
+			else
+				args[i] = "1"
+			end
+		end
+		return args
+	end
+
+	local function playerInCase(mode, name, lp)
+		local ok, list = pcall(function()
+			return getPlayer(mode, lp)
+		end)
+		if ok and type(list) == "table" then
+			return table.find(list, name) ~= nil
+		end
+		return false
+	end
+
+	local function markEdited()
+		if onEdited then pcall(onEdited) end
+	end
+
+	local function boundedNumber(value, default, minimum, maximum)
+		local n = tonumber(value)
+		if n == nil or n ~= n or n == math.huge or n == -math.huge then n = default end
+		if minimum ~= nil then n = math.max(minimum, n) end
+		if maximum ~= nil then n = math.min(maximum, n) end
+		return n
+	end
+
+	local function getMeta(cmd)
+		local raw = cmd[4]
+		local m
+		if raw == false then
+			m = { enabled = false }
+		elseif type(raw) == "table" then
+			m = raw
+		else
+			m = {}
+		end
+		m.enabled = m.enabled ~= false
+		m.cooldown = boundedNumber(m.cooldown, 0, 0)
+		m.chance = boundedNumber(m.chance, 100, 0, 100)
+		m.once = m.once == true
+		m.maxRuns = math.floor(boundedNumber(m.maxRuns, 0, 0))
+		m.delayMax = boundedNumber(m.delayMax, 0, 0)
+		m.v = 1
+		cmd[4] = m
+		return m
+	end
+
+	local function getRuntime(cmd)
+		local r = runtime[cmd]
+		if not r then
+			r = {
+				runs = 0,
+				skipped = 0,
+				pending = 0,
+				lastRun = 0,
+				lastQueued = 0,
+				lastError = "",
+				lastCmd = "",
+				onceDone = false,
+				belowArmedBy = {},
+			}
+			runtime[cmd] = r
+		else
+			r.pending = boundedNumber(r.pending, 0, 0)
+			r.lastQueued = boundedNumber(r.lastQueued, 0, 0)
+			if type(r.belowArmedBy) ~= "table" then r.belowArmedBy = {} end
+		end
+		return r
+	end
+
+	local function normalizeFilter(raw, setType)
+		if type(raw) == "table" and raw.v then return raw end
+		if setType == "Player" then
+			if raw == 0 then return { v = 1, mode = "me" } end
+			if raw == 1 then return { v = 1, mode = "any" } end
+			return { v = 1, mode = "custom", value = tostring(raw or "") }
+		elseif setType == "String" then
+			if raw == 0 or raw == nil or raw == "" then return { v = 1, mode = "any" } end
+			return { v = 1, mode = "contains", value = tostring(raw), case = false }
+		elseif setType == "Number" then
+			if raw == 0 or raw == nil then return { v = 1, mode = "any" } end
+			return { v = 1, mode = "lte", value = tonumber(raw) or 0 }
+		end
+		return { v = 1, mode = "any" }
+	end
+
+	local function defaultFilters(ev)
+		local res = {}
+		for i, set in ipairs(ev.sets or {}) do
+			if set.Type == "Player" then
+				res[i] = normalizeFilter(set.Default ~= nil and set.Default or 0, "Player")
+			elseif set.Type == "String" then
+				res[i] = normalizeFilter(set.Default ~= nil and set.Default or 0, "String")
+			elseif set.Type == "Number" then
+				res[i] = normalizeFilter(set.Default ~= nil and set.Default or 0, "Number")
+			else
+				res[i] = { v = 1, mode = "any" }
+			end
+		end
+		return res
+	end
+
+	local function pushHistory(entry)
+		history[#history + 1] = entry
+		while #history > 100 do
+			table.remove(history, 1)
+		end
+	end
+
+	local function releasePending(record)
+		if not record or record.finished then return end
+		record.finished = true
+		if record.runtime then
+			record.runtime.pending = math.max(0, (tonumber(record.runtime.pending) or 0) - 1)
+		end
+	end
+
+	local function removePending(record)
+		releasePending(record)
+		for i = #pendingTasks, 1, -1 do
+			if pendingTasks[i] == record then
+				table.remove(pendingTasks, i)
+				break
+			end
+		end
+	end
+
+	cancelPendingFor = function(cmd)
+		for i = #pendingTasks, 1, -1 do
+			local t = pendingTasks[i]
+			if t.cmd == cmd or cmd == nil then
+				releasePending(t)
+				pcall(function()
+					if t.thread then task.cancel(t.thread) end
+				end)
+				table.remove(pendingTasks, i)
+			end
+		end
+	end
+
+	local function matchPlayerFilter(filter, argVal)
+		local f = normalizeFilter(filter, "Player")
+		local mode = f.mode or "any"
+		local lp = Players.LocalPlayer
+		local name = tostring(argVal or "")
+		if mode == "any" then return true end
+		if not lp then return false end
+		if mode == "me" then return name == lp.Name or name == tostring(lp) end
+		if mode == "others" then return name ~= lp.Name and name ~= tostring(lp) end
+		if mode == "friend" or mode == "nonfriend" then
+			local plr = findPlayerByArg(argVal)
+			if not plr then return false end
+			local ok, isFriend = pcall(function() return lp:IsFriendsWith(plr.UserId) end)
+			if not ok then return false end
+			return mode == "friend" and isFriend or mode == "nonfriend" and not isFriend
+		end
+		if mode == "team" then
+			local plr = findPlayerByArg(argVal)
+			if not plr or not lp.Team then return false end
+			return plr.Team == lp.Team
+		end
+		if mode == "alive" or mode == "dead" or mode == "allies" or mode == "enemies" or mode == "nonteam" then
+			return playerInCase(mode, name, lp)
+		end
+		if mode == "named" then
+			local want = tostring(f.value or "")
+			if want == "" then return true end
+			return name:lower() == want:lower()
+		end
+		if mode == "display" then
+			local plr = findPlayerByArg(argVal)
+			local dn = plr and tostring(plr.DisplayName or "") or name
+			local want = tostring(f.value or "")
+			if want == "" then return true end
+			return string.find(dn:lower(), want:lower(), 1, true) ~= nil
+		end
+		if mode == "inradius" then
+			local studs = tonumber(f.value) or 0
+			return playerInCase("rad" .. tostring(math.floor(studs)), name, lp)
+		end
+		if mode == "group" then
+			local gid = tonumber(f.value)
+			if not gid then return false end
+			return playerInCase("group" .. tostring(math.floor(gid)), name, lp)
+		end
+		if mode == "whitelist" or mode == "blacklist" then
+			local val = tostring(f.value or "")
+			local hit = false
+			for part in string.gmatch(val, "[^|]+") do
+				part = (part:match("^%s*(.-)%s*$") or part):lower()
+				if part ~= "" and name:lower() == part then
+					hit = true
+					break
+				end
+			end
+			if mode == "whitelist" then return hit or val == "" end
+			return not hit
+		end
+		if mode == "age" then
+			local maxAge = tonumber(f.value) or 0
+			return playerInCase("age" .. tostring(math.floor(maxAge)), name, lp)
+		end
+		local custom = tostring(f.value or "")
+		if custom == "" then return true end
+		local ok, list = pcall(function() return getPlayer(custom, lp) end)
+		if ok and type(list) == "table" then
+			return table.find(list, name) ~= nil or table.find(list, argVal) ~= nil
+		end
+		return string.find(name:lower(), custom:lower(), 1, true) ~= nil
+	end
+
+	local function matchStringFilter(filter, argVal)
+		local f = normalizeFilter(filter, "String")
+		if (f.mode or "any") == "any" then return true end
+		local s = tostring(argVal or "")
+		local val = tostring(f.value or "")
+		local a, b = s, val
+		if not f.case then
+			a, b = s:lower(), val:lower()
+		end
+		local mode = f.mode
+		local function one(mode2, aa, bb, rawS, rawV)
+			if mode2 == "contains" then return string.find(aa, bb, 1, true) ~= nil end
+			if mode2 == "notcontains" then return string.find(aa, bb, 1, true) == nil end
+			if mode2 == "exact" then return aa == bb end
+			if mode2 == "startswith" then return string.sub(aa, 1, #bb) == bb end
+			if mode2 == "endswith" then return string.sub(aa, -#bb) == bb end
+			if mode2 == "pattern" then
+				local ok, found = pcall(string.find, rawS, rawV)
+				return ok and found ~= nil
+			end
+			if mode2 == "empty" then return rawS == "" end
+			if mode2 == "notempty" then return rawS ~= "" end
+			if mode2 == "length_gt" then return #rawS > (tonumber(rawV) or 0) end
+			if mode2 == "length_lt" then return #rawS < (tonumber(rawV) or 0) end
+			return true
+		end
+		if string.find(val, "|", 1, true) then
+			for part in string.gmatch(val, "[^|]+") do
+				part = (part:match("^%s*(.-)%s*$") or part)
+				local bb = f.case and part or part:lower()
+				if one(mode, a, bb, s, part) then return true end
+			end
+			return false
+		end
+		return one(mode, a, b, s, val)
+	end
+
+	local function matchNumberFilter(filter, argVal)
+		local f = normalizeFilter(filter, "Number")
+		if (f.mode or "any") == "any" then return true end
+		local n = tonumber(argVal)
+		if not n then return false end
+		local v = tonumber(f.value) or 0
+		local mode = f.mode
+		if mode == "lt" then return n < v end
+		if mode == "lte" then return n <= v end
+		if mode == "eq" then return n == v end
+		if mode == "gte" then return n >= v end
+		if mode == "gt" then return n > v end
+		if mode == "range" then
+			local vmax = tonumber(f.valueMax) or v
+			return n >= math.min(v, vmax) and n <= math.max(v, vmax)
+		end
+		if mode == "neq" then return n ~= v end
+		if mode == "outside" then
+			local vmax = tonumber(f.valueMax) or v
+			local lo, hi = math.min(v, vmax), math.max(v, vmax)
+			return n < lo or n > hi
+		end
+		return n <= v
+	end
+
+	local function evalConditions(event, cmd, args)
+		for idx, set in ipairs(event.sets or {}) do
+			local filter = cmd[2] and cmd[2][idx]
+			local argVal = args[idx]
+			if set.Type == "Player" then
+				if not applyInvert(filter, matchPlayerFilter(filter, argVal)) then return false end
+			elseif set.Type == "String" then
+				if not applyInvert(filter, matchStringFilter(filter, argVal)) then return false end
+			elseif set.Type == "Number" then
+				if not applyInvert(filter, matchNumberFilter(filter, argVal)) then return false end
+			end
+		end
+		return true
+	end
+
+	local namedArgMap = {
+		player = 1, victim = 1, killer = 2, message = 2, health = 2, amount = 3,
+		tool = 2, seat = 2, team = 2, state = 1, prompt = 1, seconds = 1, elapsed = 1,
+		button = 1, key = 1, speed = 2, command = 1, part = 1,
+	}
+
+	local function substitute(cmdStr, args, eventName)
+		local lp = Players.LocalPlayer
+		local globals = {
+			me = lp and lp.Name or "",
+			place = tostring(PlaceId or game.PlaceId or ""),
+			job = tostring(JobId or game.JobId or ""),
+			time = os.date("%H:%M:%S"),
+			event = tostring(eventName or ""),
+		}
+		local rendered = tostring(cmdStr or ""):gsub("%$([%w_]+)", function(token)
+			local numeric = tonumber(token)
+			if numeric and args[numeric] ~= nil then return tostring(args[numeric]) end
+			local argIndex = namedArgMap[token]
+			if argIndex and args[argIndex] ~= nil then return tostring(args[argIndex]) end
+			if globals[token] ~= nil then return tostring(globals[token]) end
+			return "$" .. token
+		end)
+		return rendered
+	end
+
+	local function registerEvent(name, sets, meta)
+		meta = meta or {}
+		events[name] = {
+			commands = (events[name] and events[name].commands) or {},
+			sets = sets or {},
+			category = meta.category or "Session",
+			descEn = meta.descEn or "",
+			descRu = meta.descRu or "",
+			argHints = meta.argHints or {},
+		}
+	end
+
+	local function queueCommand(name, cmd, args, forceRun)
+		local rawCommand = tostring(cmd[1] or "")
+		if rawCommand:match("^%s*$") then return false end
+		local meta = getMeta(cmd)
+		local delayMin = boundedNumber(cmd[3], 0, 0)
+		local delayMax = boundedNumber(meta.delayMax, 0, 0)
+		local waitFor = delayMin
+		if delayMax > delayMin then
+			waitFor = delayMin + math.random() * (delayMax - delayMin)
+		end
+		local cmdCopy = cmd
+		local eventName = name
+		local argsCopy = table.clone and table.clone(args) or { table.unpack(args) }
+		local rt = getRuntime(cmdCopy)
+		rt.pending += 1
+		rt.lastQueued = tick()
+		local record = { cmd = cmdCopy, event = name, runtime = rt, queuedAt = rt.lastQueued }
+		pendingTasks[#pendingTasks + 1] = record
+		local thread
+		thread = task.spawn(function()
+			if waitFor > 0 then task.wait(waitFor) end
+			local metaNow = getMeta(cmdCopy)
+			local rtNow = getRuntime(cmdCopy)
+			if not forceRun then
+				if masterPaused or metaNow.enabled == false then
+					removePending(record)
+					return
+				end
+				if metaNow.once and rtNow.onceDone then
+					removePending(record)
+					return
+				end
+				if metaNow.maxRuns > 0 and rtNow.runs >= metaNow.maxRuns then
+					removePending(record)
+					return
+				end
+				if metaNow.cooldown > 0 and (tick() - (rtNow.lastRun or 0)) < metaNow.cooldown then
+					removePending(record)
+					return
+				end
+			end
+			local finalCmd = rawCommand
+			local previousQueueFlag = IYP_EE_FROM_QUEUE
+			IYP_EE_FROM_QUEUE = true
+			local ok, err = pcall(function()
+				finalCmd = substitute(cmdCopy[1], argsCopy, eventName)
+				execCmd(finalCmd)
+			end)
+			IYP_EE_FROM_QUEUE = previousQueueFlag
+			local rt2 = getRuntime(cmdCopy)
+			rt2.runs += 1
+			rt2.lastRun = tick()
+			rt2.lastCmd = finalCmd
+			if getMeta(cmdCopy).once then rt2.onceDone = true end
+			if not ok then
+				rt2.lastError = tostring(err)
+				pushHistory({ event = eventName, cmd = finalCmd, ok = false, err = tostring(err), t = os.time() })
+			else
+				rt2.lastError = ""
+				pushHistory({ event = eventName, cmd = finalCmd, ok = true, err = "", t = os.time() })
+			end
+			removePending(record)
+		end)
+		record.thread = thread
+		return true
+	end
+
+	local function fireEvent(name, ...)
+		local args = { ... }
+		local event = events[name]
+		if not event then return 0 end
+		local force = forceTest
+		forceTest = false
+		if masterPaused and not force then
+			lastSkipReasons[#lastSkipReasons + 1] = T("eeSkipPaused")
+			return 0
+		end
+		local now = tick()
+		if now - lastFireTick < 0.01 and fireDepth > 8 then return 0 end
+		lastFireTick = now
+		fireDepth += 1
+		if fireDepth > 12 then
+			fireDepth -= 1
+			lastSkipReasons[#lastSkipReasons + 1] = T("eeSkipNone")
+			return 0
+		end
+		local queued = 0
+		for _, cmd in ipairs(event.commands) do
+			local meta = getMeta(cmd)
+			local rt = getRuntime(cmd)
+			if force then
+				if queueCommand(name, cmd, args, true) then queued += 1 end
+			else
+				local skip = false
+				local why = nil
+				local healthKey = nil
+				if meta.enabled == false then
+					skip = true
+					why = T("eeSkipOff")
+				elseif meta.once and (rt.onceDone or rt.pending > 0) then
+					skip = true
+					why = T("eeSkipOnce")
+				elseif meta.maxRuns > 0 and (rt.runs + rt.pending) >= meta.maxRuns then
+					skip = true
+					why = T("eeSkipMax")
+				elseif meta.cooldown > 0 and (now - math.max(rt.lastRun or 0, rt.lastQueued or 0)) < meta.cooldown then
+					skip = true
+					why = T("eeSkipCooldown")
+				elseif name == "OnHealthBelow" then
+					healthKey = tostring(args[1] or "_")
+					local numFilter = normalizeFilter(cmd[2] and cmd[2][2], "Number")
+					if (numFilter.mode or "any") == "any" then
+						numFilter = { v = 1, mode = "lte", value = tonumber(numFilter.value) or 25, invert = numFilter.invert }
+					end
+					local playerFilter = cmd[2] and cmd[2][1]
+					local playerMatches = applyInvert(playerFilter, matchPlayerFilter(playerFilter, args[1]))
+					local below = applyInvert(numFilter, matchNumberFilter(numFilter, args[2]))
+					if not playerMatches then
+						skip = true
+						why = T("eeSkipFilters")
+					elseif not below then
+						rt.belowArmedBy[healthKey] = nil
+						skip = true
+					elseif rt.belowArmedBy[healthKey] == false then
+						skip = true
+					end
+				elseif not evalConditions(event, cmd, args) then
+					skip = true
+					why = T("eeSkipFilters")
+				end
+				if skip then
+					rt.skipped += 1
+					if why then lastSkipReasons[#lastSkipReasons + 1] = why end
+				else
+					if meta.chance < 100 and math.random(1, 100) > meta.chance then
+						rt.skipped += 1
+						lastSkipReasons[#lastSkipReasons + 1] = T("eeSkipChance")
+					elseif queueCommand(name, cmd, args, false) then
+						queued += 1
+						if healthKey then rt.belowArmedBy[healthKey] = false end
+					end
+				end
+			end
+		end
+		fireDepth -= 1
+		return queued
+	end
+
+	-- UI helpers
+	local function mk(className, props, parent)
+		local inst = Instance.new(className)
+		for k, v in pairs(props or {}) do
+			inst[k] = v
+		end
+		if parent then inst.Parent = parent end
+		return inst
+	end
+
+	local function btn(parent, text, size, pos, cb)
+		local b = mk("TextButton", {
+			BackgroundColor3 = EE_SURFACE,
+			BorderSizePixel = 0,
+			Size = size,
+			Position = pos,
+			Text = text,
+			TextColor3 = Color3.fromRGB(245, 245, 247),
+			Font = UI_FONT,
+			TextSize = 11,
+			AutoButtonColor = false,
+			ZIndex = 42,
+		}, parent)
+		uiCorner(b, 6)
+		uiStroke(b, EE_BORDER, 1, 0.45)
+		table.insert(shade2, b)
+		table.insert(text1, b)
+		b.MouseEnter:Connect(function()
+			if not b:GetAttribute("EEActive") then
+				b.BackgroundColor3 = EE_SURFACE_HOVER
+			end
+		end)
+		b.MouseLeave:Connect(function()
+			local activeColor = b:GetAttribute("EEActiveColor")
+			b.BackgroundColor3 = b:GetAttribute("EEActive") and (activeColor or Color3.fromRGB(66, 52, 105)) or EE_SURFACE
+		end)
+		if cb then b.MouseButton1Click:Connect(cb) end
+		return b
+	end
+
+	local main = mk("Frame", {
+		Name = randomString(),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, -EE_W / 2, 0, -EE_H - 40),
+		Size = UDim2.new(0, EE_W, 0, EE_H),
+		ZIndex = 40,
+	}, ScaledHolder)
+	local mainScale = mk("UIScale", { Scale = 1 }, main)
+	main.Visible = false
+
+	local shell = mk("Frame", {
+		Name = "Shell",
+		BackgroundColor3 = EE_BG,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 1, 0),
+		Active = true,
+		ZIndex = 40,
+	}, main)
+	uiCorner(shell, 12)
+	uiStroke(shell, EE_BORDER, 1, 0.15)
+	table.insert(shade1, shell)
+
+	local top = mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, EE_TITLE),
+		Active = true,
+		ZIndex = 41,
+	}, shell)
+	uiCorner(top, 12)
+	table.insert(shade2, top)
+	mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 1, -12),
+		Size = UDim2.new(1, 0, 0, 12),
+		ZIndex = 41,
+	}, top)
+	mk("Frame", {
+		BackgroundColor3 = EE_BORDER,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 0, 1, -1),
+		Size = UDim2.new(1, 0, 0, 1),
+		ZIndex = 42,
+	}, top)
+
+	local title = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 14, 0, 0),
+		Size = UDim2.new(1, -258, 1, 0),
+		Font = UI_FONT_MED,
+		TextSize = 15,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "Automation Studio",
+		ZIndex = 42,
+	}, top)
+	table.insert(text1, title)
+
+	local countLabel = mk("TextLabel", {
+		BackgroundColor3 = Color3.fromRGB(35, 31, 49),
+		BackgroundTransparency = 0,
+		Position = UDim2.new(1, -244, 0.5, -14),
+		Size = UDim2.new(0, 68, 0, 28),
+		Font = UI_FONT_MED,
+		TextSize = 10,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextColor3 = EE_ACCENT,
+		Text = "0",
+		ZIndex = 42,
+	}, top)
+	uiCorner(countLabel, 7)
+	uiStroke(countLabel, EE_ACCENT, 1, 0.65)
+
+	local pauseBtn = btn(top, "Pause", UDim2.new(0, 60, 0, 28), UDim2.new(1, -170, 0.5, -14))
+	local histBtn = btn(top, "History", UDim2.new(0, 64, 0, 28), UDim2.new(1, -104, 0.5, -14))
+	local closeBtn = btn(top, "×", UDim2.new(0, 28, 0, 28), UDim2.new(1, -34, 0.5, -14))
+
+	local body = mk("Frame", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 0, 0, EE_TITLE),
+		Size = UDim2.new(1, 0, 1, -EE_TITLE),
+		ZIndex = 41,
+	}, shell)
+
+	local left = mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, EE_GAP, 0, EE_GAP),
+		Size = UDim2.new(0, EE_LEFT_W, 1, -EE_COL_BOTTOM),
+		ClipsDescendants = true,
+		ZIndex = 41,
+	}, body)
+	uiCorner(left, 9)
+	uiStroke(left, EE_BORDER, 1, 0.5)
+	table.insert(shade1, left)
+
+	local searchBox = mk("TextBox", {
+		BackgroundColor3 = EE_SURFACE,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 0, 8),
+		Size = UDim2.new(1, -16, 0, 28),
+		Font = UI_FONT,
+		TextSize = 12,
+		Text = "",
+		PlaceholderText = "  Search events...",
+		PlaceholderColor3 = Color3.fromRGB(110, 108, 128),
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ClearTextOnFocus = false,
+		ZIndex = 42,
+	}, left)
+	uiCorner(searchBox, 7)
+	uiStroke(searchBox, EE_BORDER, 1, 0.45)
+	table.insert(shade2, searchBox)
+
+	local catBar = mk("Frame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 6, 0, 42),
+		Size = UDim2.new(1, -12, 0, 46),
+		ZIndex = 42,
+	}, left)
+
+	local eventList = mk("ScrollingFrame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 4, 0, 94),
+		Size = UDim2.new(1, -8, 1, -102),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
+		ZIndex = 42,
+	}, left)
+	uiPad(eventList, 0, 2, 0, 10)
+	table.insert(scroll, eventList)
+	local eventHolder = mk("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -4, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		ZIndex = 42,
+	}, eventList)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, eventHolder)
+
+	local center = mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, EE_CENTER_X, 0, EE_GAP),
+		Size = UDim2.new(1, -EE_CENTER_W_OFF, 1, -EE_COL_BOTTOM),
+		ClipsDescendants = true,
+		ZIndex = 41,
+	}, body)
+	uiCorner(center, 9)
+	uiStroke(center, EE_BORDER, 1, 0.5)
+	table.insert(shade1, center)
+
+	local eventTitle = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 6),
+		Size = UDim2.new(1, -20, 0, 18),
+		Font = UI_FONT_MED,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "Select an event",
+		ZIndex = 42,
+	}, center)
+	table.insert(text1, eventTitle)
+
+	local eventDesc = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 24),
+		Size = UDim2.new(1, -20, 0, 22),
+		Font = UI_FONT,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextWrapped = true,
+		TextColor3 = Color3.fromRGB(160, 156, 180),
+		Text = "",
+		ZIndex = 42,
+	}, center)
+
+	local varHelp = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 46),
+		Size = UDim2.new(1, -20, 0, 16),
+		Font = UI_FONT,
+		TextSize = 10,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		TextWrapped = false,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		TextColor3 = Color3.fromRGB(160, 156, 180),
+		Text = "",
+		ZIndex = 42,
+	}, center)
+
+	local varBar = mk("ScrollingFrame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 0, 64),
+		Size = UDim2.new(1, -16, 0, 22),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		ScrollBarThickness = 0,
+		ScrollingDirection = Enum.ScrollingDirection.X,
+		ZIndex = 42,
+	}, center)
+
+	local emptyFlow = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 18, 0.5, -28),
+		Size = UDim2.new(1, -36, 0, 56),
+		Font = UI_FONT,
+		TextSize = 12,
+		TextColor3 = EE_MUTED,
+		Text = "No workflows yet\nAdd a command below to create one.",
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		ZIndex = 42,
+	}, center)
+
+	local flowList = mk("ScrollingFrame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 6, 0, EE_FLOW_TOP),
+		Size = UDim2.new(1, -12, 1, -EE_FLOW_REST),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
+		ZIndex = 42,
+	}, center)
+	uiPad(flowList, 0, 0, 0, 8)
+	table.insert(scroll, flowList)
+	local flowHolder = mk("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -4, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		ZIndex = 42,
+	}, flowList)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }, flowHolder)
+
+	local picker = mk("ScrollingFrame", {
+		BackgroundColor3 = Color3.fromRGB(22, 22, 30),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 1, -178),
+		Size = UDim2.new(1, -16, 0, 130),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		ScrollBarThickness = 5,
+		Visible = false,
+		ZIndex = 50,
+	}, center)
+	uiCorner(picker, 6)
+	uiStroke(picker, EE_BORDER, 1, 0.45)
+	local pickerHolder = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ZIndex = 50 }, picker)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2) }, pickerHolder)
+	local function setPickerVisible(visible, contentHeight)
+		if visible then
+			local height = math.min(130, math.max(24, (contentHeight or 22) + 2))
+			picker.Position = UDim2.new(0, 8, 1, -(48 + height))
+			picker.Size = UDim2.new(1, -16, 0, height)
+			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
+			picker.Visible = true
+		else
+			picker.Visible = false
+			flowList.Size = UDim2.new(1, -12, 1, -EE_FLOW_REST)
+		end
+	end
+
+	local addRow = mk("Frame", {
+		BackgroundColor3 = EE_SURFACE,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 1, -44),
+		Size = UDim2.new(1, -16, 0, 36),
+		ClipsDescendants = false,
+		ZIndex = 44,
+	}, center)
+	uiCorner(addRow, 7)
+	uiStroke(addRow, EE_BORDER, 1, 0.35)
+	local addBox = mk("TextBox", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 0),
+		Size = UDim2.new(1, -88, 1, 0),
+		Font = UI_FONT,
+		TextSize = 14,
+		Text = "",
+		PlaceholderText = "Command  ·  Tab  ·  \\ or / chain",
+		PlaceholderColor3 = Color3.fromRGB(110, 108, 128),
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.None,
+		ClearTextOnFocus = false,
+		ZIndex = 45,
+	}, addRow)
+	local addBtn = btn(addRow, "+ Add", UDim2.new(0, 72, 0, 28), UDim2.new(1, -78, 0.5, -14))
+	addBtn:SetAttribute("EEActive", true)
+	addBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
+	addBtn.BackgroundColor3 = EE_PRIMARY
+	addBtn.ZIndex = 45
+
+	local right = mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BorderSizePixel = 0,
+		Position = UDim2.new(1, -(EE_GAP + EE_RIGHT_W), 0, EE_GAP),
+		Size = UDim2.new(0, EE_RIGHT_W, 1, -EE_COL_BOTTOM),
+		ClipsDescendants = true,
+		ZIndex = 41,
+	}, body)
+	uiCorner(right, 9)
+	uiStroke(right, EE_BORDER, 1, 0.5)
+	table.insert(shade1, right)
+
+	local inspTitle = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 8, 0, 6),
+		Size = UDim2.new(1, -16, 0, 18),
+		Font = UI_FONT_MED,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "Inspector",
+		ZIndex = 42,
+	}, right)
+
+	local inspScroll = mk("ScrollingFrame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 4, 0, 28),
+		Size = UDim2.new(1, -8, 1, -36),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
+		ZIndex = 42,
+	}, right)
+	uiPad(inspScroll, 0, 0, 2, 12)
+	local inspHolder = mk("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -4, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		ZIndex = 42,
+	}, inspScroll)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }, inspHolder)
+
+	local inspDrop = mk("ScrollingFrame", {
+		BackgroundColor3 = Color3.fromRGB(22, 22, 30),
+		BorderSizePixel = 0,
+		Visible = false,
+		ZIndex = 80,
+		ScrollBarThickness = 5,
+		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
+	}, shell)
+	uiCorner(inspDrop, 7)
+	uiStroke(inspDrop, EE_ACCENT, 1, 0.45)
+	local inspDropHolder = mk("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		ZIndex = 81,
+	}, inspDrop)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2) }, inspDropHolder)
+	local inspDropAnchor = nil
+	local function hideInspDrop()
+		inspDrop.Visible = false
+		inspDropAnchor = nil
+	end
+	inspScroll:GetPropertyChangedSignal("CanvasPosition"):Connect(hideInspDrop)
+
+	local footer = mk("Frame", {
+		BackgroundColor3 = EE_PANEL,
+		BackgroundTransparency = 0,
+		Position = UDim2.new(0, EE_GAP, 1, -(EE_FOOTER_H - 4)),
+		Size = UDim2.new(1, -EE_GAP * 2, 0, EE_FOOTER_H - 8),
+		ZIndex = 41,
+	}, body)
+	uiCorner(footer, 7)
+	uiStroke(footer, EE_BORDER, 1, 0.55)
+	uiPad(footer, 8, 4, 8, 4)
+	mk("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		VerticalAlignment = Enum.VerticalAlignment.Center,
+		Padding = UDim.new(0, 6),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, footer)
+	local testEventBtn = btn(footer, "Test Event", UDim2.new(0, 78, 0, 28), UDim2.new(0, 0, 0, 0))
+	testEventBtn.LayoutOrder = 1
+	testEventBtn:SetAttribute("EEActive", true)
+	testEventBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
+	testEventBtn.BackgroundColor3 = EE_PRIMARY
+	local clearBtn = btn(footer, "Clear", UDim2.new(0, 54, 0, 28), UDim2.new(0, 0, 0, 0))
+	clearBtn.LayoutOrder = 2
+	local undoBtn = btn(footer, "Undo", UDim2.new(0, 54, 0, 28), UDim2.new(0, 0, 0, 0))
+	undoBtn.LayoutOrder = 3
+	local footerDivider = mk("Frame", {
+		BackgroundColor3 = EE_BORDER,
+		BorderSizePixel = 0,
+		Size = UDim2.new(0, 1, 0, 18),
+		LayoutOrder = 4,
+		ZIndex = 42,
+	}, footer)
+	local presetBtn = btn(footer, "Presets", UDim2.new(0, 64, 0, 28), UDim2.new(0, 0, 0, 0))
+	presetBtn.LayoutOrder = 5
+	local exportBtn = btn(footer, "Export", UDim2.new(0, 58, 0, 28), UDim2.new(0, 0, 0, 0))
+	exportBtn.LayoutOrder = 6
+	local importBtn = btn(footer, "Import", UDim2.new(0, 58, 0, 28), UDim2.new(0, 0, 0, 0))
+	importBtn.LayoutOrder = 7
+
+	local importFrame = mk("Frame", {
+		BackgroundColor3 = Color3.fromRGB(18, 18, 26),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, -210, 0.5, -120),
+		Size = UDim2.new(0, 420, 0, 240),
+		Visible = false,
+		ZIndex = 58,
+	}, shell)
+	uiCorner(importFrame, 8)
+	mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -16, 0, 24),
+		Position = UDim2.new(0, 8, 0, 4),
+		Font = UI_FONT_MED,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "Import Automation JSON",
+		ZIndex = 59,
+	}, importFrame)
+	local importBox = mk("TextBox", {
+		BackgroundColor3 = Color3.fromRGB(28, 28, 36),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 0, 32),
+		Size = UDim2.new(1, -16, 1, -72),
+		Font = UI_FONT,
+		TextSize = 11,
+		Text = "",
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		ClearTextOnFocus = false,
+		MultiLine = true,
+		TextWrapped = true,
+		ZIndex = 59,
+	}, importFrame)
+	uiCorner(importBox, 6)
+
+	local historyFrame = mk("Frame", {
+		BackgroundColor3 = Color3.fromRGB(18, 18, 26),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, -200, 0.5, -140),
+		Size = UDim2.new(0, 400, 0, 280),
+		Visible = false,
+		ZIndex = 55,
+	}, shell)
+	uiCorner(historyFrame, 8)
+	local histTitle = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -40, 0, 28),
+		Position = UDim2.new(0, 10, 0, 0),
+		Font = UI_FONT_MED,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "Run History",
+		ZIndex = 56,
+	}, historyFrame)
+	local histClose = btn(historyFrame, "X", UDim2.new(0, 24, 0, 20), UDim2.new(1, -30, 0, 4), function()
+		historyFrame.Visible = false
+		histBtn:SetAttribute("EEActive", false)
+		histBtn.BackgroundColor3 = EE_SURFACE
+	end)
+	local histList = mk("ScrollingFrame", {
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 8, 0, 32),
+		Size = UDim2.new(1, -16, 1, -70),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		ScrollBarThickness = 5,
+		ZIndex = 56,
+	}, historyFrame)
+	local histHolder = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ZIndex = 56 }, histList)
+	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, histHolder)
+	btn(historyFrame, "Clear Log", UDim2.new(0, 80, 0, 22), UDim2.new(0, 8, 1, -30), function()
+		table.clear(history)
+		refreshHistory()
+	end)
+
+	local confirmFrame = mk("Frame", {
+		BackgroundColor3 = Color3.fromRGB(18, 18, 26),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0.5, -160, 0.5, -70),
+		Size = UDim2.new(0, 320, 0, 140),
+		Visible = false,
+		ZIndex = 62,
+	}, shell)
+	uiCorner(confirmFrame, 8)
+	local confirmTitle = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 12, 0, 8),
+		Size = UDim2.new(1, -24, 0, 22),
+		Font = UI_FONT_MED,
+		TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(245, 245, 247),
+		Text = "",
+		ZIndex = 63,
+	}, confirmFrame)
+	local confirmBody = mk("TextLabel", {
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 12, 0, 34),
+		Size = UDim2.new(1, -24, 0, 52),
+		Font = UI_FONT,
+		TextSize = 12,
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextColor3 = Color3.fromRGB(180, 176, 196),
+		Text = "",
+		ZIndex = 63,
+	}, confirmFrame)
+	local confirmYesCb = nil
+	local confirmNo = btn(confirmFrame, "Cancel", UDim2.new(0, 80, 0, 24), UDim2.new(1, -176, 1, -36), function()
+		confirmFrame.Visible = false
+		confirmYesCb = nil
+	end)
+	local confirmYes = btn(confirmFrame, "OK", UDim2.new(0, 80, 0, 24), UDim2.new(1, -88, 1, -36), function()
+		confirmFrame.Visible = false
+		local cb = confirmYesCb
+		confirmYesCb = nil
+		if cb then cb() end
+	end)
+	local function askConfirm(titleText, bodyText, onYes)
+		confirmTitle.Text = titleText or T("eeConfirm")
+		confirmBody.Text = bodyText or ""
+		confirmNo.Text = T("eeCancel")
+		confirmYes.Text = T("eeConfirm")
+		confirmYesCb = onYes
+		confirmFrame.Visible = true
+	end
+
+	local presetMenu = mk("Frame", {
+		BackgroundColor3 = Color3.fromRGB(22, 22, 30),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, EE_GAP + 220, 1, -(EE_FOOTER_H + 80)),
+		Size = UDim2.new(0, 220, 0, 72),
+		Visible = false,
+		ZIndex = 60,
+	}, body)
+	uiCorner(presetMenu, 8)
+	uiStroke(presetMenu, EE_BORDER, 1, 0.4)
+	local presetCurrentBtn = btn(presetMenu, "Add to current event", UDim2.new(1, -12, 0, 26), UDim2.new(0, 6, 0, 8))
+	local presetPackBtn = btn(presetMenu, "Add safe pack", UDim2.new(1, -12, 0, 26), UDim2.new(0, 6, 0, 38))
+
+	local function totalCounts()
+		local en, tot = 0, 0
+		for _, ev in pairs(events) do
+			for _, cmd in ipairs(ev.commands) do
+				tot += 1
+				if getMeta(cmd).enabled ~= false then en += 1 end
+			end
+		end
+		return en, tot
+	end
+
+	local function updateCountLabel()
+		local en, tot = totalCounts()
+		countLabel.Text = tot == 0 and "0" or string.format("%d/%d", en, tot)
+		countLabel.TextColor3 = tot > 0 and EE_ACCENT or EE_MUTED
+		title.Text = T("autoStudio")
+	end
+
+	local function buildVarHelp(ev, name)
+		local parts = { T("eeVarTitle") }
+		if name == "OnChatted" then
+			parts[#parts + 1] = T("eeVarChat")
+		elseif ev.sets and #ev.sets > 0 then
+			for i, set in ipairs(ev.sets) do
+				local hint = ev.argHints and ev.argHints[i]
+				parts[#parts + 1] = "$" .. tostring(i) .. (hint and ("/" .. hint) or "") .. " = " .. (set.Name or ("#" .. i))
+			end
+		end
+		parts[#parts + 1] = T("eeVarGlobal")
+		return table.concat(parts, "  ·  ")
+	end
+
+	local function eventDescText(ev)
+		if uiLang == "ru" and ev.descRu ~= "" then return ev.descRu end
+		return ev.descEn
+	end
+
+	local function refreshHistory()
+		for _, c in ipairs(histHolder:GetChildren()) do
+			if c:IsA("Frame") then c:Destroy() end
+		end
+		local y = 0
+		for i = #history, 1, -1 do
+			local h = history[i]
+			local row = mk("Frame", {
+				BackgroundColor3 = Color3.fromRGB(28, 28, 36),
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -4, 0, 36),
+				ZIndex = 56,
+			}, histHolder)
+			uiCorner(row, 4)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -8, 1, 0),
+				Position = UDim2.new(0, 6, 0, 0),
+				Font = UI_FONT,
+				TextSize = 11,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextColor3 = h.ok and Color3.fromRGB(200, 220, 200) or Color3.fromRGB(240, 160, 160),
+				Text = string.format("[%s] %s\n%s", tostring(h.event), h.ok and "OK" or "ERR", tostring(h.cmd)),
+				TextWrapped = true,
+				ZIndex = 57,
+			}, row)
+			y += 39
+		end
+		histList.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	local refreshFlows
+	local refreshInspector
+	local refreshEventList
+	local loadData
+
+	local function selectEvent(name)
+		selectedEventName = name
+		selectedCmd = nil
+		local ev = events[name]
+		if not ev then return end
+		eventTitle.Text = name
+		eventDesc.Text = eventDescText(ev)
+		if varHelp then
+			varHelp.Text = buildVarHelp(ev, name)
+		end
+		for _, c in ipairs(varBar:GetChildren()) do
+			if c:IsA("TextButton") then c:Destroy() end
+		end
+		local x = 0
+		local chips = {}
+		for i = 1, #(ev.sets or {}) do
+			chips[#chips + 1] = "$" .. tostring(i)
+		end
+		for _, hint in ipairs(ev.argHints or {}) do
+			chips[#chips + 1] = hint
+		end
+		chips[#chips + 1] = "$me"
+		chips[#chips + 1] = "$time"
+		local seen = {}
+		for _, chip in ipairs(chips) do
+			if not seen[chip] then
+				seen[chip] = true
+				local width = math.max(42, #chip * 7 + 16)
+				local b = btn(varBar, chip, UDim2.new(0, width, 0, 18), UDim2.new(0, x, 0, 2), function()
+					local spacer = addBox.Text ~= "" and not addBox.Text:match("%s$") and " " or ""
+					addBox.Text = addBox.Text .. spacer .. chip
+					addBox:CaptureFocus()
+				end)
+				b.TextSize = 10
+				x += width + 5
+			end
+		end
+		varBar.CanvasSize = UDim2.new(0, x, 0, 0)
+		refreshFlows()
+		refreshInspector()
+		refreshEventList()
+	end
+
+	local function filterSummary(cmd, ev)
+		local parts = {}
+		for i, set in ipairs(ev.sets or {}) do
+			local f = normalizeFilter(cmd[2] and cmd[2][i], set.Type)
+			if f.mode and f.mode ~= "any" then
+				local inv = f.invert and "NOT " or ""
+				local mode = tostring(f.mode)
+				local val = tostring(f.value or "")
+				local bit = nil
+				if set.Type == "Player" and mode == "me" then
+					bit = T("eeMeOnly")
+				elseif set.Type == "String" and mode == "contains" and val ~= "" then
+					bit = (set.Name or "text") .. ' "' .. val .. '"'
+				elseif val ~= "" then
+					bit = mode .. " " .. val
+				else
+					bit = mode
+				end
+				parts[#parts + 1] = inv .. bit
+			end
+		end
+		local meta = getMeta(cmd)
+		if (tonumber(meta.cooldown) or 0) > 0 then parts[#parts + 1] = "cd " .. meta.cooldown .. "s" end
+		if (tonumber(cmd[3]) or 0) > 0 then parts[#parts + 1] = "delay " .. cmd[3] .. "s" end
+		if (tonumber(meta.chance) or 100) < 100 then parts[#parts + 1] = meta.chance .. "%" end
+		return #parts > 0 and table.concat(parts, " · ") or T("eeAlways")
+	end
+
+	refreshInspector = function()
+		hideInspDrop()
+		for _, c in ipairs(inspHolder:GetChildren()) do
+			if c:IsA("GuiObject") and c.Name ~= "UIListLayout" then c:Destroy() end
+		end
+		local function section(label)
+			local l = mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -4, 0, 22),
+				Font = UI_FONT_MED,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = EE_ACCENT,
+				Text = string.upper(label),
+				ZIndex = 43,
+			}, inspHolder)
+			mk("Frame", {
+				BackgroundColor3 = EE_BORDER,
+				BorderSizePixel = 0,
+				Position = UDim2.new(0, 0, 1, -2),
+				Size = UDim2.new(1, 0, 0, 1),
+				ZIndex = 43,
+			}, l)
+		end
+		local function field(label, value, onCommit)
+			local row = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 44), ZIndex = 43 }, inspHolder)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 14),
+				Font = UI_FONT,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = EE_MUTED,
+				Text = label,
+				ZIndex = 44,
+			}, row)
+			local box = mk("TextBox", {
+				BackgroundColor3 = EE_SURFACE,
+				BorderSizePixel = 0,
+				Position = UDim2.new(0, 0, 0, 16),
+				Size = UDim2.new(1, 0, 0, 24),
+				Font = UI_FONT,
+				TextSize = 11,
+				Text = tostring(value or ""),
+				TextColor3 = Color3.fromRGB(245, 245, 247),
+				ClearTextOnFocus = false,
+				ZIndex = 44,
+			}, row)
+			uiCorner(box, 6)
+			uiStroke(box, EE_BORDER, 1, 0.5)
+			box.Focused:Connect(function()
+				box.BackgroundColor3 = EE_SURFACE_HOVER
+			end)
+			box.FocusLost:Connect(function()
+				box.BackgroundColor3 = EE_SURFACE
+				if onCommit then onCommit(box.Text) end
+			end)
+			return box
+		end
+		local function cycle(label, options, current, onPick)
+			local row = mk("Frame", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -4, 0, 42),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				ZIndex = 43,
+			}, inspHolder)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 14),
+				Font = UI_FONT,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = EE_MUTED,
+				Text = label,
+				ZIndex = 44,
+			}, row)
+			local function pretty(v)
+				if v == "yes" then return T("eeYes") end
+				if v == "no" then return T("eeNo") end
+				return tostring(v)
+			end
+			if #options <= 2 then
+				local buttons = {}
+				local function paint()
+					for i, option in ipairs(options) do
+						local b = buttons[i]
+						if b then
+							local on = option == current
+							b:SetAttribute("EEActive", on)
+							b:SetAttribute("EEActiveColor", EE_PRIMARY)
+							b.BackgroundColor3 = on and EE_PRIMARY or EE_SURFACE
+							b.TextColor3 = Color3.fromRGB(245, 245, 247)
+						end
+					end
+				end
+				for i, option in ipairs(options) do
+					local b = btn(row, pretty(option), UDim2.new(0.5, -4, 0, 26), UDim2.new((i - 1) * 0.5, i == 1 and 0 or 4, 0, 16), function()
+						current = option
+						onPick(option)
+						paint()
+					end)
+					b.ZIndex = 48
+					b.Active = true
+					buttons[i] = b
+				end
+				paint()
+				return
+			end
+			local idx = 1
+			for i, o in ipairs(options) do
+				if o == current then idx = i break end
+			end
+			local list = mk("Frame", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 0, 0, 44),
+				Size = UDim2.new(1, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				Visible = false,
+				ZIndex = 46,
+			}, row)
+			mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2) }, list)
+			local head
+			head = btn(row, pretty(options[idx]) .. "   ▾", UDim2.new(1, 0, 0, 26), UDim2.new(0, 0, 0, 16), function()
+				list.Visible = not list.Visible
+			end)
+			head.ZIndex = 48
+			head.Active = true
+			head.TextTruncate = Enum.TextTruncate.AtEnd
+			for i, option in ipairs(options) do
+				local choice = btn(list, pretty(option), UDim2.new(1, 0, 0, 22), UDim2.new(0, 0, 0, 0), function()
+					idx = i
+					head.Text = pretty(option) .. "   ▾"
+					onPick(option)
+					list.Visible = false
+				end)
+				choice.LayoutOrder = i
+				choice.ZIndex = 48
+				choice.TextSize = 11
+				if i == idx then
+					choice:SetAttribute("EEActive", true)
+					choice:SetAttribute("EEActiveColor", EE_PRIMARY)
+					choice.BackgroundColor3 = EE_PRIMARY
+				end
+			end
+		end
+
+		if not selectedCmd or not selectedEventName then
+			section(selectedEventName or T("eeWorkflowInsp"))
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -8, 0, 56),
+				Font = UI_FONT,
+				TextSize = 11,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextColor3 = EE_MUTED,
+				Text = selectedEventName and T("eeInspEventHint") or T("eeInspHint"),
+				ZIndex = 43,
+			}, inspHolder)
+			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 86)
+			return
+		end
+		local ev = events[selectedEventName]
+		local cmd = selectedCmd
+		local meta = getMeta(cmd)
+		local rt = getRuntime(cmd)
+		section(T("eeCommand"))
+		field("Command text", cmd[1], function(t)
+			cmd[1] = t
+			markEdited()
+			refreshFlows()
+		end)
+		section(T("eeTiming"))
+		field("Delay (s)", cmd[3] or 0, function(t)
+			cmd[3] = boundedNumber(t, 0, 0)
+			markEdited()
+			refreshFlows()
+		end)
+		field("Delay max (s)", meta.delayMax or 0, function(t)
+			meta.delayMax = boundedNumber(t, 0, 0)
+			markEdited()
+		end)
+		field("Cooldown (s)", meta.cooldown or 0, function(t)
+			meta.cooldown = boundedNumber(t, 0, 0)
+			markEdited()
+			refreshFlows()
+		end)
+		section(T("eeExecution"))
+		field("Chance %", meta.chance or 100, function(t)
+			meta.chance = boundedNumber(t, 100, 0, 100)
+			markEdited()
+			refreshFlows()
+		end)
+		field("Max runs (0=inf)", meta.maxRuns or 0, function(t)
+			meta.maxRuns = math.floor(boundedNumber(t, 0, 0))
+			markEdited()
+		end)
+		cycle("Once per session", { "no", "yes" }, meta.once and "yes" or "no", function(v)
+			meta.once = v == "yes"
+			markEdited()
+		end)
+		cycle("Enabled", { "yes", "no" }, meta.enabled == false and "no" or "yes", function(v)
+			meta.enabled = v == "yes"
+			markEdited()
+			updateCountLabel()
+			refreshFlows()
+			refreshEventList()
+		end)
+		section(T("eeConditions"))
+		for i, set in ipairs(ev.sets or {}) do
+			if not cmd[2] then cmd[2] = {} end
+			cmd[2][i] = normalizeFilter(cmd[2][i], set.Type)
+			local f = cmd[2][i]
+			section((set.Name or ("Arg " .. i)))
+			if set.Type == "Player" then
+				cycle("Mode", { "any", "me", "others", "friend", "nonfriend", "team", "allies", "enemies", "nonteam", "alive", "dead", "named", "display", "inradius", "group", "whitelist", "blacklist", "age", "custom" }, f.mode or "any", function(v)
+					f.mode = v
+					markEdited()
+					refreshFlows()
+				end)
+				field("Value", f.value or "", function(t)
+					f.value = t
+					markEdited()
+					refreshFlows()
+				end)
+			elseif set.Type == "String" then
+				cycle("Mode", { "any", "contains", "exact", "startswith", "endswith", "pattern", "notcontains", "empty", "notempty", "length_gt", "length_lt" }, f.mode or "any", function(v)
+					f.mode = v
+					markEdited()
+					refreshFlows()
+				end)
+				field("Value (OR with |)", f.value or "", function(t)
+					f.value = t
+					if f.mode == "any" then f.mode = "contains" end
+					markEdited()
+					refreshFlows()
+				end)
+				cycle("Case sensitive", { "no", "yes" }, f.case and "yes" or "no", function(v)
+					f.case = v == "yes"
+					markEdited()
+				end)
+			elseif set.Type == "Number" then
+				cycle("Mode", { "any", "lt", "lte", "eq", "neq", "gte", "gt", "range", "outside" }, f.mode or "any", function(v)
+					f.mode = v
+					markEdited()
+					refreshFlows()
+				end)
+				field("Value", f.value or 0, function(t)
+					f.value = tonumber(t) or 0
+					if f.mode == "any" then f.mode = "lte" end
+					markEdited()
+					refreshFlows()
+				end)
+				field("Value max", f.valueMax or f.value or 0, function(t)
+					f.valueMax = tonumber(t) or 0
+					markEdited()
+				end)
+			end
+			cycle(T("eeInvert"), { "no", "yes" }, f.invert and "yes" or "no", function(v)
+				f.invert = v == "yes"
+				markEdited()
+				refreshFlows()
+			end)
+		end
+		section(T("eeValidation"))
+		do
+			local issues = {}
+			local raw = tostring(cmd[1] or "")
+			if raw == "" then
+				issues[#issues + 1] = "Empty command"
+			else
+				for part in string.gmatch(raw, "[^\\]+") do
+					local head = (part:match("^%s*(%S+)") or ""):lower()
+					if head ~= "" and CMDs then
+						local found = false
+						for _, def in ipairs(CMDs) do
+							local n = tostring(def.NAME or ""):lower()
+							local primary = n:match("^%S+") or n
+							if primary == head or n:find(head, 1, true) == 1 then found = true break end
+							if type(def.ALIAS) == "table" then
+								for _, al in ipairs(def.ALIAS) do
+									if tostring(al):lower() == head then found = true break end
+								end
+							end
+							if found then break end
+						end
+						if not found then issues[#issues + 1] = "Unknown cmd: " .. head end
+					end
+				end
+			end
+			for name in string.gmatch(raw, "%$(%w+)") do
+				if not tonumber(name) and name ~= "me" and name ~= "place" and name ~= "job" and name ~= "time" and name ~= "event" and not namedArgMap[name] then
+					issues[#issues + 1] = "Unknown var $" .. name
+				end
+			end
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -4, 0, math.max(18, #issues * 14)),
+				Font = UI_FONT,
+				TextSize = 10,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextColor3 = #issues > 0 and Color3.fromRGB(255, 140, 140) or Color3.fromRGB(120, 200, 140),
+				Text = #issues > 0 and table.concat(issues, "\n") or "OK",
+				TextWrapped = true,
+				ZIndex = 43,
+			}, inspHolder)
+		end
+		section(T("eeRuntime"))
+		mk("TextLabel", {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, -4, 0, 60),
+			Font = UI_FONT,
+			TextSize = 10,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			TextColor3 = Color3.fromRGB(150, 148, 168),
+			Text = string.format("Runs: %d\nPending: %d\nSkipped: %d\nLast: %s\nErr: %s", rt.runs, rt.pending or 0, rt.skipped, rt.lastCmd ~= "" and rt.lastCmd or "-", rt.lastError ~= "" and rt.lastError or "-"),
+			TextWrapped = true,
+			ZIndex = 43,
+		}, inspHolder)
+		local y = 0
+		for _, c in ipairs(inspHolder:GetChildren()) do
+			if c:IsA("GuiObject") and c ~= inspHolder:FindFirstChildOfClass("UIListLayout") then
+				y += c.AbsoluteSize.Y > 0 and c.AbsoluteSize.Y + 4 or 44
+			end
+		end
+		inspScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(y, 200))
+	end
+
+	refreshFlows = function()
+		for _, c in ipairs(flowHolder:GetChildren()) do
+			if c:IsA("Frame") then c:Destroy() end
+		end
+		local ev = selectedEventName and events[selectedEventName]
+		if not ev then
+			emptyFlow.Visible = true
+			emptyFlow.Text = T("eePickEvent")
+			flowList.CanvasSize = UDim2.new(0, 0, 0, 0)
+			return
+		end
+		emptyFlow.Visible = #ev.commands == 0
+		emptyFlow.Text = T("eeNoFlows")
+		local y = 0
+		for i, cmd in ipairs(ev.commands) do
+			local meta = getMeta(cmd)
+			local card = mk("Frame", {
+				BackgroundColor3 = selectedCmd == cmd and Color3.fromRGB(38, 33, 55) or EE_SURFACE,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -4, 0, 92),
+				ZIndex = 43,
+			}, flowHolder)
+			uiCorner(card, 8)
+			uiStroke(card, selectedCmd == cmd and EE_ACCENT or EE_BORDER, 1, selectedCmd == cmd and 0.35 or 0.6)
+			table.insert(shade2, card)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 10, 0, 6),
+				Size = UDim2.new(1, -20, 0, 20),
+				Font = UI_FONT_MED,
+				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = meta.enabled == false and Color3.fromRGB(140, 136, 158) or Color3.fromRGB(245, 245, 247),
+				Text = cmd[1] ~= "" and cmd[1] or T("eeEmpty"),
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				ZIndex = 44,
+			}, card)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 10, 0, 26),
+				Size = UDim2.new(1, -20, 0, 18),
+				Font = UI_FONT,
+				TextSize = 11,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = Color3.fromRGB(150, 148, 168),
+				Text = filterSummary(cmd, ev),
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				ZIndex = 44,
+			}, card)
+			local hit = mk("TextButton", {
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Position = UDim2.new(0, 0, 0, 0),
+				Size = UDim2.new(1, 0, 0, 48),
+				Text = "",
+				AutoButtonColor = false,
+				ZIndex = 45,
+			}, card)
+			hit.MouseButton1Click:Connect(function()
+				selectedCmd = cmd
+				refreshFlows()
+				refreshInspector()
+			end)
+			local actions = mk("Frame", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 8, 1, -34),
+				Size = UDim2.new(1, -16, 0, 28),
+				ZIndex = 46,
+			}, card)
+			mk("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = UDim.new(0, 3),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}, actions)
+			local idx = i
+			local function actBtn(label, order, width, cb, color)
+				local b = btn(actions, label, UDim2.new(0, width, 0, 28), UDim2.new(0, 0, 0, 0), cb)
+				b.LayoutOrder = order
+				b.ZIndex = 47
+				b.TextSize = 12
+				b.BackgroundColor3 = EE_SURFACE_HOVER
+				if color then b.TextColor3 = color end
+				return b
+			end
+			actBtn(meta.enabled == false and T("eeOff") or T("eeOn"), 1, 38, function()
+				meta.enabled = not (meta.enabled ~= false)
+				markEdited()
+				updateCountLabel()
+				refreshInspector()
+				refreshEventList()
+				refreshFlows()
+			end, meta.enabled == false and EE_MUTED or Color3.fromRGB(156, 231, 175))
+			actBtn(T("eeUp"), 2, 46, function()
+				if idx > 1 then
+					pushUndo()
+					ev.commands[idx], ev.commands[idx - 1] = ev.commands[idx - 1], ev.commands[idx]
+					markEdited()
+					refreshFlows()
+				end
+			end)
+			actBtn(T("eeDown"), 3, 42, function()
+				if idx < #ev.commands then
+					pushUndo()
+					ev.commands[idx], ev.commands[idx + 1] = ev.commands[idx + 1], ev.commands[idx]
+					markEdited()
+					refreshFlows()
+				end
+			end)
+			actBtn(T("eeRun"), 4, 36, function()
+				local args = testArgsFor(ev)
+				local finalCmd = substitute(cmd[1], args, selectedEventName)
+				pcall(function() execCmd(finalCmd) end)
+				notify(T("eeRun"), finalCmd)
+			end)
+			actBtn(T("eePreview"), 5, 58, function()
+				local args = testArgsFor(ev)
+				notify(T("eePreview"), substitute(cmd[1], args, selectedEventName))
+			end)
+			actBtn(T("eeCopy"), 6, 46, function()
+				pushUndo()
+				table.insert(ev.commands, idx + 1, deepCopy(cmd))
+				markEdited()
+				updateCountLabel()
+				refreshFlows()
+				refreshEventList()
+			end)
+			actBtn(T("eeDel"), 7, 40, function()
+				pushUndo()
+				cancelPendingFor(cmd)
+				table.remove(ev.commands, idx)
+				if selectedCmd == cmd then selectedCmd = nil end
+				markEdited()
+				updateCountLabel()
+				refreshFlows()
+				refreshEventList()
+				refreshInspector()
+			end, Color3.fromRGB(242, 143, 151))
+			y += 98
+		end
+		flowList.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	refreshEventList = function()
+		for _, c in ipairs(eventHolder:GetChildren()) do
+			if c:IsA("TextButton") or c:IsA("Frame") then c:Destroy() end
+		end
+		local names = {}
+		for name in pairs(events) do names[#names + 1] = name end
+		table.sort(names)
+		local y = 0
+		local q = eventFilter:lower()
+		local visible = {}
+		for _, name in ipairs(names) do
+			local ev = events[name]
+			local cat = ev.category or "Session"
+			local desc = eventDescText(ev):lower()
+			local matchesCat = eventCategory == "All" or eventCategory == cat
+			local matchesQuery = q == "" or name:lower():find(q, 1, true) or cat:lower():find(q, 1, true) or (desc ~= "" and desc:find(q, 1, true))
+			if matchesCat and matchesQuery then
+				visible[#visible + 1] = name
+				local en, tot = 0, #ev.commands
+				for _, cmd in ipairs(ev.commands) do
+					if getMeta(cmd).enabled ~= false then en += 1 end
+				end
+				local row = mk("TextButton", {
+					BackgroundColor3 = selectedEventName == name and Color3.fromRGB(48, 39, 72) or EE_SURFACE,
+					BorderSizePixel = 0,
+					Size = UDim2.new(1, -4, 0, 44),
+					Text = "",
+					AutoButtonColor = false,
+					LayoutOrder = y,
+					ZIndex = 43,
+				}, eventHolder)
+				uiCorner(row, 7)
+				uiStroke(row, selectedEventName == name and EE_ACCENT or EE_BORDER, 1, selectedEventName == name and 0.45 or 0.7)
+				mk("TextLabel", {
+					BackgroundTransparency = 1,
+					Position = UDim2.new(0, 10, 0, 4),
+					Size = UDim2.new(1, tot > 0 and -44 or -16, 0, 17),
+					Font = UI_FONT_MED,
+					TextSize = 12,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextColor3 = Color3.fromRGB(245, 245, 247),
+					Text = name,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					ZIndex = 44,
+				}, row)
+				mk("TextLabel", {
+					BackgroundTransparency = 1,
+					Position = UDim2.new(0, 10, 0, 22),
+					Size = UDim2.new(1, tot > 0 and -44 or -16, 0, 14),
+					Font = UI_FONT,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextColor3 = Color3.fromRGB(140, 136, 158),
+					Text = categoryText(cat),
+					ZIndex = 44,
+				}, row)
+				if tot > 0 then
+					local badge = mk("TextLabel", {
+						BackgroundColor3 = en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40),
+						BorderSizePixel = 0,
+						Position = UDim2.new(1, -36, 0.5, -9),
+						Size = UDim2.new(0, 28, 0, 18),
+						Font = UI_FONT_MED,
+						TextSize = 10,
+						TextColor3 = en > 0 and EE_ACCENT or EE_MUTED,
+						Text = en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)),
+						ZIndex = 44,
+					}, row)
+					uiCorner(badge, 8)
+				end
+				row.MouseEnter:Connect(function()
+					if selectedEventName ~= name then row.BackgroundColor3 = EE_SURFACE_HOVER end
+				end)
+				row.MouseLeave:Connect(function()
+					if selectedEventName ~= name then row.BackgroundColor3 = EE_SURFACE end
+				end)
+				row.MouseButton1Click:Connect(function()
+					selectEvent(name)
+				end)
+				y += 47
+			end
+		end
+		eventList.CanvasSize = UDim2.new(0, 0, 0, 0)
+		updateCountLabel()
+	end
+
+	local cats = { "All", "Character", "Players", "Chat", "Input", "World", "Session" }
+	local catKeys = {
+		All = "eeCatAll",
+		Character = "eeCatCharacter",
+		Players = "eeCatPlayers",
+		Chat = "eeCatChat",
+		Input = "eeCatInput",
+		World = "eeCatWorld",
+		Session = "eeCatSession",
+	}
+	local catButtons = {}
+	local function categoryText(cat)
+		return T(catKeys[cat] or cat)
+	end
+	local function styleCategories()
+		for catName, catButton in pairs(catButtons) do
+			local active = catName == eventCategory
+			catButton:SetAttribute("EEActive", active)
+			catButton:SetAttribute("EEActiveColor", EE_PRIMARY)
+			catButton.BackgroundColor3 = active and EE_PRIMARY or EE_SURFACE
+			catButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or EE_MUTED
+		end
+	end
+	do
+		local catRows = {}
+		for rowIndex = 1, 2 do
+			local row = mk("Frame", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 0, 0, (rowIndex - 1) * 23),
+				Size = UDim2.new(1, 0, 0, 22),
+				ZIndex = 42,
+			}, catBar)
+			mk("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = UDim.new(0, 4),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}, row)
+			catRows[rowIndex] = row
+		end
+		for index, cat in ipairs(cats) do
+			local parent = index <= 4 and catRows[1] or catRows[2]
+			local b = btn(parent, categoryText(cat), UDim2.new(0, 0, 0, 20), UDim2.new(0, 0, 0, 0), function()
+				eventCategory = cat
+				styleCategories()
+				eventList.CanvasPosition = Vector2.new(0, 0)
+				refreshEventList()
+			end)
+			b.AutomaticSize = Enum.AutomaticSize.X
+			uiPad(b, 7, 0, 7, 0)
+			b.TextSize = 10
+			b.LayoutOrder = index
+			catButtons[cat] = b
+		end
+		styleCategories()
+	end
+
+	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		eventFilter = searchBox.Text
+		eventList.CanvasPosition = Vector2.new(0, 0)
+		refreshEventList()
+	end)
+
+	local function addCommandFromBox()
+		if not selectedEventName then return end
+		local text = tostring(addBox.Text or ""):match("^%s*(.-)%s*$") or ""
+		text = text:gsub("://", "\1"):gsub("/", "\\"):gsub("\1", "://")
+		if text == "" then
+			notify(T("autoStudio"), T("eeEmptyCommand"))
+			addBox:CaptureFocus()
+			return
+		end
+		local ev = events[selectedEventName]
+		pushUndo()
+		local cmd = { text, defaultFilters(ev), 0 }
+		getMeta(cmd)
+		ev.commands[#ev.commands + 1] = cmd
+		addBox.Text = ""
+		selectedCmd = cmd
+		markEdited()
+		updateCountLabel()
+		refreshFlows()
+		refreshEventList()
+		refreshInspector()
+		setPickerVisible(false)
+	end
+
+	addBtn.MouseButton1Click:Connect(addCommandFromBox)
+	addBox.FocusLost:Connect(function(enter)
+		if enter then addCommandFromBox() end
+	end)
+	local function activeCommandToken(text)
+		text = tostring(text or "")
+		local segmentStart = 1
+		local searchFrom = 1
+		local chained = false
+		while true do
+			local slash = text:find("\\", searchFrom, true)
+			if not slash then break end
+			chained = true
+			segmentStart = slash + 1
+			searchFrom = slash + 1
+		end
+		local segment = text:sub(segmentStart)
+		local leading, token = segment:match("^(%s*)(%S*)")
+		leading = leading or ""
+		token = token or ""
+		local tokenStart = segmentStart + #leading
+		return token, tokenStart, tokenStart + #token - 1, chained
+	end
+
+	local suggestionRows = {}
+	local suggestionIndex = 0
+	local function styleSuggestions()
+		for index, row in ipairs(suggestionRows) do
+			if row.Parent then
+				row.BackgroundColor3 = index == suggestionIndex and Color3.fromRGB(66, 52, 105) or Color3.fromRGB(36, 36, 46)
+				row.TextColor3 = index == suggestionIndex and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(230, 230, 235)
+			end
+		end
+	end
+	local function revealSuggestion()
+		local row = suggestionRows[suggestionIndex]
+		if not row then return end
+		local top = (suggestionIndex - 1) * 26
+		local bottom = top + 24
+		local viewTop = picker.CanvasPosition.Y
+		local viewHeight = picker.AbsoluteWindowSize.Y
+		if top < viewTop then
+			picker.CanvasPosition = Vector2.new(0, top)
+		elseif bottom > viewTop + viewHeight then
+			picker.CanvasPosition = Vector2.new(0, math.max(0, bottom - viewHeight))
+		end
+	end
+	local function applySuggestion(primary)
+		if not primary or primary == "" then return end
+		local cur = addBox.Text or ""
+		local _, tokenStart, tokenEnd = activeCommandToken(cur)
+		local before = cur:sub(1, tokenStart - 1)
+		local after = cur:sub(tokenEnd + 1)
+		if after == "" then
+			addBox.Text = before .. primary .. " "
+			local cursor = #before + #primary + 2
+			setPickerVisible(false)
+			task.defer(function()
+				if addBox.Parent then
+					addBox:CaptureFocus()
+					addBox.CursorPosition = math.min(cursor, #addBox.Text + 1)
+				end
+			end)
+			return
+		end
+		addBox.Text = before .. primary .. after
+		local cursor = #before + #primary + 1
+		setPickerVisible(false)
+		task.defer(function()
+			if addBox.Parent then
+				addBox:CaptureFocus()
+				addBox.CursorPosition = math.min(cursor, #addBox.Text + 1)
+			end
+		end)
+	end
+	local function refreshSuggestions()
+		for _, c in ipairs(pickerHolder:GetChildren()) do
+			if c:IsA("TextButton") then c:Destroy() end
+		end
+		suggestionRows = {}
+		suggestionIndex = 0
+		local raw = addBox.Text or ""
+		local normalized = raw:gsub("://", "\1"):gsub("/", "\\"):gsub("\1", "://")
+		if normalized ~= raw then
+			local cursor = addBox.CursorPosition
+			addBox.Text = normalized
+			addBox.CursorPosition = cursor
+			return
+		end
+		local q, _, _, chained = activeCommandToken(normalized)
+		q = q:lower()
+		if not CMDs or (q == "" and not chained) then
+			setPickerVisible(false)
+			return
+		end
+		local matches = {}
+		for _, cmdDef in ipairs(CMDs) do
+			local name = tostring(cmdDef.NAME or "")
+			local primary = name:match("^%S+") or name
+			local lowerName = name:lower()
+			local lowerPrimary = primary:lower()
+			local score = nil
+			if q == "" then
+				score = 4
+			elseif lowerPrimary:sub(1, #q) == q then
+				score = 0
+			elseif lowerName:find(q, 1, true) then
+				score = 2
+			end
+			if q ~= "" and type(cmdDef.ALIAS) == "table" then
+				for _, alias in ipairs(cmdDef.ALIAS) do
+					local lowerAlias = tostring(alias):lower()
+					if lowerAlias:sub(1, #q) == q then
+						score = math.min(score or 9, 1)
+					elseif lowerAlias:find(q, 1, true) then
+						score = math.min(score or 9, 3)
+					end
+				end
+			end
+			if score then
+				matches[#matches + 1] = { name = name, primary = primary, score = score }
+			end
+		end
+		table.sort(matches, function(a, b)
+			if a.score == b.score then return a.primary:lower() < b.primary:lower() end
+			return a.score < b.score
+		end)
+		local y = 0
+		for index = 1, math.min(12, #matches) do
+			local match = matches[index]
+			local primary = match.primary
+			local row = mk("TextButton", {
+				BackgroundColor3 = Color3.fromRGB(36, 36, 46),
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -6, 0, 24),
+				Text = "  " .. match.name,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				Font = UI_FONT,
+				TextSize = 11,
+				TextColor3 = Color3.fromRGB(230, 230, 235),
+				ZIndex = 51,
+			}, pickerHolder)
+			uiCorner(row, 4)
+			row:SetAttribute("EEPrimary", primary)
+			suggestionRows[#suggestionRows + 1] = row
+			local rowIndex = #suggestionRows
+			row.MouseEnter:Connect(function()
+				suggestionIndex = rowIndex
+				styleSuggestions()
+			end)
+			row.MouseButton1Click:Connect(function()
+				applySuggestion(primary)
+			end)
+			y += 26
+		end
+		suggestionIndex = #suggestionRows > 0 and 1 or 0
+		styleSuggestions()
+		picker.CanvasPosition = Vector2.new(0, 0)
+		picker.CanvasSize = UDim2.new(0, 0, 0, y)
+		setPickerVisible(#suggestionRows > 0, y)
+	end
+	addBox:GetPropertyChangedSignal("Text"):Connect(refreshSuggestions)
+	IYR_TRACK(UserInputService.InputBegan:Connect(function(input)
+		if not main.Visible or not addBox:IsFocused() or not picker.Visible then return end
+		if input.KeyCode == Enum.KeyCode.Down and #suggestionRows > 0 then
+			suggestionIndex = suggestionIndex % #suggestionRows + 1
+			styleSuggestions()
+			revealSuggestion()
+		elseif input.KeyCode == Enum.KeyCode.Up and #suggestionRows > 0 then
+			suggestionIndex = (suggestionIndex - 2) % #suggestionRows + 1
+			styleSuggestions()
+			revealSuggestion()
+		elseif input.KeyCode == Enum.KeyCode.Tab and suggestionRows[suggestionIndex] then
+			local row = suggestionRows[suggestionIndex]
+			applySuggestion(row:GetAttribute("EEPrimary"))
+		elseif input.KeyCode == Enum.KeyCode.Escape then
+			setPickerVisible(false)
+			addBox:ReleaseFocus(false)
+		end
+	end))
+
+	pauseBtn.MouseButton1Click:Connect(function()
+		masterPaused = not masterPaused
+		pauseBtn.Text = masterPaused and T("eeResume") or T("eePause")
+		pauseBtn:SetAttribute("EEActive", masterPaused)
+		pauseBtn:SetAttribute("EEActiveColor", Color3.fromRGB(105, 57, 64))
+		pauseBtn.BackgroundColor3 = masterPaused and Color3.fromRGB(105, 57, 64) or EE_SURFACE
+		pauseBtn.TextColor3 = masterPaused and Color3.fromRGB(255, 211, 216) or Color3.fromRGB(245, 245, 247)
+		if masterPaused then cancelPendingFor(nil) end
+		notify(T("autoStudio"), masterPaused and T("autoPaused") or T("autoResumed"))
+	end)
+
+	histBtn.MouseButton1Click:Connect(function()
+		historyFrame.Visible = not historyFrame.Visible
+		histBtn:SetAttribute("EEActive", historyFrame.Visible)
+		histBtn.BackgroundColor3 = historyFrame.Visible and Color3.fromRGB(66, 52, 105) or EE_SURFACE
+		if historyFrame.Visible then refreshHistory() end
+	end)
+
+	local function uiFit()
+		local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(EE_W + 24, EE_H + 24)
+		return math.min(1, math.max(0.72, (viewport.X - 24) / EE_W), math.max(0.72, (viewport.Y - 24) / EE_H))
+	end
+
+	local function eeOpenPos()
+		local fit = mainScale.Scale > 0 and mainScale.Scale or uiFit()
+		return UDim2.new(0.5, -(EE_W * fit) / 2, 0.5, -(EE_H * fit) / 2)
+	end
+
+	local function eeHiddenPos()
+		local fit = mainScale.Scale > 0 and mainScale.Scale or 1
+		local g = 1
+		pcall(function()
+			if Scale then g = tonumber(Scale.Scale) or 1 end
+		end)
+		if g < 0.2 then g = 0.2 end
+		return UDim2.new(0.5, -(EE_W * fit) / 2, 0, -(EE_H * fit) / g - 80)
+	end
+
+	local function closeStudio()
+		setPickerVisible(false)
+		hideInspDrop()
+		historyFrame.Visible = false
+		importFrame.Visible = false
+		if confirmFrame then confirmFrame.Visible = false end
+		if presetMenu then presetMenu.Visible = false end
+		histBtn:SetAttribute("EEActive", false)
+		histBtn.BackgroundColor3 = EE_SURFACE
+		eeCloseToken += 1
+		local token = eeCloseToken
+		main:TweenPosition(eeHiddenPos(), "InOut", "Quart", 0.4, true)
+		task.delay(0.45, function()
+			if token == eeCloseToken then
+				main.Visible = false
+			end
+		end)
+	end
+
+	closeBtn.MouseButton1Click:Connect(closeStudio)
+
+	testEventBtn.MouseButton1Click:Connect(function()
+		if not selectedEventName then return end
+		local ev = events[selectedEventName]
+		local args = testArgsFor(ev)
+		lastSkipReasons = {}
+		local shift = false
+		pcall(function()
+			shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+		end)
+		forceTest = shift
+		local queued = fireEvent(selectedEventName, table.unpack(args))
+		if queued == 0 then
+			local why = lastSkipReasons[1] or T("eeSkipNone")
+			notify(T("autoStudio"), why .. " — " .. T("eeForceHint"))
+		else
+			notify(T("autoStudio"), T("eeTestFired") .. selectedEventName .. " ×" .. tostring(queued))
+		end
+	end)
+
+	clearBtn.MouseButton1Click:Connect(function()
+		if not selectedEventName then return end
+		askConfirm(T("eeClear"), T("eeClearConfirm"), function()
+			local ev = events[selectedEventName]
+			if not ev then return end
+			pushUndo()
+			for _, cmd in ipairs(ev.commands) do cancelPendingFor(cmd) end
+			ev.commands = {}
+			selectedCmd = nil
+			markEdited()
+			updateCountLabel()
+			refreshFlows()
+			refreshEventList()
+			refreshInspector()
+			notify(T("autoStudio"), T("eeCleared") .. " " .. selectedEventName)
+		end)
+	end)
+
+	local function safePack()
+		return {
+			{ "OnChatted", { "goto $player", { normalizeFilter(1, "Player"), normalizeFilter(0, "String") }, 0 } },
+			{ "OnDied", { "respawn", { normalizeFilter(0, "Player") }, 0.2 } },
+			{ "OnHealthBelow", { "reset", { normalizeFilter(0, "Player"), normalizeFilter({ v = 1, mode = "lte", value = 25 }, "Number") }, 0 } },
+			{ "OnTool", { "notify equipped $tool", { normalizeFilter(0, "Player"), normalizeFilter(0, "String") }, 0 } },
+			{ "OnInterval", { "walkspeed 16", {}, 0 } },
+			{ "OnFriendJoin", { "notify friend joined $player", { normalizeFilter(1, "Player") }, 0 } },
+		}
+	end
+
+	presetBtn.MouseButton1Click:Connect(function()
+		presetMenu.Visible = not presetMenu.Visible
+		presetCurrentBtn.Text = T("eePresetCurrent")
+		presetPackBtn.Text = T("eePresetPack")
+	end)
+
+	presetCurrentBtn.MouseButton1Click:Connect(function()
+		presetMenu.Visible = false
+		if not selectedEventName then return end
+		local ev = events[selectedEventName]
+		if not ev then return end
+		pushUndo()
+		local cmd
+		if selectedEventName == "OnChatted" then
+			cmd = { "goto $player", { normalizeFilter(1, "Player"), normalizeFilter(0, "String") }, 0 }
+		elseif selectedEventName == "OnDied" then
+			cmd = { "respawn", { normalizeFilter(0, "Player") }, 0.2 }
+		else
+			cmd = { "notify " .. selectedEventName, defaultFilters(ev), 0 }
+		end
+		getMeta(cmd)
+		ev.commands[#ev.commands + 1] = cmd
+		markEdited()
+		updateCountLabel()
+		refreshFlows()
+		refreshEventList()
+		notify(T("autoStudio"), T("eePresetsAdded"))
+	end)
+
+	presetPackBtn.MouseButton1Click:Connect(function()
+		presetMenu.Visible = false
+		pushUndo()
+		for _, p in ipairs(safePack()) do
+			local ev = events[p[1]]
+			if ev then
+				local cmd = p[2]
+				getMeta(cmd)
+				if p[1] == "OnInterval" then
+					getMeta(cmd).cooldown = 10
+				end
+				if p[1] == "OnHealthBelow" then
+					getMeta(cmd).cooldown = 3
+				end
+				ev.commands[#ev.commands + 1] = cmd
+			end
+		end
+		markEdited()
+		updateCountLabel()
+		refreshEventList()
+		if selectedEventName then refreshFlows() end
+		notify(T("autoStudio"), T("eePresetsAdded"))
+	end)
+
+	exportBtn.MouseButton1Click:Connect(function()
+		local data = {}
+		for name, ev in pairs(events) do
+			data[name] = ev.commands
+		end
+		local json = HttpService:JSONEncode(data)
+		if everyClipboard then
+			pcall(everyClipboard, json)
+			notify(T("autoStudio"), T("eeExported"))
+		else
+			notify(T("autoStudio"), T("eeNoClip"))
+		end
+	end)
+
+	undoBtn.MouseButton1Click:Connect(function()
+		local snap = undoHistory[#undoHistory]
+		if not snap then
+			notify(T("autoStudio"), T("eeNothingUndo"))
+			return
+		end
+		undoHistory[#undoHistory] = nil
+		applySnap(snap)
+		selectedCmd = nil
+		markEdited()
+		updateCountLabel()
+		refreshFlows()
+		refreshEventList()
+		refreshInspector()
+		notify(T("autoStudio"), T("eeUndoOk"))
+	end)
+
+	importBtn.MouseButton1Click:Connect(function()
+		importFrame.Visible = true
+		importBox.Text = ""
+		importBox:CaptureFocus()
+	end)
+	btn(importFrame, "Cancel", UDim2.new(0, 70, 0, 22), UDim2.new(1, -160, 1, -30), function()
+		importFrame.Visible = false
+	end)
+	btn(importFrame, "Apply", UDim2.new(0, 70, 0, 22), UDim2.new(1, -82, 1, -30), function()
+		local txt = importBox.Text
+		if txt == nil or txt == "" then return end
+		local ok, data = pcall(function() return HttpService:JSONDecode(txt) end)
+		if not ok or type(data) ~= "table" then
+			notify(T("autoStudio"), T("eeImportBad"))
+			return
+		end
+		local anyKnown, malformed = false, false
+		for eventName, list in pairs(data) do
+			if events[eventName] and type(list) == "table" then
+				anyKnown = true
+				if #list > 500 then malformed = true break end
+				for _, raw in ipairs(list) do
+					if type(raw) ~= "table" or type(raw[1]) ~= "string" then
+						malformed = true
+						break
+					end
+				end
+				if malformed then break end
+			end
+		end
+		if not anyKnown or malformed then
+			notify(T("autoStudio"), T("eeImportBad"))
+			return
+		end
+		pushUndo()
+		loadData(data)
+		importFrame.Visible = false
+		markEdited()
+		updateCountLabel()
+		refreshList()
+		notify(T("autoStudio"), T("eeImported"))
+	end)
+
+	local function saveData()
+		local result = {}
+		for name, ev in pairs(events) do
+			local list = {}
+			for _, cmd in ipairs(ev.commands) do
+				local meta = getMeta(cmd)
+				local filters = {}
+				for i, set in ipairs(ev.sets or {}) do
+					filters[i] = normalizeFilter(cmd[2] and cmd[2][i], set.Type)
+				end
+				list[#list + 1] = {
+					cmd[1],
+					filters,
+					boundedNumber(cmd[3], 0, 0),
+					{
+						enabled = meta.enabled ~= false,
+						cooldown = tonumber(meta.cooldown) or 0,
+						chance = tonumber(meta.chance) or 100,
+						once = meta.once == true,
+						maxRuns = tonumber(meta.maxRuns) or 0,
+						delayMax = tonumber(meta.delayMax) or 0,
+						v = 1,
+					},
+				}
+			end
+			result[name] = list
+		end
+		return HttpService:JSONEncode(result)
+	end
+
+	loadData = function(input)
+		local data = input
+		if type(input) ~= "table" then
+			local ok
+			ok, data = pcall(function() return HttpService:JSONDecode(input) end)
+			if not ok then return end
+		end
+		if type(data) ~= "table" then return end
+		cancelPendingFor(nil)
+		runtime = setmetatable({}, { __mode = "k" })
+		selectedCmd = nil
+		for name, list in pairs(data) do
+			if events[name] and type(list) == "table" then
+				local cmds = {}
+				for _, raw in ipairs(list) do
+					if type(raw) == "table" then
+						local cmd = { tostring(raw[1] or ""), {}, boundedNumber(raw[3], 0, 0) }
+						local filters = {}
+						local ev = events[name]
+						for i, set in ipairs(ev.sets or {}) do
+							filters[i] = normalizeFilter(raw[2] and raw[2][i], set.Type)
+						end
+						cmd[2] = filters
+						if type(raw[4]) == "table" then
+							cmd[4] = deepCopy(raw[4])
+						elseif raw[4] == false then
+							cmd[4] = { enabled = false, v = 1 }
+						end
+						getMeta(cmd)
+						cmds[#cmds + 1] = cmd
+					end
+				end
+				events[name].commands = cmds
+			end
+		end
+	end
+
+	local function addCmd(eventName, data)
+		if not events[eventName] then return end
+		local cmd
+		if type(data) == "table" then
+			cmd = { tostring(data[1] or ""), data[2] or defaultFilters(events[eventName]), boundedNumber(data[3], 0, 0), data[4] }
+			if type(cmd[2]) == "table" then
+				for i, set in ipairs(events[eventName].sets or {}) do
+					cmd[2][i] = normalizeFilter(cmd[2][i], set.Type)
+				end
+			else
+				cmd[2] = defaultFilters(events[eventName])
+			end
+		else
+			cmd = { tostring(data or ""), defaultFilters(events[eventName]), 0 }
+		end
+		getMeta(cmd)
+		table.insert(events[eventName].commands, cmd)
+	end
+
+	local function refreshList()
+		refreshEventList()
+		if selectedEventName and events[selectedEventName] then
+			selectEvent(selectedEventName)
+		elseif next(events) then
+			local names = {}
+			for n in pairs(events) do names[#names + 1] = n end
+			table.sort(names)
+			if names[1] then selectEvent(names[1]) end
+		end
+		updateCountLabel()
+	end
+
+	-- single interval scheduler
+	task.spawn(function()
+		local gen = IYR_GEN
+		local elapsed = 0
+		while IYR_GEN == gen do
+			task.wait(1)
+			if IYR_GEN ~= gen then return end
+			elapsed += 1
+			if events.OnInterval then
+				fireEvent("OnInterval", elapsed)
+			end
+		end
+	end)
+
+	local function applyStudioLang()
+		title.Text = T("autoStudio")
+		searchBox.PlaceholderText = T("eeSearch")
+		pauseBtn.Text = masterPaused and T("eeResume") or T("eePause")
+		histBtn.Text = T("eeHistory")
+		addBtn.Text = T("eeAdd")
+		addBox.PlaceholderText = T("eeAddPlaceholder")
+		inspTitle.Text = T("eeInspector")
+		testEventBtn.Text = T("eeTestEvent")
+		clearBtn.Text = T("eeClear")
+		undoBtn.Text = T("eeUndo")
+		presetBtn.Text = T("eePresets")
+		exportBtn.Text = T("eeExport")
+		importBtn.Text = T("eeImport")
+		histTitle.Text = T("eeRunHistory")
+		if presetCurrentBtn then presetCurrentBtn.Text = T("eePresetCurrent") end
+		if presetPackBtn then presetPackBtn.Text = T("eePresetPack") end
+		for cat, catButton in pairs(catButtons) do
+			catButton.Text = categoryText(cat)
+		end
+		styleCategories()
+		addBtn.BackgroundColor3 = EE_PRIMARY
+		testEventBtn.BackgroundColor3 = EE_PRIMARY
+		if not selectedEventName then
+			eventTitle.Text = T("eeSelectEvent")
+		end
+		updateCountLabel()
+	end
+
+	dragGUI(main)
+
+	return {
+		RegisterEvent = registerEvent,
+		FireEvent = fireEvent,
+		Refresh = refreshList,
+		SaveData = saveData,
+		LoadData = loadData,
+		AddCmd = addCmd,
+		Frame = main,
+		SetOnEdited = function(f)
+			if type(f) == "function" then onEdited = f end
+		end,
+		IsPaused = function() return masterPaused end,
+		IsBusy = function() return fireDepth > 0 end,
+		IsOpen = function() return main.Visible end,
+		GetHistory = function() return history end,
+		GetCounts = function()
+			return totalCounts()
+		end,
+		ApplyLang = applyStudioLang,
+		Close = closeStudio,
+		Open = function()
+			eeCloseToken += 1
+			main.Visible = true
+			local fit = uiFit()
+			mainScale.Scale = fit
+			main.Position = eeHiddenPos()
+			main:TweenPosition(eeOpenPos(), "InOut", "Quart", 0.45, true)
+			applyStudioLang()
+			refreshList()
+		end,
+		EE_W = EE_W,
+		EE_H = EE_H,
+	}
 end)()
 
 reference = (function()
@@ -6006,7 +8276,13 @@ Hide.MouseButton1Down:Connect(function()
 end)
 
 EventBind.MouseButton1Click:Connect(function()
-    eventEditor.Frame:TweenPosition(UDim2.new(0.5,-175,0.5,-101), "InOut", "Quart", 0.5, true, nil)
+    if type(eventEditor.Open) == "function" then
+        eventEditor.Open()
+    else
+        local w = eventEditor.EE_W or 620
+        local h = eventEditor.EE_H or 400
+        eventEditor.Frame:TweenPosition(UDim2.new(0.5, -w / 2, 0.5, -h / 2), "InOut", "Quart", 0.5, true, nil)
+    end
 end)
 
 Keybinds.MouseButton1Click:Connect(function()
@@ -6353,11 +8629,14 @@ function showHelper(title, desc)
     end
     Title_3.Text = shortTitle
     Description.Text = desc
+    Tooltip:SetAttribute("CmdTitle", title)
+    Tooltip:SetAttribute("CmdDesc", desc)
 
     local padX = 24
     local titleH = 28
     local gap = 6
-    local bottomPad = 10
+    local btnH = 22
+    local bottomPad = 36
     local maxDescW = HELPER_W - padX
     local bounds = TextService:GetTextSize(desc, Description.TextSize, Description.Font, Vector2.new(maxDescW, 200))
     local descH = math.clamp(math.ceil(bounds.Y) + 2, 16, 72)
@@ -6365,6 +8644,13 @@ function showHelper(title, desc)
     Description.Position = UDim2.new(0, 12, 0, titleH + gap)
     if HelperAccent then
         HelperAccent.Position = UDim2.new(0, 12, 0, titleH - 1)
+    end
+    if HelperFavBtn then
+        local fav = type(isFavoriteCmd) == "function" and isFavoriteCmd(title)
+        HelperFavBtn.Text = fav and T("removeFavorite") or T("addFavorite")
+        HelperFavBtn.TextColor3 = fav and Color3.fromRGB(186, 182, 204) or Color3.fromRGB(255, 214, 102)
+        HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
+        HelperFavBtn.Visible = true
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
     Tooltip.Visible = true
@@ -6545,22 +8831,66 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         return a.score > b.score
     end)
 
-    local layout = 100
-    for _, item in ipairs(ranked) do
-        indexnum += 1
-        item.btn.Visible = true
-        item.btn.LayoutOrder = layout
-        layout += 1
-        visibleCmdButtons[#visibleCmdButtons + 1] = item.btn
-                if topCommand == nil then
-            topCommand = item.btn.Text
-                end
-            end
-
     local takesPlayer = false
     if hasSpace and ranked[1] then
         local usage = ranked[1].btn.Text:lower()
         takesPlayer = usage:find("[player]", 1, true) or usage:find("[plr]", 1, true) or usage:find("player", 1, true)
+    end
+
+    local favRanked, otherRanked = {}, {}
+    if takesPlayer then
+        otherRanked = ranked
+    else
+        for _, item in ipairs(ranked) do
+            local favIdx
+            if type(isFavoriteCmd) == "function" then
+                local isFav, idx = isFavoriteCmd(item.btn:GetAttribute("Title") or item.btn.Text)
+                if isFav then favIdx = idx end
+            end
+            if favIdx then
+                item.favIdx = favIdx
+                favRanked[#favRanked + 1] = item
+            else
+                otherRanked[#otherRanked + 1] = item
+            end
+        end
+        table.sort(favRanked, function(a, b)
+            if a.favIdx ~= b.favIdx then return a.favIdx < b.favIdx end
+            return a.btn.Text < b.btn.Text
+        end)
+    end
+
+    if cmdFavHeader then
+        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
+        cmdFavHeader.LayoutOrder = 1
+    end
+    if cmdAllHeader then
+        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+        cmdAllHeader.LayoutOrder = 500
+    end
+
+    local function placeCmdRow(item, order)
+        indexnum += 1
+        item.btn.Visible = true
+        item.btn.LayoutOrder = order
+        if type(applyFavoriteStyle) == "function" then
+            applyFavoriteStyle(item.btn)
+        end
+        visibleCmdButtons[#visibleCmdButtons + 1] = item.btn
+        if topCommand == nil then
+            topCommand = item.btn.Text
+        end
+    end
+
+    local layout = 2
+    for _, item in ipairs(favRanked) do
+        placeCmdRow(item, layout)
+        layout += 1
+    end
+    layout = 501
+    for _, item in ipairs(otherRanked) do
+        placeCmdRow(item, layout)
+        layout += 1
     end
     if takesPlayer then
         local suggestions = collectPlayerSuggestions(argQuery)
@@ -7902,7 +10232,6 @@ end
 function FavCmds.apply(btn)
 	local title = tostring(btn:GetAttribute("Title") or btn.Text)
 	local fav = FavCmds.is(title)
-	btn.LayoutOrder = fav and 1 or (100 + (btn:GetAttribute("CmdIndex") or 0))
 	local label = btn:FindFirstChild("Label")
 	if label then
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
@@ -7919,9 +10248,13 @@ function FavCmds.toggle(name)
 		table.insert(favCmds, key)
 		notify(T("favorites"), T("addFavorite") .. ": " .. key)
 	end
-	for _, child in pairs(CMDsF:GetChildren()) do
-		if child:IsA("TextButton") and child.Name == "CMD" then
-			FavCmds.apply(child)
+	if type(IndexContents) == "function" then
+		IndexContents((Cmdbar and Cmdbar.Text) or "", true)
+	else
+		for _, child in pairs(CMDsF:GetChildren()) do
+			if child:IsA("TextButton") and child.Name == "CMD" then
+				FavCmds.apply(child)
+			end
 		end
 	end
 	updatesaves()
@@ -8027,9 +10360,14 @@ function checkTT()
 
     if hovered then
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
-    else
-        Tooltip.Visible = false
+        return
     end
+    for _, gui in pairs(guisAtPosition) do
+        if gui == Tooltip or (gui.Parent and gui:IsDescendantOf(Tooltip)) then
+            return
+        end
+    end
+    Tooltip.Visible = false
 end
 
 function FindInTable(tbl,val)
@@ -8198,8 +10536,14 @@ local lastCmds = {}
 local historyCount = 0
 local split=" "
 local lastBreakTime = 0
+IYP_EE_FROM_QUEUE = false
 function execCmd(cmdStr,speaker,store)
     cmdStr = cmdStr:gsub("%s+$","")
+    if not IYP_EE_FROM_QUEUE and eventEditor and type(eventEditor.IsBusy) == "function" and not eventEditor.IsBusy() then
+        pcall(function()
+            eventEditor.FireEvent("OnCommand", tostring(cmdStr or ""))
+        end)
+    end
     task.spawn(function()
         local rawCmdStr = cmdStr
         cmdStr = string.gsub(cmdStr,"\\\\","%%BackSlash%%")
@@ -19755,32 +22099,108 @@ if PluginsTable ~= nil or PluginsTable ~= {} then
     FindPlugins(PluginsTable)
 end
 
--- Events
-eventEditor.RegisterEvent("OnExecute")
-eventEditor.RegisterEvent("OnSpawn",{
-    {Type="Player",Name="Player Filter ($1)"}
-})
-eventEditor.RegisterEvent("OnDied",{
-    {Type="Player",Name="Player Filter ($1)"}
-})
-eventEditor.RegisterEvent("OnDamage",{
-    {Type="Player",Name="Player Filter ($1)"},
-    {Type="Number",Name="Below Health ($2)"}
-})
-eventEditor.RegisterEvent("OnKilled",{
-    {Type="Player",Name="Victim Player ($1)"},
-    {Type="Player",Name="Killer Player ($2)",Default = 1}
-})
-eventEditor.RegisterEvent("OnJoin",{
-    {Type="Player",Name="Player Filter ($1)",Default = 1}
-})
-eventEditor.RegisterEvent("OnLeave",{
-    {Type="Player",Name="Player Filter ($1)",Default = 1}
-})
-eventEditor.RegisterEvent("OnChatted",{
-    {Type="Player",Name="Player Filter ($1)",Default = 1},
-    {Type="String",Name="Message Filter ($2)"}
-})
+-- Events / Automation Studio
+eventEditor.RegisterEvent("OnExecute", nil, {category="Session", descEn="Fires once when IYP finishes loading", descRu="Срабатывает один раз после загрузки IYP", argHints={}})
+eventEditor.RegisterEvent("OnSpawn", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Player character spawned", descRu="Персонаж появился", argHints={"$player"}})
+eventEditor.RegisterEvent("OnDied", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Player died", descRu="Игрок умер", argHints={"$player"}})
+eventEditor.RegisterEvent("OnDamage", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="Number", Name="Health after hit ($2 / $health)"}
+}, {category="Character", descEn="Player took damage", descRu="Игрок получил урон", argHints={"$player","$health"}})
+eventEditor.RegisterEvent("OnHeal", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="Number", Name="Health ($2 / $health)"},
+    {Type="Number", Name="Amount ($3 / $amount)"}
+}, {category="Character", descEn="Player healed", descRu="Игрок восстановил здоровье", argHints={"$player","$health","$amount"}})
+eventEditor.RegisterEvent("OnHealthBelow", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="Number", Name="Below health ($2 / $health)", Default={ v = 1, mode = "lte", value = 25 }}
+}, {category="Character", descEn="Health crossed below threshold (re-arms after recover)", descRu="Здоровье упало ниже порога", argHints={"$player","$health"}})
+eventEditor.RegisterEvent("OnKilled", {
+    {Type="Player", Name="Victim ($1 / $player)"},
+    {Type="Player", Name="Killer ($2 / $killer)", Default=1}
+}, {category="Character", descEn="Player was killed", descRu="Игрока убили", argHints={"$player","$killer"}})
+eventEditor.RegisterEvent("OnJump", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Player jumped", descRu="Игрок прыгнул", argHints={"$player"}})
+eventEditor.RegisterEvent("OnSit", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="String", Name="Seat ($2 / $seat)"}
+}, {category="Character", descEn="Player sat", descRu="Игрок сел", argHints={"$player","$seat"}})
+eventEditor.RegisterEvent("OnTool", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="String", Name="Tool ($2 / $tool)"}
+}, {category="Character", descEn="Player equipped a tool", descRu="Игрок взял инструмент", argHints={"$player","$tool"}})
+eventEditor.RegisterEvent("OnJoin", {
+    {Type="Player", Name="Player ($1 / $player)", Default=1}
+}, {category="Players", descEn="Player joined the server", descRu="Игрок зашёл на сервер", argHints={"$player"}})
+eventEditor.RegisterEvent("OnLeave", {
+    {Type="Player", Name="Player ($1 / $player)", Default=1}
+}, {category="Players", descEn="Player left the server", descRu="Игрок вышел", argHints={"$player"}})
+eventEditor.RegisterEvent("OnFriendJoin", {
+    {Type="Player", Name="Friend ($1 / $player)", Default=1}
+}, {category="Players", descEn="A Roblox friend joined", descRu="Зашёл друг", argHints={"$player"}})
+eventEditor.RegisterEvent("OnTeamChanged", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="String", Name="Team ($2 / $team)"}
+}, {category="Players", descEn="Player team changed", descRu="Сменилась команда", argHints={"$player","$team"}})
+eventEditor.RegisterEvent("OnChatted", {
+    {Type="Player", Name="Player ($1 / $player)", Default=1},
+    {Type="String", Name="Message ($2 / $message)"}
+}, {category="Chat", descEn="Player chatted", descRu="Игрок написал в чат", argHints={"$player","$message"}})
+eventEditor.RegisterEvent("OnIdle", {
+    {Type="Number", Name="Idle seconds ($1 / $seconds)", Default={ v = 1, mode = "gte", value = 30 }}
+}, {category="Input", descEn="LocalPlayer idle for N seconds", descRu="Ты бездействует N секунд", argHints={"$seconds"}})
+eventEditor.RegisterEvent("OnWindowFocus", nil, {category="Input", descEn="Roblox window focused", descRu="Окно Roblox в фокусе", argHints={}})
+eventEditor.RegisterEvent("OnWindowBlur", nil, {category="Input", descEn="Roblox window lost focus", descRu="Окно Roblox потеряло фокус", argHints={}})
+eventEditor.RegisterEvent("OnPrompt", {
+    {Type="String", Name="Prompt ($1 / $prompt)"}
+}, {category="World", descEn="LocalPlayer triggered a ProximityPrompt", descRu="Сработал ProximityPrompt", argHints={"$prompt"}})
+eventEditor.RegisterEvent("OnTeleport", {
+    {Type="String", Name="State ($1 / $state)"}
+}, {category="Session", descEn="Teleport state changed", descRu="Сменилось состояние телепорта", argHints={"$state"}})
+eventEditor.RegisterEvent("OnInterval", {
+    {Type="Number", Name="Elapsed seconds ($1 / $elapsed)"}
+}, {category="Session", descEn="Fires every second; use cooldown to throttle", descRu="Каждую секунду; throttle через cooldown", argHints={"$elapsed"}})
+eventEditor.RegisterEvent("OnLocalSpawn", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="LocalPlayer character spawned", descRu="Твой персонаж появился", argHints={"$player"}})
+eventEditor.RegisterEvent("OnCharacterRemoving", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Character is being removed", descRu="Персонаж удаляется", argHints={"$player"}})
+eventEditor.RegisterEvent("OnFall", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Player entered freefall", descRu="Игрок в свободном падении", argHints={"$player"}})
+eventEditor.RegisterEvent("OnLand", {
+    {Type="Player", Name="Player ($1 / $player)"}
+}, {category="Character", descEn="Player landed", descRu="Игрок приземлился", argHints={"$player"}})
+eventEditor.RegisterEvent("OnToolRemoved", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="String", Name="Tool ($2 / $tool)"}
+}, {category="Character", descEn="Tool removed from character", descRu="Инструмент убран", argHints={"$player","$tool"}})
+eventEditor.RegisterEvent("OnWalkSpeed", {
+    {Type="Player", Name="Player ($1 / $player)"},
+    {Type="Number", Name="Speed ($2 / $speed)"}
+}, {category="Character", descEn="WalkSpeed changed", descRu="Изменился WalkSpeed", argHints={"$player","$speed"}})
+eventEditor.RegisterEvent("OnMouseClick", {
+    {Type="String", Name="Button ($1 / $button)"}
+}, {category="Input", descEn="Mouse button pressed", descRu="Нажата кнопка мыши", argHints={"$button"}})
+eventEditor.RegisterEvent("OnKeyPress", {
+    {Type="String", Name="Key ($1 / $key)"}
+}, {category="Input", descEn="Keyboard key pressed", descRu="Нажата клавиша", argHints={"$key"}})
+eventEditor.RegisterEvent("OnPromptShown", {
+    {Type="String", Name="Prompt ($1 / $prompt)"}
+}, {category="World", descEn="ProximityPrompt shown to LocalPlayer", descRu="Показан ProximityPrompt", argHints={"$prompt"}})
+eventEditor.RegisterEvent("OnTouched", {
+    {Type="String", Name="Part ($1 / $part)"}
+}, {category="World", descEn="LocalPlayer character touched a part", descRu="Персонаж коснулся части", argHints={"$part"}})
+eventEditor.RegisterEvent("OnCommand", {
+    {Type="String", Name="Command ($1 / $command)"}
+}, {category="Session", descEn="A command is about to execute (skips nested automation)", descRu="Команда сейчас выполнится (без вложенной автоматизации)", argHints={"$command"}})
 
 function hookCharEvents(plr,instant)
     task.spawn(function()
@@ -19794,26 +22214,106 @@ function hookCharEvents(plr,instant)
         IYR_TRACK(humanoid.HealthChanged:Connect(function(health)
             local change = math.abs(oldHealth - health)
             if oldHealth > health then
-                eventEditor.FireEvent("OnDamage",plr.Name,tonumber(health))
+                eventEditor.FireEvent("OnDamage", plr.Name, tonumber(health))
+            elseif health > oldHealth then
+                eventEditor.FireEvent("OnHeal", plr.Name, tonumber(health), tonumber(change))
             end
+            eventEditor.FireEvent("OnHealthBelow", plr.Name, tonumber(health))
             oldHealth = health
         end))
 
         IYR_TRACK(humanoid.Died:Connect(function()
-            eventEditor.FireEvent("OnDied",plr.Name)
-
+            eventEditor.FireEvent("OnDied", plr.Name)
             local killedBy = humanoid:FindFirstChild("creator")
             if killedBy and killedBy.Value and killedBy.Value.Parent then
-                eventEditor.FireEvent("OnKilled",plr.Name,killedBy.Name)
+                eventEditor.FireEvent("OnKilled", plr.Name, killedBy.Value.Name)
             end
         end))
+
+        IYR_TRACK(humanoid.StateChanged:Connect(function(_, new)
+            if new == Enum.HumanoidStateType.Jumping then
+                eventEditor.FireEvent("OnJump", plr.Name)
+            elseif new == Enum.HumanoidStateType.Freefall then
+                eventEditor.FireEvent("OnFall", plr.Name)
+            elseif new == Enum.HumanoidStateType.Landed then
+                eventEditor.FireEvent("OnLand", plr.Name)
+            end
+        end))
+
+        IYR_TRACK(humanoid:GetPropertyChangedSignal("Sit"):Connect(function()
+            if humanoid.Sit then
+                local seat = humanoid.SeatPart and humanoid.SeatPart.Name or "Seat"
+                eventEditor.FireEvent("OnSit", plr.Name, seat)
+            end
+        end))
+
+        IYR_TRACK(char.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") then
+                eventEditor.FireEvent("OnTool", plr.Name, child.Name)
+            end
+        end))
+        IYR_TRACK(char.ChildRemoved:Connect(function(child)
+            if child:IsA("Tool") then
+                eventEditor.FireEvent("OnToolRemoved", plr.Name, child.Name)
+            end
+        end))
+        IYR_TRACK(humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+            eventEditor.FireEvent("OnWalkSpeed", plr.Name, humanoid.WalkSpeed)
+        end))
+        if plr == Players.LocalPlayer then
+            local hrp = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+            if hrp then
+                IYR_TRACK(hrp.Touched:Connect(function(part)
+                    if part then
+                        eventEditor.FireEvent("OnTouched", part.Name)
+                    end
+                end))
+            end
+        end
+        local equipped = char:FindFirstChildOfClass("Tool")
+        if equipped then
+            eventEditor.FireEvent("OnTool", plr.Name, equipped.Name)
+        end
     end)
 end
 
+local _eeChatDedupe = {}
+local function fireOnChatted(playerName, msg)
+    local key = tostring(playerName) .. "\0" .. tostring(msg)
+    local now = tick()
+    local prev = _eeChatDedupe[key]
+    if prev and (now - prev) < 0.05 then return end
+    _eeChatDedupe[key] = now
+    task.delay(1, function()
+        if _eeChatDedupe[key] == now then _eeChatDedupe[key] = nil end
+    end)
+    eventEditor.FireEvent("OnChatted", playerName, msg)
+end
+
 IYR_TRACK(Players.PlayerAdded:Connect(function(plr)
-    eventEditor.FireEvent("OnJoin",plr.Name)
-    IYR_TRACK(plr.Chatted:Connect(function(msg) eventEditor.FireEvent("OnChatted",tostring(plr),msg) end))
-    IYR_TRACK(plr.CharacterAdded:Connect(function() eventEditor.FireEvent("OnSpawn",tostring(plr)) hookCharEvents(plr) end))
+    eventEditor.FireEvent("OnJoin", plr.Name)
+    pcall(function()
+        if Players.LocalPlayer:IsFriendsWith(plr.UserId) then
+            eventEditor.FireEvent("OnFriendJoin", plr.Name)
+        end
+    end)
+    IYR_TRACK(plr.Chatted:Connect(function(msg)
+        fireOnChatted(plr.Name, msg)
+    end))
+    IYR_TRACK(plr.CharacterAdded:Connect(function()
+        eventEditor.FireEvent("OnSpawn", plr.Name)
+        if plr == Players.LocalPlayer then
+            eventEditor.FireEvent("OnLocalSpawn", plr.Name)
+        end
+        hookCharEvents(plr)
+    end))
+    IYR_TRACK(plr.CharacterRemoving:Connect(function()
+        eventEditor.FireEvent("OnCharacterRemoving", plr.Name)
+    end))
+    IYR_TRACK(plr:GetPropertyChangedSignal("Team"):Connect(function()
+        local teamName = plr.Team and plr.Team.Name or "None"
+        eventEditor.FireEvent("OnTeamChanged", plr.Name, teamName)
+    end))
     JoinLog(plr)
     ChatLog(plr)
     if ESPenabled then
@@ -19833,7 +22333,7 @@ if not isLegacyChat then
             if player.UserId == Players.LocalPlayer.UserId then
                 do_exec(message.Text, Players.LocalPlayer)
             end
-            eventEditor.FireEvent("OnChatted", player.Name, message.Text)
+            fireOnChatted(player.Name, message.Text)
             sendChatWebhook(player, message.Text)
         end
     end))
@@ -19841,8 +22341,93 @@ end
 
 for _,plr in pairs(Players:GetPlayers()) do
     pcall(function()
-        IYR_TRACK(plr.CharacterAdded:Connect(function() eventEditor.FireEvent("OnSpawn",tostring(plr)) hookCharEvents(plr) end))
+        IYR_TRACK(plr.Chatted:Connect(function(msg)
+            fireOnChatted(plr.Name, msg)
+        end))
+        IYR_TRACK(plr.CharacterAdded:Connect(function()
+            eventEditor.FireEvent("OnSpawn", plr.Name)
+            if plr == Players.LocalPlayer then
+                eventEditor.FireEvent("OnLocalSpawn", plr.Name)
+            end
+            hookCharEvents(plr)
+        end))
+        IYR_TRACK(plr.CharacterRemoving:Connect(function()
+            eventEditor.FireEvent("OnCharacterRemoving", plr.Name)
+        end))
+        IYR_TRACK(plr:GetPropertyChangedSignal("Team"):Connect(function()
+            local teamName = plr.Team and plr.Team.Name or "None"
+            eventEditor.FireEvent("OnTeamChanged", plr.Name, teamName)
+        end))
         hookCharEvents(plr)
+    end)
+end
+
+-- Input / window / prompt / teleport automation signals
+do
+    local idleSeconds = 0
+    local lastInput = tick()
+    IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gp)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then return end
+        lastInput = tick()
+        idleSeconds = 0
+        if gp then return end
+        if eventEditor and type(eventEditor.IsOpen) == "function" and eventEditor.IsOpen() then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            eventEditor.FireEvent("OnMouseClick", "Left")
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+            eventEditor.FireEvent("OnMouseClick", "Right")
+        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+            eventEditor.FireEvent("OnMouseClick", "Middle")
+        elseif input.UserInputType == Enum.UserInputType.Keyboard then
+            eventEditor.FireEvent("OnKeyPress", input.KeyCode.Name)
+        end
+    end))
+    IYR_TRACK(task.spawn(function()
+        local gen = IYR_GEN
+        while IYR_GEN == gen do
+            task.wait(1)
+            if IYR_GEN ~= gen then return end
+            local idle = math.floor(tick() - lastInput)
+            if idle >= 5 and idle ~= idleSeconds then
+                idleSeconds = idle
+                eventEditor.FireEvent("OnIdle", idle)
+            end
+        end
+    end))
+
+    pcall(function()
+        IYR_TRACK(UserInputService.WindowFocused:Connect(function()
+            eventEditor.FireEvent("OnWindowFocus")
+        end))
+        IYR_TRACK(UserInputService.WindowFocusReleased:Connect(function()
+            eventEditor.FireEvent("OnWindowBlur")
+        end))
+    end)
+
+    pcall(function()
+        IYR_TRACK(ProximityPromptService.PromptTriggered:Connect(function(prompt, player)
+            if player == Players.LocalPlayer then
+                eventEditor.FireEvent("OnPrompt", prompt.Name ~= "" and prompt.Name or prompt:GetFullName())
+            end
+        end))
+    end)
+    pcall(function()
+        IYR_TRACK(ProximityPromptService.PromptShown:Connect(function(prompt)
+            eventEditor.FireEvent("OnPromptShown", prompt.Name ~= "" and prompt.Name or prompt:GetFullName())
+        end))
+    end)
+
+    pcall(function()
+        IYR_TRACK(TeleportService.TeleportInitFailed:Connect(function()
+            eventEditor.FireEvent("OnTeleport", "Failed")
+        end))
+    end)
+    pcall(function()
+        if Players.LocalPlayer and Players.LocalPlayer.OnTeleport then
+            IYR_TRACK(Players.LocalPlayer.OnTeleport:Connect(function(state)
+                eventEditor.FireEvent("OnTeleport", tostring(state))
+            end))
+        end
     end)
 end
 
@@ -20025,33 +22610,36 @@ task.defer(function()
             end,
         })
 
-        function getCount()
-            local ok, sd = pcall(eventEditor.SaveData)
-            if not ok or not sd or sd == "[]" then
-                return 0
-            end
-            local decodedOk, data = pcall(function()
-                return game:FindService("HttpService"):JSONDecode(sd)
-            end)
-            if not decodedOk or type(data) ~= "table" then
-                return 0
-            end
-            local count = 0
-            for _, v in pairs(data) do
-                if type(v) == "table" then
-                    for _ in pairs(v) do
-                    count += 1
+        local function eventBindLabel()
+            local tot = 0
+            if type(eventEditor.GetCounts) == "function" then
+                local _, total = eventEditor.GetCounts()
+                tot = total or 0
+            else
+                local ok, sd = pcall(eventEditor.SaveData)
+                if ok and sd and sd ~= "[]" then
+                    local decodedOk, data = pcall(function()
+                        return game:FindService("HttpService"):JSONDecode(sd)
+                    end)
+                    if decodedOk and type(data) == "table" then
+                        for _, v in pairs(data) do
+                            if type(v) == "table" then
+                                for _ in pairs(v) do
+                                    tot += 1
+                                end
+                            end
+                        end
                     end
                 end
             end
-            return count
+            return T("editEvents") .. " (x" .. tostring(tot) .. ")"
         end
 
-        EventBind.ButtonLabel.Text = "Edit Event Binds" .. " (x" .. getCount() .. ")"
+        EventBind.ButtonLabel.Text = eventBindLabel()
 
         eventEditor.SetOnEdited(function()
             updatesaves()
-            EventBind.ButtonLabel.Text = "Edit Event Binds" .. " (x" .. getCount() .. ")"
+            EventBind.ButtonLabel.Text = eventBindLabel()
         end)
 end)
 
