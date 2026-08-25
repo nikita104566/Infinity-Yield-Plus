@@ -9046,7 +9046,6 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     applyCmdSelection()
 
     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
-    introCommandsReady = true
     if introPlaying then
         -- Keep the panel open while the splash covers the list
     elseif not Ianim then
@@ -22704,6 +22703,7 @@ if aliases and #aliases > 0 then
 end
 
 IYR_TRACK(IYMouse.Move:Connect(checkTT))
+introCommandsReady = true
 
 IYR_TRACK(CaptureService.CaptureBegan:Connect(function()
     PARENT.Enabled = false
