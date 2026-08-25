@@ -469,7 +469,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.4'
+currentVersion = '7.40'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -1129,7 +1129,7 @@ Prefix = Instance.new("TextLabel")
 PrefixBox = Instance.new("TextBox")
 Keybinds = Instance.new("TextLabel")
 StayOpen = Instance.new("TextLabel")
-Button = Instance.new("Frame")
+Button = Instance.new("TextButton")
 On = Instance.new("TextButton")
 Positions = Instance.new("TextLabel")
 EventBind = Instance.new("TextLabel")
@@ -1778,8 +1778,12 @@ Button.BackgroundColor3 = Color3.fromRGB(78, 78, 79)
 Button.BorderSizePixel = 0
 Button.Position = UDim2.new(1, -28, 0.5, -11)
 Button.Size = UDim2.new(0, 22, 0, 22)
+Button.Font = UI_FONT
+Button.Text = ""
+Button.AutoButtonColor = false
 Button.ZIndex = 24
 table.insert(shade3,Button)
+uiStroke(Button, Color3.fromRGB(255, 255, 255), 1, 0.75)
 
 On.Name = "On"
 On.Parent = Button
@@ -1788,10 +1792,11 @@ On.BackgroundTransparency = 1
 On.BorderSizePixel = 0
 On.Position = UDim2.new(0, 3, 0, 3)
 On.Size = UDim2.new(0, 16, 0, 16)
-On.Font = Enum.Font.SourceSans
-On.FontSize = Enum.FontSize.Size14
+On.Font = UI_FONT_MED
+On.TextSize = 14
 On.Text = ""
-On.TextColor3 = Color3.new(0, 0, 0)
+On.TextColor3 = Color3.new(1, 1, 1)
+On.AutoButtonColor = false
 On.ZIndex = 25
 
 LanguageRow = Instance.new("TextLabel")
@@ -1978,7 +1983,7 @@ function styleCmdRow(btn)
 			local m = btn:FindFirstChild("Sel")
 			if m then m.Visible = false end
 		end
-		if not introPlaying and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
+		if not splashBlocksUi() and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
 			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
 		end
 	end)
@@ -2178,8 +2183,8 @@ Logo.ImageTransparency = 0
 Logo.ZIndex = 19
 
 local INTRO_HOLD = 1.0
-local INTRO_FADE_OUT = 0.6
-local INTRO_AUTOHIDE = 0.45
+local INTRO_FADE_OUT = 0.55
+local INTRO_AUTOHIDE = 0.2
 
 introPlaying = true
 introDone = false
@@ -2195,14 +2200,27 @@ function holderHovered()
 	return IYMouse.X >= p.X and IYMouse.X <= p.X + s.X
 		and IYMouse.Y >= p.Y and IYMouse.Y <= p.Y + s.Y
 end
+-- True only while the opaque splash still covers the command list
+function splashBlocksUi()
+	if introDone then return false end
+	if not (IntroBackground and IntroBackground.Parent) then return false end
+	if IntroBackground.Visible == false then return false end
+	return (IntroBackground.BackgroundTransparency or 0) < 0.65
+end
 function scheduleIntroMinimize()
-	-- After splash: collapse quickly unless pinned open, typing, or hovering the panel
-	task.delay(INTRO_AUTOHIDE, function()
-		if StayOpen then return end
-		if Cmdbar and Cmdbar:IsFocused() then return end
-		if holderHovered() then return end
-		if type(minimizeHolder) == "function" then
-			pcall(minimizeHolder)
+	-- Collapse ASAP once commands are visible and the cursor is not on the panel
+	task.spawn(function()
+		task.wait(0.08)
+		for _ = 1, 8 do
+			if StayOpen == true then return end
+			if Cmdbar and Cmdbar:IsFocused() then return end
+			if not holderHovered() then
+				if type(minimizeHolder) == "function" then
+					pcall(minimizeHolder)
+				end
+				return
+			end
+			task.wait(0.1)
 		end
 	end)
 end
@@ -2229,7 +2247,7 @@ function finishIntro()
 			checkTT()
 		end
 	end)
-	-- Do not wait again for commands (that caused a long post-logo hang)
+	-- Hide may already be scheduled at fade-start; schedule again as a safety net
 	scheduleIntroMinimize()
 end
 
@@ -2264,9 +2282,18 @@ do
 			end
 			if introFadeStart == nil then
 				introFadeStart = os.clock()
+				-- Unblock tooltips / minimize as soon as splash starts fading
+				introPlaying = false
 				pcall(function()
 					if IntroBackground then IntroBackground.Active = false end
 				end)
+				task.defer(function()
+					if type(checkTT) == "function" then
+						checkTT()
+					end
+				end)
+				-- Start hide countdown when commands become visible, not after full fade
+				scheduleIntroMinimize()
 			end
 			local e = 1 - math.cos(math.clamp((os.clock() - introFadeStart) / INTRO_FADE_OUT, 0, 1) * math.pi * 0.5)
 			pcall(function()
@@ -7225,11 +7252,19 @@ function closeSettingsPanel(instant)
 	)
 end
 
-if StayOpen == false then
-    On.BackgroundTransparency = 1
-else
-    On.BackgroundTransparency = 0
+function applyStayOpenVisual()
+	if not On then return end
+	if StayOpen == true then
+		On.BackgroundTransparency = 0
+		On.Text = "✓"
+		On.TextColor3 = Color3.new(1, 1, 1)
+	else
+		On.BackgroundTransparency = 1
+		On.Text = ""
+	end
 end
+
+applyStayOpenVisual()
 
 pcall(applyUiLanguage)
 
@@ -7256,17 +7291,18 @@ end
 
 minimizeNum = -28
 function minimizeHolder()
-	if introPlaying then return end
+	-- Allow collapse once splash no longer covers the list (fade started / done)
+	if splashBlocksUi() then return end
 	if StayOpen == false then
-		Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, minimizeNum), "InOut", "Quart", 0.5, true, nil)
-		TweenService:Create(Holder, TweenInfo.new(0.5), { BackgroundTransparency = 0.55 }):Play()
-		TweenService:Create(Title, TweenInfo.new(0.5), { BackgroundTransparency = 0.55 }):Play()
+		Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, minimizeNum), "InOut", "Quart", 0.25, true, nil)
+		TweenService:Create(Holder, TweenInfo.new(0.25), { BackgroundTransparency = 0.55 }):Play()
+		TweenService:Create(Title, TweenInfo.new(0.25), { BackgroundTransparency = 0.55 }):Play()
 		if Tooltip then Tooltip.Visible = false end
 	end
 end
 
 function cmdbarHolder()
-    if introPlaying then return end
+    if splashBlocksUi() then return end
     if StayOpen == false then
         Holder:TweenPosition(UDim2.new(1, Holder.Position.X.Offset, 1, CMDBAR_PEEK), "InOut", "Quart", 0.5, true, nil)
         if Tooltip then Tooltip.Visible = false end
@@ -7456,9 +7492,10 @@ Holder.MouseLeave:Connect(function()
     if not Cmdbar:IsFocused() then
         local reqTime = tick()
         lastMinimizeReq = reqTime
-        task.wait(1.5)
+        task.wait(0.2)
         if lastMinimizeReq ~= reqTime then return end
-        if not Cmdbar:IsFocused() then
+        if StayOpen == true then return end
+        if not Cmdbar:IsFocused() and not holderHovered() then
             minimizeHolder()
         end
     end
@@ -7475,6 +7512,7 @@ function syncThemeChrome()
 	end
 	if On then
 		On.BackgroundColor3 = ACCENT
+		applyStayOpenVisual()
 	end
 	if HelperAccent then
 		HelperAccent.BackgroundColor3 = ACCENT
@@ -8177,18 +8215,16 @@ SettingsButton.MouseButton1Click:Connect(function()
     end
 end)
 
-On.MouseButton1Click:Connect(function()
-    if isHidden == false then
-        if StayOpen == false then
-            StayOpen = true
-            On.BackgroundTransparency = 0
-        else
-            StayOpen = false
-            On.BackgroundTransparency = 1
-        end
-        updatesaves()
-    end
-end)
+local function toggleStayOpen()
+	if isHidden == false then
+		StayOpen = not StayOpen
+		applyStayOpenVisual()
+		updatesaves()
+	end
+end
+
+Button.MouseButton1Click:Connect(toggleStayOpen)
+On.MouseButton1Click:Connect(toggleStayOpen)
 
 LanguageValue.MouseButton1Click:Connect(function()
     uiLang = (uiLang == "ru") and "en" or "ru"
@@ -8690,7 +8726,7 @@ function placeHelper()
     local th = Tooltip.Size.Y.Offset
     if th < 1 then th = 96 end
 
-    local gap = 16
+    local gap = 6
     local x = IYMouse.X + gap
     local y = IYMouse.Y + gap
 
@@ -8733,7 +8769,7 @@ function hideHelper()
 end
 
 function showHelper(title, desc)
-    if not Tooltip or SettingsOpen or introPlaying then
+    if not Tooltip or SettingsOpen or splashBlocksUi() then
         hideHelper()
         return
     end
@@ -9077,7 +9113,7 @@ task.spawn(function()
         local function Index()
             if chatbox.Text:lower():sub(1,1) == prefix then
                 if SettingsOpen == true then
-                    closeSettingsPanel(true)
+                    closeSettingsPanel(false)
                 end
                 IndexContents(PlayerGui.Chat.Frame.ChatBarParentFrame.Frame.BoxFrame.Frame.ChatBar.Text:lower():sub(2),true)
             else
@@ -10546,7 +10582,7 @@ function checkTT()
     if not (Holder and Holder.Parent and Tooltip) then
         return
     end
-    if introPlaying or SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
+    if splashBlocksUi() or SettingsOpen or not Holder.Visible or not CMDsF or not CMDsF.Visible then
         hideHelper()
         return
     end
@@ -10611,6 +10647,14 @@ function checkTT()
     end
     hideHelper()
 end
+
+-- Hover works as soon as the command list exists (do not wait for all addcmd)
+helperMoveConnected = false
+if IYMouse and type(checkTT) == "function" then
+	IYR_TRACK(IYMouse.Move:Connect(checkTT))
+	helperMoveConnected = true
+end
+introCommandsReady = true
 
 function FindInTable(tbl,val)
     if tbl == nil then return false end
@@ -10888,6 +10932,19 @@ function addcmd(name,alias,func,plgn)
         }
     cmds[#cmds+1] = cmd
     indexCmd(cmd)
+end
+
+-- Yield periodically so intro fade / tooltips / autohide can run during bulk registration
+do
+	local realAddcmd = addcmd
+	local addcmdCount = 0
+	addcmd = function(name, alias, func, plgn)
+		realAddcmd(name, alias, func, plgn)
+		addcmdCount += 1
+		if addcmdCount % 35 == 0 then
+			task.wait()
+		end
+	end
 end
 
 function removecmd(cmd)
@@ -11424,7 +11481,7 @@ Cmdbar.Focused:Connect(function()
     historyCount = 0
     canvasPos = CMDsF.CanvasPosition
     if SettingsOpen == true then
-        closeSettingsPanel(true)
+        closeSettingsPanel(false)
     end
     tabComplete = UserInputService.InputBegan:Connect(function(input,gameProcessed)
         if Cmdbar:IsFocused() then
@@ -15135,7 +15192,7 @@ addcmd('hideiy',{'hideiyr'},function(args, speaker)
     wasStayOpen = StayOpen
     if StayOpen == true then
         StayOpen = false
-        On.BackgroundTransparency = 1
+        applyStayOpenVisual()
     end
     minimizeNum = 0
     minimizeHolder()
@@ -15148,7 +15205,7 @@ addcmd('showiy',{'unhideiy', 'showiyr', 'unhideiyr'},function(args, speaker)
     if wasStayOpen then
         maximizeHolder()
         StayOpen = true
-        On.BackgroundTransparency = 0
+        applyStayOpenVisual()
     else
         minimizeHolder()
     end
@@ -22703,8 +22760,10 @@ if aliases and #aliases > 0 then
     refreshaliases()
 end
 
-IYR_TRACK(IYMouse.Move:Connect(checkTT))
-introCommandsReady = true
+if not helperMoveConnected and IYMouse and type(checkTT) == "function" then
+	IYR_TRACK(IYMouse.Move:Connect(checkTT))
+	helperMoveConnected = true
+end
 
 IYR_TRACK(CaptureService.CaptureBegan:Connect(function()
     PARENT.Enabled = false
