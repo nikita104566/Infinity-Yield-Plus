@@ -2196,10 +2196,11 @@ function holderHovered()
 		and IYMouse.Y >= p.Y and IYMouse.Y <= p.Y + s.Y
 end
 function scheduleIntroMinimize()
-	-- After splash: collapse quickly unless pinned open or typing a command
+	-- After splash: collapse quickly unless pinned open, typing, or hovering the panel
 	task.delay(INTRO_AUTOHIDE, function()
 		if StayOpen then return end
 		if Cmdbar and Cmdbar:IsFocused() then return end
+		if holderHovered() then return end
 		if type(minimizeHolder) == "function" then
 			pcall(minimizeHolder)
 		end
