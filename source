@@ -4121,12 +4121,12 @@ dragGUI(PluginEditor)
 dragGUI(ToPartFrame)
 
 eventEditor = (function()
-	local EE_W, EE_H, EE_TITLE = 860, 560, 42
-	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 216, 216, 10, 46
+	local EE_W, EE_H, EE_TITLE = 960, 620, 48
+	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
 	local EE_COL_BOTTOM = EE_GAP + EE_FOOTER_H
-	local EE_FLOW_TOP, EE_ADD_RESERVE = 84, 54
+	local EE_FLOW_TOP, EE_ADD_RESERVE = 88, 58
 	local EE_FLOW_REST = EE_FLOW_TOP + EE_ADD_RESERVE
 	local EE_BG = Color3.fromRGB(9, 9, 13)
 	local EE_PANEL = Color3.fromRGB(18, 18, 26)
@@ -4983,6 +4983,27 @@ eventEditor = (function()
 		return sw
 	end
 
+	runtime.ghostBtn = function(b)
+		b.BackgroundTransparency = 1
+		local stroke = b:FindFirstChildOfClass("UIStroke")
+		if stroke then
+			stroke.Transparency = 1
+		end
+		b.MouseEnter:Connect(function()
+			if b:GetAttribute("EEActive") then
+				return
+			end
+			b.BackgroundTransparency = 0.82
+			b.BackgroundColor3 = EE_SURFACE_HOVER
+		end)
+		b.MouseLeave:Connect(function()
+			if b:GetAttribute("EEActive") then
+				return
+			end
+			b.BackgroundTransparency = 1
+		end)
+	end
+
 	local main = mk("Frame", {
 		Name = randomString(),
 		BackgroundTransparency = 1,
@@ -5023,10 +5044,11 @@ eventEditor = (function()
 		ZIndex = 41,
 	}, top)
 	mk("Frame", {
-		BackgroundColor3 = EE_BORDER,
+		BackgroundColor3 = EE_ACCENT,
+		BackgroundTransparency = 0.35,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 0, 1, -1),
-		Size = UDim2.new(1, 0, 0, 1),
+		Position = UDim2.new(0, 0, 1, -2),
+		Size = UDim2.new(1, 0, 0, 2),
 		ZIndex = 42,
 	}, top)
 
@@ -5035,7 +5057,7 @@ eventEditor = (function()
 		Position = UDim2.new(0, 14, 0, 0),
 		Size = UDim2.new(1, -258, 1, 0),
 		Font = UI_FONT_MED,
-		TextSize = 16,
+		TextSize = 17,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(245, 245, 247),
 		Text = "Automation Studio",
@@ -5044,24 +5066,27 @@ eventEditor = (function()
 	table.insert(text1, title)
 
 	local countLabel = mk("TextLabel", {
-		BackgroundColor3 = Color3.fromRGB(38, 33, 54),
+		BackgroundColor3 = EE_PRIMARY,
 		BackgroundTransparency = 0,
 		Position = UDim2.new(1, -248, 0.5, -14),
 		Size = UDim2.new(0, 72, 0, 28),
 		Font = UI_FONT_MED,
 		TextSize = 11,
 		TextXAlignment = Enum.TextXAlignment.Center,
-		TextColor3 = EE_ACCENT,
+		TextColor3 = EE_TEXT,
 		Text = "0",
 		ZIndex = 42,
 	}, top)
 	uiCorner(countLabel, 8)
-	uiStroke(countLabel, EE_ACCENT, 1, 0.72)
+	uiStroke(countLabel, EE_ACCENT, 1, 0.4)
 
 	local pauseBtn = btn(top, "Pause", UDim2.new(0, 64, 0, 28), UDim2.new(1, -170, 0.5, -14))
 	local histBtn = btn(top, "History", UDim2.new(0, 64, 0, 28), UDim2.new(1, -100, 0.5, -14))
 	local closeBtn = btn(top, "×", UDim2.new(0, 28, 0, 28), UDim2.new(1, -30, 0.5, -14))
-	closeBtn.TextSize = 16
+	closeBtn.TextSize = 18
+	runtime.ghostBtn(pauseBtn)
+	runtime.ghostBtn(histBtn)
+	runtime.ghostBtn(closeBtn)
 
 	local body = mk("Frame", {
 		BackgroundTransparency = 1,
@@ -5079,16 +5104,16 @@ eventEditor = (function()
 		ZIndex = 41,
 	}, body)
 	uiCorner(left, 10)
-	uiStroke(left, EE_BORDER, 1, 0.62)
+	uiStroke(left, EE_BORDER, 1, 0.88)
 	table.insert(shade1, left)
 
 	local searchBox = mk("TextBox", {
 		BackgroundColor3 = EE_SURFACE,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 10, 0, 10),
-		Size = UDim2.new(1, -20, 0, 30),
+		Size = UDim2.new(1, -20, 0, 34),
 		Font = UI_FONT,
-		TextSize = 12,
+		TextSize = 13,
 		Text = "",
 		PlaceholderText = "  Search events...",
 		PlaceholderColor3 = EE_MUTED,
@@ -5097,14 +5122,14 @@ eventEditor = (function()
 		ClearTextOnFocus = false,
 		ZIndex = 42,
 	}, left)
-	uiCorner(searchBox, 8)
+	uiCorner(searchBox, 9)
 	uiStroke(searchBox, EE_BORDER, 1, 0.35)
 	table.insert(shade2, searchBox)
 
 	local catBar = mk("Frame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 8, 0, 46),
+		Position = UDim2.new(0, 8, 0, 50),
 		Size = UDim2.new(1, -16, 0, 48),
 		ZIndex = 42,
 	}, left)
@@ -5112,8 +5137,8 @@ eventEditor = (function()
 	local eventList = mk("ScrollingFrame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 4, 0, 100),
-		Size = UDim2.new(1, -8, 1, -110),
+		Position = UDim2.new(0, 4, 0, 104),
+		Size = UDim2.new(1, -8, 1, -114),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 4,
@@ -5131,7 +5156,7 @@ eventEditor = (function()
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, eventHolder)
 
 	local center = mk("Frame", {
-		BackgroundColor3 = EE_PANEL,
+		BackgroundColor3 = Color3.fromRGB(20, 20, 29),
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, EE_CENTER_X, 0, EE_GAP),
 		Size = UDim2.new(1, -EE_CENTER_W_OFF, 1, -EE_COL_BOTTOM),
@@ -5139,15 +5164,15 @@ eventEditor = (function()
 		ZIndex = 41,
 	}, body)
 	uiCorner(center, 10)
-	uiStroke(center, EE_BORDER, 1, 0.62)
+	uiStroke(center, EE_BORDER, 1, 0.88)
 	table.insert(shade1, center)
 
 	local eventTitle = mk("TextLabel", {
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 12, 0, 8),
-		Size = UDim2.new(1, -24, 0, 20),
+		Size = UDim2.new(1, -24, 0, 22),
 		Font = UI_FONT_MED,
-		TextSize = 16,
+		TextSize = 18,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(245, 245, 247),
 		Text = "Select an event",
@@ -5248,7 +5273,7 @@ eventEditor = (function()
 	local function setPickerVisible(visible, contentHeight)
 		if visible then
 			local height = math.min(130, math.max(24, (contentHeight or 22) + 2))
-			picker.Position = UDim2.new(0, 8, 1, -(48 + height))
+			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
 			picker.Size = UDim2.new(1, -16, 0, height)
 			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
 			picker.Visible = true
@@ -5261,17 +5286,17 @@ eventEditor = (function()
 	local addRow = mk("Frame", {
 		BackgroundColor3 = EE_SURFACE,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 8, 1, -44),
-		Size = UDim2.new(1, -16, 0, 36),
+		Position = UDim2.new(0, 10, 1, -50),
+		Size = UDim2.new(1, -20, 0, 42),
 		ClipsDescendants = false,
 		ZIndex = 44,
 	}, center)
-	uiCorner(addRow, 7)
+	uiCorner(addRow, 10)
 	uiStroke(addRow, EE_BORDER, 1, 0.35)
 	local addBox = mk("TextBox", {
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 10, 0, 0),
-		Size = UDim2.new(1, -88, 1, 0),
+		Size = UDim2.new(1, -96, 1, 0),
 		Font = UI_FONT,
 		TextSize = 14,
 		Text = "",
@@ -5283,7 +5308,7 @@ eventEditor = (function()
 		ClearTextOnFocus = false,
 		ZIndex = 45,
 	}, addRow)
-	local addBtn = btn(addRow, "+ Add", UDim2.new(0, 72, 0, 28), UDim2.new(1, -78, 0.5, -14))
+	local addBtn = btn(addRow, "+ Add", UDim2.new(0, 80, 0, 32), UDim2.new(1, -86, 0.5, -16))
 	addBtn:SetAttribute("EEActive", true)
 	addBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
 	addBtn.BackgroundColor3 = EE_PRIMARY
@@ -5298,7 +5323,7 @@ eventEditor = (function()
 		ZIndex = 41,
 	}, body)
 	uiCorner(right, 10)
-	uiStroke(right, EE_BORDER, 1, 0.62)
+	uiStroke(right, EE_BORDER, 1, 0.88)
 	table.insert(shade1, right)
 
 	local inspTitle = mk("TextLabel", {
@@ -5306,7 +5331,7 @@ eventEditor = (function()
 		Position = UDim2.new(0, 8, 0, 6),
 		Size = UDim2.new(1, -16, 0, 18),
 		Font = UI_FONT_MED,
-		TextSize = 12,
+		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(245, 245, 247),
 		Text = "Inspector",
@@ -5316,8 +5341,8 @@ eventEditor = (function()
 	local inspScroll = mk("ScrollingFrame", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 4, 0, 28),
-		Size = UDim2.new(1, -8, 1, -36),
+		Position = UDim2.new(0, 4, 0, 32),
+		Size = UDim2.new(1, -8, 1, -40),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ScrollBarThickness = 4,
@@ -5398,7 +5423,7 @@ eventEditor = (function()
 		ZIndex = 41,
 	}, body)
 	uiCorner(footer, 7)
-	uiStroke(footer, EE_BORDER, 1, 0.7)
+	uiStroke(footer, EE_BORDER, 1, 0.88)
 	uiPad(footer, 8, 4, 8, 4)
 	mk("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
@@ -5407,14 +5432,14 @@ eventEditor = (function()
 		Padding = UDim.new(0, 6),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, footer)
-	local testEventBtn = btn(footer, "Test Event", UDim2.new(0, 92, 0, 28), UDim2.new(0, 0, 0, 0))
+	local testEventBtn = btn(footer, "Test Event", UDim2.new(0, 108, 0, 32), UDim2.new(0, 0, 0, 0))
 	testEventBtn.LayoutOrder = 1
 	testEventBtn:SetAttribute("EEActive", true)
 	testEventBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
 	testEventBtn.BackgroundColor3 = EE_PRIMARY
-	local clearBtn = btn(footer, "Clear", UDim2.new(0, 54, 0, 28), UDim2.new(0, 0, 0, 0))
+	local clearBtn = btn(footer, "Clear", UDim2.new(0, 58, 0, 32), UDim2.new(0, 0, 0, 0))
 	clearBtn.LayoutOrder = 2
-	local undoBtn = btn(footer, "Undo", UDim2.new(0, 54, 0, 28), UDim2.new(0, 0, 0, 0))
+	local undoBtn = btn(footer, "Undo", UDim2.new(0, 58, 0, 32), UDim2.new(0, 0, 0, 0))
 	undoBtn.LayoutOrder = 3
 	mk("Frame", {
 		BackgroundColor3 = EE_BORDER,
@@ -5423,12 +5448,17 @@ eventEditor = (function()
 		LayoutOrder = 4,
 		ZIndex = 42,
 	}, footer)
-	local presetBtn = btn(footer, "Presets", UDim2.new(0, 64, 0, 28), UDim2.new(0, 0, 0, 0))
+	local presetBtn = btn(footer, "Presets", UDim2.new(0, 72, 0, 32), UDim2.new(0, 0, 0, 0))
 	presetBtn.LayoutOrder = 5
-	local exportBtn = btn(footer, "Export", UDim2.new(0, 58, 0, 28), UDim2.new(0, 0, 0, 0))
+	local exportBtn = btn(footer, "Export", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
 	exportBtn.LayoutOrder = 6
-	local importBtn = btn(footer, "Import", UDim2.new(0, 58, 0, 28), UDim2.new(0, 0, 0, 0))
+	local importBtn = btn(footer, "Import", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
 	importBtn.LayoutOrder = 7
+	runtime.ghostBtn(clearBtn)
+	runtime.ghostBtn(undoBtn)
+	runtime.ghostBtn(presetBtn)
+	runtime.ghostBtn(exportBtn)
+	runtime.ghostBtn(importBtn)
 
 	local importFrame = mk("Frame", {
 		BackgroundColor3 = Color3.fromRGB(22, 22, 32),
@@ -5856,7 +5886,14 @@ eventEditor = (function()
 					addBox.Text = addBox.Text .. spacer .. chip
 					addBox:CaptureFocus()
 				end)
-				b.TextSize = 10
+				b.BackgroundColor3 = EE_SELECTED
+				b.TextColor3 = EE_ACCENT
+				b.TextSize = 11
+				local chipStroke = b:FindFirstChildOfClass("UIStroke")
+				if chipStroke then
+					chipStroke.Color = EE_ACCENT
+					chipStroke.Transparency = 0.5
+				end
 				x += width + 5
 			end
 		end
@@ -5906,7 +5943,7 @@ eventEditor = (function()
 				Font = UI_FONT_MED,
 				TextSize = 11,
 				TextXAlignment = Enum.TextXAlignment.Left,
-				TextColor3 = EE_ACCENT,
+				TextColor3 = EE_MUTED,
 				Text = label,
 				ZIndex = 43,
 			}, inspHolder)
@@ -5919,7 +5956,7 @@ eventEditor = (function()
 			}, l)
 		end
 		local function field(label, value, onCommit)
-			local row = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 44), ZIndex = 43 }, inspHolder)
+			local row = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 48), ZIndex = 43 }, inspHolder)
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
 				Size = UDim2.new(1, 0, 0, 14),
@@ -5934,15 +5971,15 @@ eventEditor = (function()
 				BackgroundColor3 = EE_SURFACE,
 				BorderSizePixel = 0,
 				Position = UDim2.new(0, 0, 0, 16),
-				Size = UDim2.new(1, 0, 0, 24),
+				Size = UDim2.new(1, 0, 0, 28),
 				Font = UI_FONT,
-				TextSize = 11,
+				TextSize = 12,
 				Text = tostring(value or ""),
 				TextColor3 = Color3.fromRGB(245, 245, 247),
 				ClearTextOnFocus = false,
 				ZIndex = 44,
 			}, row)
-			uiCorner(box, 6)
+			uiCorner(box, 8)
 			uiStroke(box, EE_BORDER, 1, 0.5)
 			box.Focused:Connect(function()
 				box.BackgroundColor3 = EE_SURFACE_HOVER
@@ -5976,6 +6013,18 @@ eventEditor = (function()
 				return tostring(v)
 			end
 			if #options <= 2 then
+				if #options == 2 then
+					local a, bopt = options[1], options[2]
+					if (a == "yes" or a == "no") and (bopt == "yes" or bopt == "no") then
+						makeSwitch(row, current == "yes", UDim2.new(1, -38, 0, 18), function()
+							local newV = current == "yes" and "no" or "yes"
+							current = newV
+							onPick(newV)
+							refreshInspector()
+						end)
+						return
+					end
+				end
 				local buttons = {}
 				local function paint()
 					for i, option in ipairs(options) do
@@ -6366,7 +6415,7 @@ eventEditor = (function()
 			layoutOrder += 1
 			local meta = getMeta(cmd)
 			local selected = selectedCmd == cmd
-			local cardH = selected and 92 or 72
+			local cardH = selected and 100 or 70
 			local card = mk("Frame", {
 				BackgroundColor3 = selected and EE_SELECTED or EE_SURFACE,
 				BorderSizePixel = 0,
@@ -6387,15 +6436,15 @@ eventEditor = (function()
 				BackgroundColor3 = muted and EE_MUTED or (selected and EE_ACCENT or EE_PRIMARY),
 				BackgroundTransparency = muted and 0.6 or 0,
 				BorderSizePixel = 0,
-				Position = UDim2.new(0, 0, 0, 10),
-				Size = UDim2.new(0, 3, 1, -20),
+				Position = UDim2.new(0, 0, 0, 0),
+				Size = UDim2.new(0, 3, 1, 0),
 				ZIndex = 44,
 			}, card)
 			uiCorner(strip, 2)
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
 				Position = UDim2.new(0, 16, 0, 8),
-				Size = UDim2.new(1, -28, 0, 20),
+				Size = UDim2.new(1, -56, 0, 20),
 				Font = UI_FONT_MED,
 				TextSize = 13,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -6428,7 +6477,7 @@ eventEditor = (function()
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Position = UDim2.new(0, 0, 0, 0),
-				Size = UDim2.new(1, 0, 0, 46),
+				Size = UDim2.new(1, -50, 0, 44),
 				Text = "",
 				AutoButtonColor = false,
 				ZIndex = 45,
@@ -6441,7 +6490,7 @@ eventEditor = (function()
 			end)
 			local actions = mk("Frame", {
 				BackgroundTransparency = 1,
-				Position = UDim2.new(0, 14, 1, -30),
+				Position = UDim2.new(0, 16, 1, -28),
 				Size = UDim2.new(1, -24, 0, 26),
 				ZIndex = 46,
 			}, card)
@@ -6449,19 +6498,19 @@ eventEditor = (function()
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
-				Padding = UDim.new(0, 2),
+				Padding = UDim.new(0, 6),
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			}, actions)
 			local function actBtn(label, order, width, cb, color)
-				local b = btn(actions, label, UDim2.new(0, width, 0, 26), UDim2.new(0, 0, 0, 0), cb)
+				local b = btn(actions, label, UDim2.new(0, width, 0, 22), UDim2.new(0, 0, 0, 0), cb)
 				b.LayoutOrder = order
 				b.ZIndex = 47
-				b.TextSize = 13
-				b.BackgroundColor3 = EE_SURFACE_HOVER
+				b.TextSize = 12
+				runtime.ghostBtn(b)
 				if color then b.TextColor3 = color end
 				return b
 			end
-			actBtn(meta.enabled == false and T("eeOff") or T("eeOn"), 1, 36, function()
+			makeSwitch(card, meta.enabled ~= false, UDim2.new(1, -46, 0, 10), function()
 				pushUndo()
 				meta.enabled = not (meta.enabled ~= false)
 				markEdited()
@@ -6469,8 +6518,8 @@ eventEditor = (function()
 				refreshInspector()
 				refreshEventList()
 				refreshFlows()
-			end, meta.enabled == false and EE_MUTED or EE_OK)
-			actBtn("↑", 2, 28, function()
+			end)
+			actBtn("↑", 2, 24, function()
 				local pos = table.find(groupPeers, absoluteIndex)
 				if pos and pos > 1 then
 					local other = groupPeers[pos - 1]
@@ -6480,7 +6529,7 @@ eventEditor = (function()
 					refreshFlows()
 				end
 			end)
-			actBtn("↓", 3, 28, function()
+			actBtn("↓", 3, 24, function()
 				local pos = table.find(groupPeers, absoluteIndex)
 				if pos and pos < #groupPeers then
 					local other = groupPeers[pos + 1]
@@ -6676,7 +6725,7 @@ eventEditor = (function()
 			LayoutOrder = layoutOrder,
 			ZIndex = 43,
 		}, flowHolder)
-		local createBtn = btn(createRow, T("eeCreateGroup"), UDim2.new(0, 118, 0, 26), UDim2.new(0, 0, 0, 2), function()
+		local createBtn = btn(createRow, T("eeCreateGroup"), UDim2.new(1, -8, 0, 28), UDim2.new(0, 0, 0, 2), function()
 			promptText(T("eeNewGroup"), "", function(text)
 				local name = normalizeGroupName(text)
 				if isReservedGroupName(name) then
@@ -6695,7 +6744,8 @@ eventEditor = (function()
 				refreshInspector()
 			end)
 		end)
-		createBtn.TextSize = 11
+		createBtn.TextSize = 12
+		runtime.ghostBtn(createBtn)
 		y += 36
 
 		flowList.CanvasSize = UDim2.new(0, 0, 0, y + 12)
@@ -6733,16 +6783,25 @@ eventEditor = (function()
 				local row = mk("Frame", {
 					BackgroundColor3 = selectedEventName == name and EE_SELECTED or EE_SURFACE,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -4, 0, 48),
+					Size = UDim2.new(1, -4, 0, 56),
 					LayoutOrder = order,
 					ZIndex = 43,
 				}, eventHolder)
 				uiCorner(row, 8)
 				uiStroke(row, selectedEventName == name and EE_ACCENT or EE_BORDER, 1, selectedEventName == name and 0.3 or 0.5)
+				local evStrip = mk("Frame", {
+					BackgroundColor3 = selectedEventName == name and EE_ACCENT or EE_PRIMARY,
+					BackgroundTransparency = selectedEventName == name and 0 or 0.55,
+					BorderSizePixel = 0,
+					Size = UDim2.new(0, 3, 1, -12),
+					Position = UDim2.new(0, 0, 0, 6),
+					ZIndex = 44,
+				}, row)
+				uiCorner(evStrip, 2)
 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 12, 0, 6),
+					Position = UDim2.new(0, 14, 0, 8),
 					Size = UDim2.new(1, -104, 0, 18),
 					Font = UI_FONT_MED,
 					TextSize = 13,
@@ -6754,7 +6813,7 @@ eventEditor = (function()
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 12, 0, 26),
+					Position = UDim2.new(0, 14, 0, 30),
 					Size = UDim2.new(1, -86, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
@@ -6806,7 +6865,7 @@ eventEditor = (function()
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 51
+				y += 59
 			end
 		end
 		if #visible == 0 then
@@ -6839,8 +6898,10 @@ eventEditor = (function()
 			catButton:SetAttribute("EEActive", active)
 			catButton:SetAttribute("EEActiveColor", EE_PRIMARY)
 			catButton.BackgroundColor3 = active and EE_PRIMARY or EE_SURFACE
-			catButton.BackgroundTransparency = active and 0 or 0.45
+			catButton.BackgroundTransparency = active and 0 or 1
 			catButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or EE_MUTED
+			local st = catButton:FindFirstChildOfClass("UIStroke")
+			if st then st.Transparency = active and 1 or 0.75 end
 		end
 	end
 	do
