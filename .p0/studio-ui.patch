@@ -1,0 +1,870 @@
+diff --git a/source b/source
+index e14ff78..03b0757 100644
+--- a/source
++++ b/source
+@@ -4126,12 +4126,20 @@ dragGUI(KeybindEditor)
+ dragGUI(PluginEditor)
+ dragGUI(ToPartFrame)
+ 
++-- P0 WATCHDOG: main chunk is near Luau’s 200-local limit; do not add top-level locals. Keep new Studio state inside this IIFE or existing tables.
+ eventEditor = (function()
++	pcall(function()
++		for _, oldStudio in ipairs(ScaledHolder:GetChildren()) do
++			if oldStudio:IsA("Frame") and oldStudio.Size.X.Offset == 1020 and oldStudio.Size.Y.Offset == 660 and oldStudio:FindFirstChild("Shell") then
++				oldStudio:Destroy()
++			end
++		end
++	end)
+ 	local EE_W, EE_H, EE_TITLE = 1020, 660, 50
+ 	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
+ 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
+ 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
+-	local EE_COL_BOTTOM = EE_GAP + EE_FOOTER_H
++	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
+ 	local EE_FLOW_TOP, EE_ADD_RESERVE = 88, 58
+ 	local EE_FLOW_REST = EE_FLOW_TOP + EE_ADD_RESERVE
+ 	local EE_BG = Color3.fromRGB(8, 7, 14)
+@@ -5037,7 +5045,7 @@ eventEditor = (function()
+ 	local top = mk("Frame", {
+ 		BackgroundColor3 = EE_PANEL,
+ 		BorderSizePixel = 0,
+-		Size = UDim2.new(1, 0, 0, EE_TITLE),
++		Size = UDim2.new(1, 0, 0, EE_TITLE + EE_GAP),
+ 		Active = true,
+ 		ZIndex = 41,
+ 	}, shell)
+@@ -5051,49 +5059,107 @@ eventEditor = (function()
+ 		ZIndex = 41,
+ 	}, top)
+ 	mk("Frame", {
++		Name = "EEHeaderDivider",
+ 		BackgroundColor3 = EE_BORDER,
+-		BackgroundTransparency = 0.45,
++		BackgroundTransparency = 0.68,
+ 		BorderSizePixel = 0,
+-		Position = UDim2.new(0, 0, 1, -1),
+-		Size = UDim2.new(1, 0, 0, 1),
++		Position = UDim2.new(0, 12, 1, -1),
++		Size = UDim2.new(1, -24, 0, 1),
+ 		ZIndex = 42,
+ 	}, top)
+ 
+ 	local title = mk("TextLabel", {
+ 		BackgroundTransparency = 1,
+-		Position = UDim2.new(0, 14, 0, 0),
+-		Size = UDim2.new(1, -262, 1, 0),
++		Position = UDim2.fromOffset(54, 0),
++		Size = UDim2.fromOffset(420, 62),
+ 		Font = UI_FONT_MED,
+-		TextSize = 17,
++		TextSize = 16,
+ 		TextXAlignment = Enum.TextXAlignment.Left,
++		TextYAlignment = Enum.TextYAlignment.Center,
+ 		TextColor3 = Color3.fromRGB(245, 245, 247),
+ 		Text = "Automation Studio",
+ 		ZIndex = 42,
+ 	}, top)
+ 	table.insert(text1, title)
++	uiCorner(mk("Frame", {
++		Name = "EEBrandBadge",
++		BackgroundColor3 = Color3.fromRGB(48, 39, 77),
++		BackgroundTransparency = 0.04,
++		BorderSizePixel = 0,
++		Position = UDim2.fromOffset(14, 16),
++		Size = UDim2.fromOffset(30, 30),
++		ZIndex = 43,
++	}, top), 9)
++	uiStroke(top:FindFirstChild("EEBrandBadge"), EE_ACCENT, 1, 0.32)
++	mk("TextLabel", {
++		Name = "EEBrandGlyph",
++		BackgroundTransparency = 1,
++		Size = UDim2.fromScale(1, 1),
++		Font = UI_FONT_MED,
++		TextSize = 10,
++		TextColor3 = Color3.fromRGB(224, 212, 255),
++		Text = "IY",
++		ZIndex = 44,
++	}, top:FindFirstChild("EEBrandBadge"))
++
++	uiCorner(mk("Frame", {
++		Name = "EEHeaderActions",
++		BackgroundColor3 = EE_PANEL,
++		BackgroundTransparency = 1,
++		BorderSizePixel = 0,
++		Position = UDim2.new(1, -282, 0, 0),
++		Size = UDim2.fromOffset(270, 62),
++		ZIndex = 42,
++	}, top), 10)
+ 
+ 	local countLabel = mk("TextLabel", {
+-		BackgroundColor3 = EE_PRIMARY,
++		BackgroundColor3 = EE_SURFACE,
+ 		BackgroundTransparency = 0,
+-		Position = UDim2.new(1, -248, 0.5, -14),
+-		Size = UDim2.new(0, 72, 0, 28),
++		Active = true,
++		Position = UDim2.fromOffset(0, 16),
++		Size = UDim2.fromOffset(80, 30),
+ 		Font = UI_FONT_MED,
+ 		TextSize = 11,
+ 		TextXAlignment = Enum.TextXAlignment.Center,
+-		TextColor3 = EE_TEXT,
++		TextColor3 = EE_MUTED,
+ 		Text = "0",
+-		ZIndex = 42,
+-	}, top)
++		ZIndex = 44,
++	}, top:FindFirstChild("EEHeaderActions"))
+ 	uiCorner(countLabel, 8)
+-	uiStroke(countLabel, EE_ACCENT, 1, 0.4)
+-
+-	local pauseBtn = btn(top, "Pause", UDim2.new(0, 64, 0, 28), UDim2.new(1, -170, 0.5, -14))
+-	local histBtn = btn(top, "History", UDim2.new(0, 64, 0, 28), UDim2.new(1, -100, 0.5, -14))
+-	local closeBtn = btn(top, "×", UDim2.new(0, 28, 0, 28), UDim2.new(1, -30, 0.5, -14))
++	uiStroke(countLabel, EE_BORDER, 1, 0.45)
++	table.insert(shade2, countLabel)
++	uiCorner(mk("Frame", {
++		Name = "EEStatusDot",
++		BackgroundColor3 = EE_MUTED,
++		BorderSizePixel = 0,
++		Position = UDim2.fromOffset(8, 12),
++		Size = UDim2.fromOffset(6, 6),
++		ZIndex = 45,
++	}, countLabel), 6)
++
++	local pauseBtn = btn(top:FindFirstChild("EEHeaderActions"), "Pause", UDim2.fromOffset(64, 30), UDim2.fromOffset(88, 16))
++	local histBtn = btn(top:FindFirstChild("EEHeaderActions"), "History", UDim2.fromOffset(68, 30), UDim2.fromOffset(160, 16))
++	local closeBtn = btn(top:FindFirstChild("EEHeaderActions"), "×", UDim2.fromOffset(34, 30), UDim2.fromOffset(236, 16))
++	pauseBtn.Name = "EEPauseButton"
++	histBtn.Name = "EEHistoryButton"
++	closeBtn.Name = "EECloseButton"
++	pauseBtn.ZIndex = 44
++	histBtn.ZIndex = 44
++	closeBtn.ZIndex = 44
++	pauseBtn.Font = UI_FONT_MED
++	histBtn.Font = UI_FONT_MED
+ 	closeBtn.TextSize = 18
+-	;(getgenv() or _G).IYP_EE_GHOST(pauseBtn)
+-	;(getgenv() or _G).IYP_EE_GHOST(histBtn)
+-	;(getgenv() or _G).IYP_EE_GHOST(closeBtn)
++	pauseBtn:SetAttribute("EEHeaderControl", true)
++	histBtn:SetAttribute("EEHeaderControl", true)
++	closeBtn:SetAttribute("EEHeaderControl", true)
++	closeBtn.MouseEnter:Connect(function()
++		closeBtn.BackgroundColor3 = EE_DANGER
++		closeBtn.BackgroundTransparency = 0.08
++	end)
++	closeBtn.MouseLeave:Connect(function()
++		closeBtn.BackgroundColor3 = EE_SURFACE
++		closeBtn.BackgroundTransparency = 0
++	end)
+ 
+ 	local body = mk("Frame", {
+ 		BackgroundTransparency = 1,
+@@ -5122,7 +5188,7 @@ eventEditor = (function()
+ 		Font = UI_FONT,
+ 		TextSize = 13,
+ 		Text = "",
+-		PlaceholderText = "Search events...",
++		PlaceholderText = "Search events…",
+ 		PlaceholderColor3 = EE_MUTED,
+ 		TextColor3 = Color3.fromRGB(245, 245, 247),
+ 		TextXAlignment = Enum.TextXAlignment.Left,
+@@ -5138,7 +5204,8 @@ eventEditor = (function()
+ 		BackgroundTransparency = 1,
+ 		BorderSizePixel = 0,
+ 		Position = UDim2.new(0, 8, 0, 50),
+-		Size = UDim2.new(1, -16, 0, 48),
++		Size = UDim2.new(1, -16, 0, 0),
++		AutomaticSize = Enum.AutomaticSize.Y,
+ 		ZIndex = 42,
+ 	}, left)
+ 
+@@ -5149,12 +5216,17 @@ eventEditor = (function()
+ 		Size = UDim2.new(1, -8, 1, -114),
+ 		CanvasSize = UDim2.new(0, 0, 0, 0),
+ 		AutomaticCanvasSize = Enum.AutomaticSize.None,
+-		ScrollBarThickness = 4,
+-		ScrollBarImageColor3 = Color3.fromRGB(100, 94, 130),
++		ScrollBarThickness = 5,
++		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
++		ScrollBarImageTransparency = 0.3,
+ 		ZIndex = 42,
+ 	}, left)
+ 	uiPad(eventList, 0, 2, 0, 10)
+ 	table.insert(scroll, eventList)
++	catBar:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
++		eventList.Position = UDim2.new(0, 4, 0, 56 + math.max(44, catBar.AbsoluteSize.Y))
++		eventList.Size = UDim2.new(1, -8, 1, -(66 + math.max(44, catBar.AbsoluteSize.Y)))
++	end)
+ 	local eventHolder = mk("Frame", {
+ 		BackgroundTransparency = 1,
+ 		Size = UDim2.new(1, -4, 0, 0),
+@@ -5274,8 +5346,9 @@ eventEditor = (function()
+ 		Size = UDim2.new(1, -12, 1, -EE_FLOW_REST),
+ 		CanvasSize = UDim2.new(0, 0, 0, 0),
+ 		AutomaticCanvasSize = Enum.AutomaticSize.None,
+-		ScrollBarThickness = 4,
+-		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
++		ScrollBarThickness = 5,
++		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
++		ScrollBarImageTransparency = 0.3,
+ 		ZIndex = 42,
+ 	}, center)
+ 	uiPad(flowList, 0, 0, 0, 8)
+@@ -5295,7 +5368,9 @@ eventEditor = (function()
+ 		Size = UDim2.new(1, -20, 0, 130),
+ 		CanvasSize = UDim2.new(0, 0, 0, 0),
+ 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+-		ScrollBarThickness = 4,
++		ScrollBarThickness = 5,
++		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
++		ScrollBarImageTransparency = 0.3,
+ 		Visible = false,
+ 		ZIndex = 50,
+ 	}, center)
+@@ -5410,14 +5485,58 @@ eventEditor = (function()
+ 		Size = UDim2.new(1, -8, 1, -44),
+ 		CanvasSize = UDim2.new(0, 0, 0, 0),
+ 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+-		ScrollBarThickness = 4,
+-		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
++		ScrollBarThickness = 5,
++		ScrollBarImageColor3 = Color3.fromRGB(124, 116, 166),
++		ScrollBarImageTransparency = 0.3,
++		ScrollingDirection = Enum.ScrollingDirection.Y,
++		ElasticBehavior = Enum.ElasticBehavior.Never,
+ 		ZIndex = 42,
+ 	}, right)
+-	uiPad(inspScroll, 0, 0, 2, 12)
++	uiPad(inspScroll, 0, 0, 2, 28)
++	mk("UIGradient", {
++		Rotation = 90,
++		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }),
++	}, mk("Frame", {
++		Name = "EEInspTopFade",
++		BackgroundColor3 = Color3.fromRGB(18, 17, 28),
++		BorderSizePixel = 0,
++		Position = UDim2.new(0, 4, 0, 36),
++		Size = UDim2.new(1, -14, 0, 10),
++		Visible = false,
++		ZIndex = 48,
++	}, right))
++	mk("UIGradient", {
++		Rotation = 270,
++		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }),
++	}, mk("Frame", {
++		Name = "EEInspBottomFade",
++		BackgroundColor3 = Color3.fromRGB(18, 17, 28),
++		BorderSizePixel = 0,
++		Position = UDim2.new(0, 4, 1, -18),
++		Size = UDim2.new(1, -14, 0, 10),
++		Visible = false,
++		ZIndex = 48,
++	}, right))
++	uiCorner(mk("TextLabel", {
++		Name = "EEInspTooltip",
++		BackgroundColor3 = Color3.fromRGB(12, 11, 20),
++		BackgroundTransparency = 0.02,
++		BorderSizePixel = 0,
++		AnchorPoint = Vector2.new(0.5, 0),
++		Position = UDim2.fromOffset(124, 76),
++		Size = UDim2.fromOffset(58, 24),
++		Font = UI_FONT_MED,
++		TextSize = 10,
++		TextColor3 = EE_TEXT,
++		Text = "",
++		Visible = false,
++		ZIndex = 120,
++	}, right), 7)
++	uiStroke(right:FindFirstChild("EEInspTooltip"), EE_ACCENT, 1, 0.25)
++
+ 	local inspHolder = mk("Frame", {
+ 		BackgroundTransparency = 1,
+-		Size = UDim2.new(1, -4, 0, 0),
++		Size = UDim2.new(1, -10, 0, 0),
+ 		AutomaticSize = Enum.AutomaticSize.Y,
+ 		ZIndex = 42,
+ 	}, inspScroll)
+@@ -5478,12 +5597,18 @@ eventEditor = (function()
+ 		end
+ 		inspDrop.Visible = true
+ 	end
+-	inspScroll:GetPropertyChangedSignal("CanvasPosition"):Connect(hideInspDrop)
++	inspScroll:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
++		hideInspDrop()
++		local topFade = right:FindFirstChild("EEInspTopFade")
++		local bottomFade = right:FindFirstChild("EEInspBottomFade")
++		if topFade then topFade.Visible = inspScroll.CanvasPosition.Y > 1 end
++		if bottomFade then bottomFade.Visible = inspScroll.CanvasPosition.Y + inspScroll.AbsoluteWindowSize.Y < inspScroll.AbsoluteCanvasSize.Y - 1 end
++	end)
+ 
+ 	local footer = mk("Frame", {
+ 		BackgroundColor3 = EE_PANEL,
+ 		BackgroundTransparency = 0,
+-		Position = UDim2.new(0, EE_GAP, 1, -(EE_FOOTER_H - 4)),
++		Position = UDim2.new(0, EE_GAP, 1, -(EE_FOOTER_H + 4)),
+ 		Size = UDim2.new(1, -EE_GAP * 2, 0, EE_FOOTER_H - 8),
+ 		ZIndex = 41,
+ 	}, body)
+@@ -5497,27 +5622,27 @@ eventEditor = (function()
+ 		Padding = UDim.new(0, 6),
+ 		SortOrder = Enum.SortOrder.LayoutOrder,
+ 	}, footer)
+-	local testEventBtn = btn(footer, "Test Event", UDim2.new(0, 108, 0, 32), UDim2.new(0, 0, 0, 0))
++	local testEventBtn = btn(footer, "▶  Test Event", UDim2.new(0, 108, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	testEventBtn.LayoutOrder = 1
+ 	testEventBtn:SetAttribute("EEActive", true)
+ 	testEventBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
+ 	testEventBtn.BackgroundColor3 = EE_PRIMARY
+ 	local clearBtn = btn(footer, "Clear", UDim2.new(0, 58, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	clearBtn.LayoutOrder = 2
+-	local undoBtn = btn(footer, "Undo", UDim2.new(0, 58, 0, 32), UDim2.new(0, 0, 0, 0))
++	local undoBtn = btn(footer, "←  Undo", UDim2.new(0, 58, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	undoBtn.LayoutOrder = 3
+ 	mk("Frame", {
+-		BackgroundColor3 = EE_BORDER,
++		BackgroundTransparency = 1,
+ 		BorderSizePixel = 0,
+-		Size = UDim2.new(0, 1, 0, 18),
++		Size = UDim2.new(0, 4, 0, 1),
+ 		LayoutOrder = 4,
+ 		ZIndex = 42,
+ 	}, footer)
+ 	local presetBtn = btn(footer, "Presets", UDim2.new(0, 72, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	presetBtn.LayoutOrder = 5
+-	local exportBtn = btn(footer, "Export", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
++	local exportBtn = btn(footer, "↑  Export", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	exportBtn.LayoutOrder = 6
+-	local importBtn = btn(footer, "Import", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
++	local importBtn = btn(footer, "↓  Import", UDim2.new(0, 64, 0, 32), UDim2.new(0, 0, 0, 0))
+ 	importBtn.LayoutOrder = 7
+ 
+ 	local importFrame = mk("Frame", {
+@@ -5818,7 +5943,11 @@ eventEditor = (function()
+ 	local function updateCountLabel()
+ 		local en, tot = totalCounts()
+ 		countLabel.Text = tot == 0 and "0" or string.format(T("eeFlowCount"), en, tot)
+-		countLabel.TextColor3 = tot > 0 and EE_ACCENT or EE_MUTED
++		local headerStateColor = en > 0 and EE_ACCENT or (tot > 0 and Color3.fromRGB(232, 188, 118) or EE_MUTED)
++		countLabel.TextColor3 = headerStateColor
++		if countLabel:FindFirstChild("EEStatusDot") then countLabel.EEStatusDot.BackgroundColor3 = headerStateColor end
++		local headerStroke = countLabel:FindFirstChildOfClass("UIStroke")
++		if headerStroke then headerStroke.Color = EE_BORDER headerStroke.Transparency = 0.45 end
+ 		title.Text = T("autoStudio")
+ 	end
+ 
+@@ -6006,22 +6135,41 @@ eventEditor = (function()
+ 	end
+ 
+ 	refreshInspector = function()
++		local activeHint = right:FindFirstChild("EEInspTooltip")
++		if activeHint then activeHint.Visible = false end
+ 		hideInspDrop()
+ 		for _, c in ipairs(inspHolder:GetChildren()) do
+ 			if c:IsA("GuiObject") and c.Name ~= "UIListLayout" then c:Destroy() end
+ 		end
+ 		local function section(label)
++			local sectionRow = mk("Frame", {
++				BackgroundColor3 = Color3.fromRGB(25, 23, 38),
++				BackgroundTransparency = 0.12,
++				BorderSizePixel = 0,
++				Size = UDim2.new(1, -4, 0, 22),
++				ZIndex = 43,
++			}, inspHolder)
++			uiCorner(sectionRow, 6)
++			uiCorner(mk("Frame", {
++				Name = "EESectionDot",
++				BackgroundColor3 = EE_ACCENT,
++				BorderSizePixel = 0,
++				Position = UDim2.new(0, 8, 0.5, -2),
++				Size = UDim2.new(0, 4, 0, 4),
++				ZIndex = 44,
++			}, sectionRow), 4)
+ 			mk("TextLabel", {
+ 				BackgroundTransparency = 1,
+-				Size = UDim2.new(1, -4, 0, 18),
++				Position = UDim2.new(0, 18, 0, 0),
++				Size = UDim2.new(1, -22, 1, 0),
+ 				Font = UI_FONT_MED,
+-				TextSize = 11,
++				TextSize = 10,
+ 				TextXAlignment = Enum.TextXAlignment.Left,
+-				TextYAlignment = Enum.TextYAlignment.Bottom,
+-				TextColor3 = EE_MUTED,
++				TextYAlignment = Enum.TextYAlignment.Center,
++				TextColor3 = EE_ACCENT,
+ 				Text = label,
+-				ZIndex = 43,
+-			}, inspHolder)
++				ZIndex = 44,
++			}, sectionRow)
+ 		end
+ 		local function field(label, value, onCommit)
+ 			local row = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 44), ZIndex = 43 }, inspHolder)
+@@ -6052,9 +6200,13 @@ eventEditor = (function()
+ 			uiPad(box, 8, 0, 8, 0)
+ 			box.Focused:Connect(function()
+ 				box.BackgroundColor3 = EE_SURFACE_HOVER
++				local stroke = box:FindFirstChildOfClass("UIStroke")
++				if stroke then stroke.Color = EE_ACCENT; stroke.Transparency = 0.08 end
+ 			end)
+ 			box.FocusLost:Connect(function()
+ 				box.BackgroundColor3 = EE_SURFACE
++				local stroke = box:FindFirstChildOfClass("UIStroke")
++				if stroke then stroke.Color = EE_BORDER; stroke.Transparency = 0.5 end
+ 				if onCommit then onCommit(box.Text) end
+ 			end)
+ 			return box
+@@ -6277,23 +6429,70 @@ eventEditor = (function()
+ 			end
+ 		end
+ 		local acts = mk("Frame", {
+-			BackgroundTransparency = 1,
+-			Size = UDim2.new(1, -4, 0, 28),
++			BackgroundColor3 = Color3.fromRGB(22, 20, 34),
++			BorderSizePixel = 0,
++			Size = UDim2.new(1, -4, 0, 34),
+ 			ZIndex = 43,
+ 		}, inspHolder)
++		uiCorner(acts, 8)
++		uiStroke(acts, EE_BORDER, 1, 0.62)
++		uiPad(acts, 4, 2, 4, 2)
+ 		mk("UIListLayout", {
+ 			FillDirection = Enum.FillDirection.Horizontal,
+-			HorizontalAlignment = Enum.HorizontalAlignment.Left,
++			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+ 			VerticalAlignment = Enum.VerticalAlignment.Center,
+ 			Padding = UDim.new(0, 4),
+ 			SortOrder = Enum.SortOrder.LayoutOrder,
+ 		}, acts)
+ 		local function inspAct(label, order, width, cb, color)
+-			local b = btn(acts, label, UDim2.new(0, width, 0, 24), UDim2.new(0, 0, 0, 0), cb)
++			local enabled = true
++			if order == 1 or order == 2 then
++				local pos = table.find(peers, cmdIndex)
++				enabled = pos ~= nil and ((order == 1 and pos > 1) or (order == 2 and pos < #peers))
++			elseif order == 3 or order == 4 then
++				enabled = tostring(cmd[1] or "") ~= ""
++			end
++			local b = btn(acts, label, UDim2.new(0, 31, 0, 30), UDim2.new(0, 0, 0, 0), cb)
++			local baseColor = enabled and (order == 3 and EE_PRIMARY or Color3.fromRGB(34, 31, 50)) or Color3.fromRGB(24, 23, 34)
++			if order == 5 then
++				b.Text = ""
++				local back = mk("Frame", { Name = "CopyIconBack", BackgroundTransparency = 1, BorderSizePixel = 0, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 2, 0.5, -2), Size = UDim2.new(0, 8, 0, 8), ZIndex = 48 }, b)
++				uiCorner(back, 2)
++				uiStroke(back, EE_MUTED, 1, 0.08)
++				local front = mk("Frame", { Name = "CopyIconFront", BackgroundTransparency = 1, BorderSizePixel = 0, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, -2, 0.5, 2), Size = UDim2.new(0, 8, 0, 8), ZIndex = 49 }, b)
++				uiCorner(front, 2)
++				uiStroke(front, EE_MUTED, 1, 0.08)
++			end
++			local hintText = order == 1 and "Move up" or (order == 2 and "Move down" or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
+ 			b.LayoutOrder = order
+ 			b.ZIndex = 47
+-			b.TextSize = 11
+-			;(getgenv() or _G).IYP_EE_GHOST(b)
++			b.TextSize = 14
++			b.TextTransparency = enabled and 0 or 0.52
++			b.BackgroundColor3 = baseColor
++			b.Active = enabled
++			pcall(function() b.Interactable = enabled end)
++			b:SetAttribute("EEActive", true)
++			b:SetAttribute("EEActiveColor", baseColor)
++			b.MouseEnter:Connect(function()
++				if enabled then b.BackgroundColor3 = order == 3 and EE_ACCENT or EE_SURFACE_HOVER end
++				local hint = right:FindFirstChild("EEInspTooltip")
++				if hint then
++					local hintWidth = math.max(58, (utf8.len(hintText) or #hintText) * 6 + 16)
++					local hintX = b.AbsolutePosition.X - right.AbsolutePosition.X + b.AbsoluteSize.X * 0.5
++					hintX = math.clamp(hintX, hintWidth * 0.5 + 8, right.AbsoluteSize.X - hintWidth * 0.5 - 8)
++					local hintY = b.AbsolutePosition.Y - right.AbsolutePosition.Y + b.AbsoluteSize.Y + 5
++					if hintY + 24 > right.AbsoluteSize.Y - 8 then hintY = b.AbsolutePosition.Y - right.AbsolutePosition.Y - 29 end
++					hint.Text = hintText
++					hint.Size = UDim2.fromOffset(hintWidth, 24)
++					hint.Position = UDim2.fromOffset(hintX, hintY)
++					hint.Visible = true
++				end
++			end)
++			b.MouseLeave:Connect(function()
++				b.BackgroundColor3 = baseColor
++				local hint = right:FindFirstChild("EEInspTooltip")
++				if hint then hint.Visible = false end
++			end)
+ 			if color then b.TextColor3 = color end
+ 			return b
+ 		end
+@@ -6325,11 +6524,11 @@ eventEditor = (function()
+ 			pcall(function() execCmd(finalCmd) end)
+ 			notify(T("eeRun"), finalCmd)
+ 		end)
+-		inspAct(T("eePreview"), 4, 52, function()
++		inspAct("◉", 4, 24, function()
+ 			local args = testArgsFor(ev)
+ 			notify(T("eePreview"), substitute(cmd[1], args, selectedEventName))
+ 		end)
+-		inspAct(T("eeCopy"), 5, 40, function()
++		inspAct("", 5, 24, function()
+ 			pushUndo()
+ 			local copy = deepCopy(cmd)
+ 			getMeta(copy)
+@@ -6340,7 +6539,7 @@ eventEditor = (function()
+ 			refreshEventList()
+ 			refreshInspector()
+ 		end)
+-		inspAct(T("eeDel"), 6, 34, function()
++		inspAct("×", 6, 24, function()
+ 			pushUndo()
+ 			cancelPendingFor(cmd)
+ 			table.remove(ev.commands, cmdIndex)
+@@ -6585,9 +6784,14 @@ eventEditor = (function()
+ 			end
+ 		end
+ 		inspScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(y, 200))
++		task.defer(function()
++			local bottomFade = right:FindFirstChild("EEInspBottomFade")
++			if bottomFade then bottomFade.Visible = inspScroll.AbsoluteCanvasSize.Y > inspScroll.AbsoluteWindowSize.Y + 1 end
++		end)
+ 		local selKey = tostring(cmd)
+ 		if inspHolder:GetAttribute("EESel") ~= selKey then
+ 			inspHolder:SetAttribute("EESel", selKey)
++			inspScroll.CanvasPosition = Vector2.new(0, 0)
+ 			inspHolder.Position = UDim2.new(0, 14, 0, 0)
+ 			local sc = inspHolder:FindFirstChildOfClass("UIScale")
+ 			if sc then sc:Destroy() end
+@@ -6617,8 +6821,9 @@ eventEditor = (function()
+ 				TweenService:Create(entry.card, tw, { BackgroundColor3 = col }):Play()
+ 				local stroke = entry.card:FindFirstChildOfClass("UIStroke")
+ 				if stroke then
+-					stroke.Color = EE_BORDER
+-					TweenService:Create(stroke, tw, { Transparency = sel and 0.45 or 1 }):Play()
++					local stateColor = entry.card:GetAttribute("EEStateColor")
++					stroke.Color = stateColor or EE_BORDER
++					TweenService:Create(stroke, tw, { Transparency = stateColor and (sel and 0.3 or 0.55) or (sel and 0.45 or 1) }):Play()
+ 				end
+ 			end
+ 		end
+@@ -6650,7 +6855,7 @@ eventEditor = (function()
+ 				summary = T("eeNoConditions")
+ 			end
+ 			local gname = normalizeGroupName(meta.group)
+-			if gname ~= "" then
++			if gname ~= "" and not parentFrame then
+ 				summary = gname .. " · " .. summary
+ 			end
+ 			local showSummary = summary ~= T("eeNoConditions")
+@@ -6671,10 +6876,49 @@ eventEditor = (function()
+ 			if muted and not selected then
+ 				card.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+ 			end
++			local cardState, cardStateColor = nil, nil
++			do
++				local rtc = nil
++				pcall(function() rtc = getRuntime(cmd) end)
++				local rtErr = nil
++				if type(rtc) == "table" then rtErr = rtc.lastError or rtc.error or rtc.err end
++				if rtErr ~= nil and tostring(rtErr) ~= "" then
++					cardState, cardStateColor = "ERROR", EE_DANGER
++				elseif meta.enabled == false then
++					cardState, cardStateColor = "OFF", Color3.fromRGB(132, 128, 154)
++				elseif ev.enabled == false then
++					cardState, cardStateColor = "PAUSED", Color3.fromRGB(232, 188, 118)
++				elseif not isGroupEnabled(ev, meta.group) then
++					cardState, cardStateColor = "GROUP OFF", Color3.fromRGB(232, 188, 118)
++				end
++			end
++			if cardState then
++				card:SetAttribute("EEStateColor", cardStateColor)
++				local cardStroke = card:FindFirstChildOfClass("UIStroke")
++				if cardStroke then
++					cardStroke.Color = selected and EE_ACCENT or cardStateColor
++					cardStroke.Transparency = selected and 0.12 or 0.68
++				end
++				local badge = mk("TextLabel", {
++					BackgroundColor3 = cardStateColor,
++					BackgroundTransparency = 0.84,
++					BorderSizePixel = 0,
++					Position = UDim2.new(1, -62 - (#cardState * 7 + 14), 0, showSummary and 9 or 15),
++					Size = UDim2.new(0, #cardState * 7 + 14, 0, 18),
++					Font = UI_FONT_MED,
++					TextSize = 10,
++					TextXAlignment = Enum.TextXAlignment.Center,
++					TextColor3 = cardStateColor,
++					Text = cardState,
++					ZIndex = 46,
++				}, card)
++				uiCorner(badge, 6)
++				uiStroke(badge, cardStateColor, 1, 0.58)
++			end
+ 			mk("TextLabel", {
+ 				BackgroundTransparency = 1,
+ 				Position = UDim2.new(0, 12, 0, showSummary and 8 or 14),
+-				Size = UDim2.new(1, -56, 0, 20),
++				Size = UDim2.new(1, cardState and -(100 + #cardState * 7) or -64, 0, 20),
+ 				Font = UI_FONT_MED,
+ 				TextSize = 14,
+ 				TextXAlignment = Enum.TextXAlignment.Left,
+@@ -6687,7 +6931,7 @@ eventEditor = (function()
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+ 					Position = UDim2.new(0, 12, 0, 28),
+-					Size = UDim2.new(1, -56, 0, 16),
++					Size = UDim2.new(1, -64, 0, 16),
+ 					Font = UI_FONT,
+ 					TextSize = 11,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
+@@ -6761,6 +7005,15 @@ eventEditor = (function()
+ 				ZIndex = 43,
+ 			}, parentFrame or flowHolder)
+ 			uiCorner(header, 8)
++			local function styleFoldIcon(button, collapsed)
++				button.Text = ""
++				local horizontal = mk("Frame", { BackgroundColor3 = EE_MUTED, BorderSizePixel = 0, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 10, 0, 2), ZIndex = 47 }, button)
++				uiCorner(horizontal, 1)
++				if collapsed then
++					local vertical = mk("Frame", { BackgroundColor3 = EE_MUTED, BorderSizePixel = 0, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 2, 0, 10), ZIndex = 47 }, button)
++					uiCorner(vertical, 1)
++				end
++			end
+ 			local rightPad = named and 168 or 50
+ 			mk("TextLabel", {
+ 				BackgroundTransparency = 1,
+@@ -6821,16 +7074,18 @@ eventEditor = (function()
+ 				end)
+ 				play.LayoutOrder = 2
+ 				play.TextSize = 12
+-				;(getgenv() or _G).IYP_EE_GHOST(play)
+-				local fold = btn(controls, st.collapsed and "+" or "-", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
++				play:SetAttribute("EEActive", true)
++				play:SetAttribute("EEActiveColor", EE_PRIMARY)
++				play.BackgroundColor3 = EE_PRIMARY
++				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
+ 					st.collapsed = not st.collapsed
+ 					markEdited()
+ 					refreshFlows()
+ 				end)
+ 				fold.LayoutOrder = 3
+-				fold.TextSize = 14
+-				;(getgenv() or _G).IYP_EE_GHOST(fold)
+-				local rename = btn(controls, "R", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
++				styleFoldIcon(fold, st.collapsed)
++
++				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
+ 					promptText(T("eeRenameGroup"), groupName, function(text)
+ 						local newName = normalizeGroupName(text)
+ 						if isReservedGroupName(newName) then
+@@ -6850,9 +7105,9 @@ eventEditor = (function()
+ 					end)
+ 				end)
+ 				rename.LayoutOrder = 4
+-				rename.TextSize = 13
+-				;(getgenv() or _G).IYP_EE_GHOST(rename)
+-				local del = btn(controls, "X", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
++				rename.TextSize = 10
++
++				local del = btn(controls, "×", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
+ 					taskConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
+ 						pushUndo()
+ 						deleteGroup(ev, groupName)
+@@ -6866,15 +7121,15 @@ eventEditor = (function()
+ 				del.LayoutOrder = 5
+ 				del.TextColor3 = EE_DANGER
+ 				del.TextSize = 13
+-				;(getgenv() or _G).IYP_EE_GHOST(del)
++
+ 			else
+-				local fold = btn(header, st.collapsed and "+" or "-", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
++				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
+ 					st.collapsed = not st.collapsed
+ 					markEdited()
+ 					refreshFlows()
+ 				end)
+-				fold.TextSize = 14
+-				;(getgenv() or _G).IYP_EE_GHOST(fold)
++				styleFoldIcon(fold, st.collapsed)
++
+ 			end
+ 			y += named and 46 or 26
+ 			return st
+@@ -7017,14 +7272,14 @@ eventEditor = (function()
+ 				local selectedRow = selectedEventName == name
+ 				local row = mk("Frame", {
+ 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
+-					BackgroundTransparency = selectedRow and 0 or 1,
++					BackgroundTransparency = selectedRow and 0 or 0.72,
+ 					BorderSizePixel = 0,
+ 					Size = UDim2.new(1, -4, 0, 52),
+ 					LayoutOrder = order,
+ 					ZIndex = 43,
+ 				}, eventHolder)
+ 				uiCorner(row, 8)
+-				uiStroke(row, EE_BORDER, 1, selectedRow and 0.7 or 1)
++				uiStroke(row, selectedRow and EE_ACCENT or EE_BORDER, 1, selectedRow and 0.24 or 0.9)
+ 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+@@ -7065,7 +7320,7 @@ eventEditor = (function()
+ 				end)
+ 				hit.MouseLeave:Connect(function()
+ 					if selectedEventName ~= name then
+-						row.BackgroundTransparency = 1
++						row.BackgroundTransparency = 0.72
+ 					end
+ 				hit.MouseButton1Click:Connect(function()
+@@ -7085,13 +7340,13 @@ eventEditor = (function()
+ 				end)
+ 				if tot > 0 then
+ 					local badge = mk("TextLabel", {
+-						BackgroundColor3 = en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40),
++						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
+ 						BorderSizePixel = 0,
+ 						Position = UDim2.new(1, -92, 0.5, -9),
+ 						Size = UDim2.new(0, 42, 0, 18),
+ 						Font = UI_FONT_MED,
+ 						TextSize = 10,
+-						TextColor3 = en > 0 and EE_ACCENT or EE_MUTED,
++						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
+ 						Text = en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)),
+ 						ZIndex = 44,
+ 					}, row)
+@@ -7138,33 +7393,51 @@ eventEditor = (function()
+ 	end
+ 	do
+ 		local catRows = {}
+-		for rowIndex = 1, 2 do
+-			local row = mk("Frame", {
+-				BackgroundTransparency = 1,
+-				Position = UDim2.new(0, 0, 0, (rowIndex - 1) * 23),
+-				Size = UDim2.new(1, 0, 0, 22),
+-				ZIndex = 42,
+-			}, catBar)
+-			mk("UIListLayout", {
++		catRows[1] = mk("Frame", {
++			BackgroundTransparency = 1,
++			Position = UDim2.new(0, 0, 0, 0),
++			Size = UDim2.new(1, 0, 0, 0),
++			AutomaticSize = Enum.AutomaticSize.Y,
++			ZIndex = 42,
++		}, catBar)
++		catRows[2] = catRows[1]
++		do
++			local catFlow = mk("UIListLayout", {
+ 				FillDirection = Enum.FillDirection.Horizontal,
+ 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+ 				VerticalAlignment = Enum.VerticalAlignment.Center,
+-				Padding = UDim.new(0, 4),
++				Padding = UDim.new(0, 5),
+ 				SortOrder = Enum.SortOrder.LayoutOrder,
+-			}, row)
+-			catRows[rowIndex] = row
++			}, catRows[1])
++			if not pcall(function() catFlow.Wraps = true end) then
++				catRows[1].AutomaticSize = Enum.AutomaticSize.None
++				catRows[1].Size = UDim2.new(1, 0, 0, 26)
++				catRows[2] = mk("Frame", {
++					BackgroundTransparency = 1,
++					Position = UDim2.new(0, 0, 0, 29),
++					Size = UDim2.new(1, 0, 0, 26),
++					ZIndex = 42,
++				}, catBar)
++				mk("UIListLayout", {
++					FillDirection = Enum.FillDirection.Horizontal,
++					HorizontalAlignment = Enum.HorizontalAlignment.Left,
++					VerticalAlignment = Enum.VerticalAlignment.Center,
++					Padding = UDim.new(0, 5),
++					SortOrder = Enum.SortOrder.LayoutOrder,
++				}, catRows[2])
++			end
+ 		end
+ 		for index, cat in ipairs(cats) do
+-			local parent = index <= 4 and catRows[1] or catRows[2]
+-			local b = btn(parent, categoryText(cat), UDim2.new(0, 0, 0, 20), UDim2.new(0, 0, 0, 0), function()
++			local parent = (catRows[2] ~= catRows[1] and index > 4) and catRows[2] or catRows[1]
++			local b = btn(parent, categoryText(cat), UDim2.new(0, 0, 0, 24), UDim2.new(0, 0, 0, 0), function()
+ 				eventCategory = cat
+ 				styleCategories()
+ 				eventList.CanvasPosition = Vector2.new(0, 0)
+ 				refreshEventList()
+ 			end)
+ 			b.AutomaticSize = Enum.AutomaticSize.X
+-			uiPad(b, 7, 0, 7, 0)
+-			b.TextSize = 10
++			uiPad(b, 8, 0, 8, 0)
++			b.TextSize = 11
+ 			b.LayoutOrder = index
+ 			catButtons[cat] = b
+ 		end
+@@ -7459,7 +7732,7 @@ eventEditor = (function()
+ 
+ 	local function uiFit()
+ 		local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(EE_W + 24, EE_H + 24)
+-		return math.min(1, math.max(0.72, (viewport.X - 24) / EE_W), math.max(0.72, (viewport.Y - 24) / EE_H))
++		return math.min(1, math.max(0.45, (viewport.X - 16) / EE_W), math.max(0.45, (viewport.Y - 16) / EE_H))
+ 	end
+ 
+ 	local function eeOpenPos()
+@@ -7476,6 +7749,17 @@ eventEditor = (function()
+ 		if g < 0.2 then g = 0.2 end
+ 		return UDim2.new(0.5, -(EE_W * fit) / 2, 0, -(EE_H * fit) / g - 80)
+ 	end
++	pcall(function()
++		local camera = workspace.CurrentCamera
++		if camera then
++			IYR_TRACK(camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
++				if not main.Visible then return end
++				local fit = uiFit()
++				mainScale.Scale = fit
++				main.Position = eeOpenPos()
++			end))
++		end
++	end)
+ 
+ 	local function closeStudio()
+ 		setPickerVisible(false)
+@@ -7640,6 +7924,30 @@ eventEditor = (function()
+ 		refreshInspector()
+ 		notify(T("autoStudio"), T("eeUndoOk"))
+ 	end)
++	IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessed)
++		if gameProcessed or not main.Visible then return end
++		local ctrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
++		if not ctrl then return end
++		if input.KeyCode == Enum.KeyCode.F then
++			searchBox:CaptureFocus()
++			return
++		end
++		if input.KeyCode ~= Enum.KeyCode.Z or UserInputService:GetFocusedTextBox() then return end
++		local snap = undoHistory[#undoHistory]
++		if not snap then
++			notify(T("autoStudio"), T("eeNothingUndo"))
++			return
++		end
++		undoHistory[#undoHistory] = nil
++		applySnap(snap)
++		selectedCmd = nil
++		markEdited()
++		updateCountLabel()
++		refreshFlows()
++		refreshEventList()
++		refreshInspector()
++		notify(T("autoStudio"), T("eeUndoOk"))
++	end))
+ 
+ 	importBtn.MouseButton1Click:Connect(function()
+ 		importTitle.Text = T("eeImportTitle")
+@@ -7830,12 +8138,12 @@ eventEditor = (function()
+ 		createGroupBtn.Text = T("eeCreateGroup")
+ 		addBox.PlaceholderText = T("eeAddPlaceholder")
+ 		inspTitle.Text = T("eeInspector")
+-		testEventBtn.Text = T("eeTestEvent")
++		testEventBtn.Text = "▶  " .. T("eeTestEvent")
+ 		clearBtn.Text = T("eeClear")
+-		undoBtn.Text = T("eeUndo")
++		undoBtn.Text = "←  " .. T("eeUndo")
+ 		presetBtn.Text = T("eePresets")
+-		exportBtn.Text = T("eeExport")
+-		importBtn.Text = T("eeImport")
++		exportBtn.Text = "↑  " .. T("eeExport")
++		importBtn.Text = "↓  " .. T("eeImport")
+ 		histTitle.Text = T("eeRunHistory")
+ 		if histClearBtn then histClearBtn.Text = T("eeClearLog") end
+ 		if importTitle then importTitle.Text = T("eeImportTitle") end
