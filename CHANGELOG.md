@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.50 — 2026-09-09
+
+### Changed
+- Bumped release version to **7.50** (`version`, README badge, in-app `currentVersion`).
+- Synced Automation Studio build from the latest GPT polish pass into `source`.
+
+### Improved
+- Command picker: skip empty `NAME` separators, full A–Z list, scroll to the last command.
+- Variable chips stay inside the center panel; insert into the focused command box.
+- Inspector hides empty Conditions; Runtime uses compact rows.
+
 ## Automation Studio UI — 2026-09-09
 
 ### Improved
