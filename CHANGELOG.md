@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `showhistory` (`hist`, `cmdhistory`) is now in main `source`: search it in the command panel, run it with the prefix, get the last 8 saved commands in a notify.
+- History no longer stores `showhistory` / `hist` / `cmdhistory` (same as `lastcommand`).
+- `currentVersion` in `source` matches the release badge (7.63).
+
+### Notes
+- One `loadstring` of `source` is enough for this command. No new hotfix file.
+
 ## 7.62 — 2026-09-14
 
 ### Added
