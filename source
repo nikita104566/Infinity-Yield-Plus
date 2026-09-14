@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.66'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -594,6 +594,7 @@ UI_L = {
 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
 		eeEmptyCommand = "Type a command first",
 		eeNoEventsMatch = "No events match this filter.",
+		eeNoCmdMatch = "No commands match",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
@@ -819,6 +820,7 @@ UI_L = {
 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
 		eeEmptyCommand = "Сначала введи команду",
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
+		eeNoCmdMatch = "Нет таких команд",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
@@ -5372,7 +5374,7 @@ eventEditor = (function()
 		Position = UDim2.new(0, 12, 0, 54),
 		Size = UDim2.new(1, -24, 0, 22),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 0,
 		ScrollingDirection = Enum.ScrollingDirection.X,
 		ClipsDescendants = true,
@@ -5443,10 +5445,13 @@ eventEditor = (function()
 		Position = UDim2.new(0, 10, 1, -178),
 		Size = UDim2.new(1, -20, 0, 130),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 5,
 		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
 		ScrollBarImageTransparency = 0.3,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
+		ElasticBehavior = Enum.ElasticBehavior.Never,
+		ClipsDescendants = true,
 		Visible = false,
 		ZIndex = 50,
 	}, center)
@@ -5456,15 +5461,18 @@ eventEditor = (function()
 	local pickerHolder = mk("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		AutomaticSize = Enum.AutomaticSize.None,
 		ZIndex = 50,
 	}, picker)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
 	local function setPickerVisible(visible, contentHeight)
 		if visible then
-			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
+			local rowsH = math.max(26, contentHeight or 26)
+			local height = math.min(188, rowsH + 8)
 			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
 			picker.Size = UDim2.new(1, -20, 0, height)
+			picker.CanvasSize = UDim2.new(0, 0, 0, rowsH)
+			pickerHolder.Size = UDim2.new(1, -10, 0, rowsH)
 			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
 			emptyFlow.Size = UDim2.new(1, -24, 1, -(EE_FLOW_REST + height + 4))
 			if not picker.Visible then
@@ -5477,6 +5485,8 @@ eventEditor = (function()
 		else
 			picker.Visible = false
 			picker.BackgroundTransparency = 0
+			picker.CanvasSize = UDim2.new(0, 0, 0, 0)
+			pickerHolder.Size = UDim2.new(1, 0, 0, 0)
 			flowList.Size = UDim2.new(1, -12, 1, -EE_FLOW_REST)
 			emptyFlow.Size = UDim2.new(1, -24, 1, -EE_FLOW_REST)
 		end
@@ -6162,11 +6172,12 @@ eventEditor = (function()
 		chips[#chips + 1] = "$me"
 		chips[#chips + 1] = "$time"
 		local seen = {}
+		local chipX = 4
 		local chipTw = TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		for _, chip in ipairs(chips) do
 			if not seen[chip] then
 				seen[chip] = true
-				local width = math.max(42, #chip * 7 + 16)
+				local width = math.max(42, (utf8.len(chip) or #chip) * 7 + 16)
 				local b = mk("TextButton", {
 					BackgroundColor3 = EE_SELECTED,
 					BorderSizePixel = 0,
@@ -6193,8 +6204,12 @@ eventEditor = (function()
 					box.Text = box.Text .. spacer .. chip
 					box:CaptureFocus()
 				end)
+				chipX += width + 5
 			end
 		end
+		if chipX > 4 then chipX -= 5 end
+		varBar.CanvasSize = UDim2.new(0, math.max(0, chipX + 4), 0, 0)
+		varBar.CanvasPosition = Vector2.new(0, 0)
 		refreshFlows()
 		refreshInspector()
 		refreshEventList()
@@ -7718,7 +7733,7 @@ eventEditor = (function()
 	end
 	local function refreshSuggestions()
 		for _, c in ipairs(pickerHolder:GetChildren()) do
-			if c:IsA("TextButton") then c:Destroy() end
+			if c:IsA("GuiObject") then c:Destroy() end
 		end
 		suggestionRows = {}
 		suggestionIndex = 0
@@ -7770,8 +7785,31 @@ eventEditor = (function()
 			if a.score == b.score then return a.primary:lower() < b.primary:lower() end
 			return a.score < b.score
 		end)
+		if #matches == 0 then
+			local emptyRow = mk("TextButton", {
+				BackgroundColor3 = Color3.fromRGB(28, 26, 42),
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 26),
+				Text = T("eeNoCmdMatch"),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Font = UI_FONT,
+				TextSize = 11,
+				TextColor3 = EE_MUTED,
+				AutoButtonColor = false,
+				Active = false,
+				ZIndex = 51,
+			}, pickerHolder)
+			uiCorner(emptyRow, 6)
+			uiPad(emptyRow, 8, 0, 8, 0)
+			picker.CanvasPosition = Vector2.new(0, 0)
+			setPickerVisible(true, 26)
+			return
+		end
 		local y = 0
-		for index = 1, #matches do
+		local last = #matches
+		if last > 24 then last = 24 end
+		for index = 1, last do
 			local match = matches[index]
 			local primary = match.primary
 			local row = mk("TextButton", {
@@ -7805,7 +7843,6 @@ eventEditor = (function()
 		suggestionIndex = #suggestionRows > 0 and 1 or 0
 		styleSuggestions()
 		picker.CanvasPosition = Vector2.new(0, 0)
-		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
 		setPickerVisible(#suggestionRows > 0, y)
 	end
 	local suggestDebounceTok = 0
@@ -8262,6 +8299,7 @@ eventEditor = (function()
 		addBtn.Text = T("eeAdd")
 		createGroupBtn.Text = T("eeCreateGroup")
 		addBox.PlaceholderText = T("eeAddPlaceholder")
+		if picker.Visible then refreshSuggestions() end
 		inspTitle.Text = T("eeInspector")
 		testEventBtn.Text = "▶  " .. T("eeTestEvent")
 		clearBtn.Text = T("eeClear")

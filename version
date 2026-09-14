@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.66",
+	"Announcement": "7.66: Studio command picker fits its rows and says when nothing matches"
 }
