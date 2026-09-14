@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.65'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -557,6 +557,8 @@ UI_L = {
 		keybindToggleOn = "Create Toggle",
 		favorites = "Favorites",
 		allCommands = "Commands",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
@@ -782,6 +784,8 @@ UI_L = {
 		keybindToggleOn = "Создать тоггл",
 		favorites = "Избранное",
 		allCommands = "Команды",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
@@ -8614,6 +8618,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8641,6 +8646,7 @@ useFactorySettings = function()
 	WayPoints = {}
 	PluginsTable = {}
 	favCmds = {}
+	cmdHistory = {}
 end
 
 themeCustomColors = themeCustomColors or {}
@@ -8727,6 +8733,26 @@ end
 
 local loadedEventData = nil
 local jsonAttempts = 0
+cmdHistory = cmdHistory or {}
+function snapshotCmdHistory()
+	local hist = {}
+	if type(cmdHistory) ~= "table" then
+		return hist
+	end
+	for i = 1, #cmdHistory do
+		local entry = cmdHistory[i]
+		if type(entry) == "string" then
+			local trimmed = string.match(entry, "^%s*(.-)%s*$") or entry
+			if trimmed ~= "" then
+				hist[#hist + 1] = trimmed
+				if #hist >= 30 then
+					break
+				end
+			end
+		end
+	end
+	return hist
+end
 function saves()
     if writefileExploit() and type(waxreadfile) == "function" and jsonAttempts < 10 then
         -- Read once. The old code called readfile three times and the middle call
@@ -8751,6 +8777,12 @@ function saves()
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
+                    if vtype(json.cmdHistory, "table") then
+                        cmdHistory = json.cmdHistory
+                        cmdHistory = snapshotCmdHistory()
+                    else
+                        cmdHistory = {}
+                    end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -8838,6 +8870,7 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = snapshotCmdHistory();
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -12735,7 +12768,7 @@ function splitString(str,delim)
     return broken
 end
 
-cmdHistory = {}
+if type(cmdHistory) ~= "table" then cmdHistory = {} end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12795,11 +12828,20 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
-                            table.insert(cmdHistory,1,rawCmdStr)
+                        if type(cmdHistory) ~= "table" then cmdHistory = {} end
+                        local histTok = string.lower(string.match(rawCmdStr, "^%s*;?%s*(%S+)") or "")
+                        if histTok ~= "lastcommand" and histTok ~= "lastcmd" and cmdHistory[1] ~= rawCmdStr then
+                            table.insert(cmdHistory, 1, rawCmdStr)
                         end
                     end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
+                    if type(cmdHistory) == "table" and #cmdHistory > 30 then table.remove(cmdHistory) end
+                    histSaveGen = (tonumber(histSaveGen) or 0) + 1
+                    local histSaveMine = histSaveGen
+                    task.delay(0.35, function()
+                        if histSaveMine == histSaveGen and type(updatesaves) == "function" then
+                            pcall(updatesaves)
+                        end
+                    end)
 
                     lastCmds[cmdName] = v
                 end
@@ -13325,6 +13367,7 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
                 if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
                     moveCmdSelection(-1)
                 else
+                if type(cmdHistory) ~= "table" then cmdHistory = {} end
                 historyCount += 1
                 if historyCount > #cmdHistory then historyCount = #cmdHistory end
                 Cmdbar.Text = cmdHistory[historyCount] or ""
@@ -13334,6 +13377,7 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
                 if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
                     moveCmdSelection(1)
                 else
+                if type(cmdHistory) ~= "table" then cmdHistory = {} end
                 historyCount = historyCount - 1
                 if historyCount < 0 then historyCount = 0 end
                 Cmdbar.Text = cmdHistory[historyCount] or ""
@@ -18192,8 +18236,13 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
     end
 end)
 
@@ -24874,6 +24923,9 @@ addcmd('reloadplugin',{},function(args, speaker)
 end)
 
 addcmd('reload', {'iypreload', 'iyreload', 'reiy', 'refreshiy'}, function(args, speaker)
+    pcall(function()
+        if type(updatesaves) == "function" then updatesaves() end
+    end)
     pcall(function()
         local genv = (getgenv and getgenv()) or _G
         genv.IYR_SKIP_INTRO = true
