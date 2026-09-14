@@ -1,4 +1,4 @@
 {
-	"Version": "7.63",
-	"Announcement": "7.63: showhistory / hist lists recent commands after one source loadstring"
+	"Version": "7.64",
+	"Announcement": "7.64: click a Studio group header to inspect, run, rename, or delete it"
 }

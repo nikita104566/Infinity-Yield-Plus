@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.64-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -17,7 +17,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ```
 
 Open the panel with your prefix (default `;`).
-`showhistory` / `hist` is in that one loadstring (command list + notify). Leftover `hotfix7xx.luau` files do not replace `source`.
+Leftover `hotfix7xx.luau` files do not replace `source`.
 
 ## Features
 
@@ -39,6 +39,7 @@ Open the panel with your prefix (default `;`).
 - `env` / `device` / `showprefix` / `timezone` / `display` — executor, input, prefix, zone, viewport
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
+- Studio groups: click the group header to inspect, enable, rename, run, or delete the group
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
 - Chain commands with `\\\\`

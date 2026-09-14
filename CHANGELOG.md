@@ -1,5 +1,18 @@
 # Changelog
 
+## 7.64 — 2026-09-14
+
+### Added
+- Automation Studio: click a group header to open Inspector (count, enable, rename, run, delete, workflow list).
+- Group icon tooltips (Run / fold / rename / delete) on the Studio chrome.
+
+### Changed
+- Grouped workflow cards no longer show a duplicate GROUP OFF badge (the header already shows off-state).
+- Card badges use EN/RU (`ERR` / `Off` / `Pause`) with UTF-8 width.
+
+### Notes
+- One loadstring of `source`. `currentVersion` 7.64.
+
 ## 7.63 — 2026-09-14
 
 ### Added
