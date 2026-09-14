@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -696,6 +696,8 @@ UI_L = {
 		eeValidation = "Validation",
 		eeRuntime = "Runtime",
 		eeEmpty = "(empty)",
+		eeInspGroupHint = "Click a workflow below, or Run / Rename / Delete this group.",
+		eeGroupCmds = "In this group",
 		eeWorkflowInsp = "Workflow inspector",
 		eeCmdText = "Command text",
 		eeDelay = "Delay (s)",
@@ -741,6 +743,10 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		histTitle = "History",
+		histEmpty = "History is empty",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
 	},
 	ru = {
 		command = "Команда",
@@ -921,6 +927,8 @@ UI_L = {
 		eeValidation = "Проверка",
 		eeRuntime = "Runtime",
 		eeEmpty = "(пусто)",
+		eeInspGroupHint = "Нажми workflow ниже или Запуск / Имя / Удалить для группы.",
+		eeGroupCmds = "В этой группе",
 		eeWorkflowInsp = "Инспектор workflow",
 		eeCmdText = "Текст команды",
 		eeDelay = "Задержка (с)",
@@ -966,6 +974,10 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		histTitle = "История",
+		histEmpty = "История пуста",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
 	},
 }
 
@@ -5097,6 +5109,22 @@ eventEditor = (function()
 	uiCorner(shell, 14)
 	uiStroke(shell, EE_BORDER, 1, 0.55)
 	table.insert(shade1, shell)
+	uiCorner(mk("TextLabel", {
+		Name = "EEChromeTip",
+		BackgroundColor3 = Color3.fromRGB(12, 11, 20),
+		BackgroundTransparency = 0.02,
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromOffset(0, 0),
+		Size = UDim2.fromOffset(58, 22),
+		Font = UI_FONT_MED,
+		TextSize = 10,
+		TextColor3 = EE_TEXT,
+		Text = "",
+		Visible = false,
+		ZIndex = 200,
+	}, shell), 7)
+	uiStroke(shell:FindFirstChild("EEChromeTip"), EE_ACCENT, 1, 0.25)
 
 	local top = mk("Frame", {
 		BackgroundColor3 = EE_PANEL,
@@ -6142,6 +6170,7 @@ eventEditor = (function()
 	local function selectEvent(name)
 		selectedEventName = name
 		selectedCmd = nil
+		shell:SetAttribute("EESelGroup", "")
 		local ev = events[name]
 		if not ev then return end
 		eventTitle.Text = name
@@ -6231,6 +6260,8 @@ eventEditor = (function()
 	refreshInspector = function()
 		local activeHint = right:FindFirstChild("EEInspTooltip")
 		if activeHint then activeHint.Visible = false end
+		local chromeTip = shell:FindFirstChild("EEChromeTip")
+		if chromeTip then chromeTip.Visible = false end
 		hideInspDrop()
 		for _, c in ipairs(inspHolder:GetChildren()) do
 			if c:IsA("GuiObject") and c.Name ~= "UIListLayout" then c:Destroy() end
@@ -6442,30 +6473,199 @@ eventEditor = (function()
 			makeSwitch(row, isOn, UDim2.new(1, -38, 0.5, -9), onToggle)
 		end
 
-		if not selectedCmd or not selectedEventName then
+		if not selectedEventName then
 			inspTitle.Text = T("eeInspector")
 			inspHolder:SetAttribute("EESel", "")
 			inspHolder.Position = UDim2.new(0, 0, 0, 0)
 			local leftover = inspHolder:FindFirstChildOfClass("UIScale")
 			if leftover then leftover:Destroy() end
-			if not selectedEventName then
+			shell:SetAttribute("EESelGroup", "")
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -8, 0, 72),
+				Font = UI_FONT,
+				TextSize = 12,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextColor3 = EE_MUTED,
+				Text = T("eeInspHint"),
+				ZIndex = 43,
+			}, inspHolder)
+			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 100)
+			return
+		end
+		if not selectedCmd then
+			inspTitle.Text = T("eeInspector")
+			inspHolder:SetAttribute("EESel", "")
+			inspHolder.Position = UDim2.new(0, 0, 0, 0)
+			local leftover = inspHolder:FindFirstChildOfClass("UIScale")
+			if leftover then leftover:Destroy() end
+			local evSum = events[selectedEventName]
+			ensureEventExtras(evSum)
+			local gsel = tostring(shell:GetAttribute("EESelGroup") or "")
+			local stG = (gsel ~= "" and type(evSum.groupState) == "table") and evSum.groupState[gsel] or nil
+			if type(stG) == "table" then
+				inspTitle.Text = gsel
+				local peers = {}
+				for i, c in ipairs(evSum.commands or {}) do
+					if normalizeGroupName(getMeta(c).group) == gsel then
+						peers[#peers + 1] = i
+					end
+				end
+				local en, tot = 0, #peers
+				for _, idx in ipairs(peers) do
+					if getMeta(evSum.commands[idx]).enabled ~= false then en += 1 end
+				end
+				if stG.enabled == false then en = 0 end
+				local statusRow = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 36), ZIndex = 43 }, inspHolder)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, -8, 0, 72),
+					Size = UDim2.new(1, -44, 1, 0),
+					Font = UI_FONT_MED,
+					TextSize = 12,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					TextColor3 = EE_ACCENT,
+					Text = string.format(T("eeFlowCount"), en, tot),
+					ZIndex = 44,
+				}, statusRow)
+				makeSwitch(statusRow, stG.enabled ~= false, UDim2.new(1, -38, 0.5, -9), function()
+					pushUndo()
+					stG.enabled = not (stG.enabled ~= false)
+					markEdited()
+					updateCountLabel()
+					refreshEventList()
+					refreshFlows()
+					refreshInspector()
+				end)
+				field(T("eeRenameGroup"), gsel, function(text)
+					local newName = normalizeGroupName(text)
+					if isReservedGroupName(newName) then
+						notify(T("autoStudio"), T("eeGroupReserved"))
+						refreshInspector()
+						return
+					end
+					if newName == gsel then return end
+					if evSum.groupState[newName] then
+						notify(T("autoStudio"), T("eeGroupExists"))
+						refreshInspector()
+						return
+					end
+					pushUndo()
+					if not renameGroup(evSum, gsel, newName) then
+						refreshInspector()
+						return
+					end
+					shell:SetAttribute("EESelGroup", newName)
+					markEdited()
+					refreshFlows()
+					refreshInspector()
+				end)
+				local actsG = mk("Frame", {
+					BackgroundTransparency = 1,
+					Size = UDim2.new(1, -4, 0, 32),
+					ZIndex = 43,
+				}, inspHolder)
+				mk("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					Padding = UDim.new(0, 6),
+					SortOrder = Enum.SortOrder.LayoutOrder,
+				}, actsG)
+				local runG = btn(actsG, T("eeRun"), UDim2.new(0, 72, 0, 28), UDim2.new(0, 0, 0, 0), function()
+					local args = testArgsFor(evSum)
+					local n = 0
+					for _, idx in ipairs(peers) do
+						local c = evSum.commands[idx]
+						if c then
+							local m = getMeta(c)
+							local text = tostring(c[1] or "")
+							if m.enabled ~= false and text ~= "" and stG.enabled ~= false then
+								local finalCmd = substitute(text, args, selectedEventName)
+								pcall(function() execCmd(finalCmd) end)
+								n += 1
+							end
+						end
+					end
+					if n == 0 then
+						notify(T("autoStudio"), T("eeRunGroupEmpty"))
+					else
+						notify(T("autoStudio"), string.format(T("eeRunGroupOk"), n))
+					end
+				end)
+				runG.LayoutOrder = 1
+				runG.TextSize = 11
+				runG:SetAttribute("EEActive", true)
+				runG:SetAttribute("EEActiveColor", EE_PRIMARY)
+				runG.BackgroundColor3 = EE_PRIMARY
+				local delG = btn(actsG, T("eeDel"), UDim2.new(0, 56, 0, 28), UDim2.new(0, 0, 0, 0), function()
+					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
+						pushUndo()
+						deleteGroup(evSum, gsel)
+						shell:SetAttribute("EESelGroup", "")
+						markEdited()
+						refreshFlows()
+						refreshInspector()
+						refreshEventList()
+						notify(T("autoStudio"), T("eeGroupDeleted"))
+					end)
+				end)
+				delG.LayoutOrder = 2
+				delG.TextSize = 11
+				delG.TextColor3 = EE_DANGER
+				section(T("eeGroupCmds"))
+				if #peers == 0 then
+					mk("TextLabel", {
+						BackgroundTransparency = 1,
+						Size = UDim2.new(1, -8, 0, 28),
+						Font = UI_FONT,
+						TextSize = 12,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						TextColor3 = EE_MUTED,
+						Text = T("eeRunGroupEmpty"),
+						ZIndex = 43,
+					}, inspHolder)
+				else
+					for _, idx in ipairs(peers) do
+						local c = evSum.commands[idx]
+						local line = mk("TextButton", {
+							BackgroundColor3 = EE_SURFACE,
+							BorderSizePixel = 0,
+							Size = UDim2.new(1, -4, 0, 26),
+							Font = UI_FONT,
+							TextSize = 11,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							TextColor3 = EE_TEXT,
+							Text = (c and c[1] ~= "" and tostring(c[1])) or T("eeEmpty"),
+							TextTruncate = Enum.TextTruncate.AtEnd,
+							AutoButtonColor = false,
+							ZIndex = 44,
+						}, inspHolder)
+						uiCorner(line, 6)
+						uiPad(line, 8, 0, 8, 0)
+						line.MouseButton1Click:Connect(function()
+							selectedCmd = c
+							shell:SetAttribute("EESelGroup", "")
+							refreshFlows()
+							refreshInspector()
+						end)
+					end
+				end
+				mk("TextLabel", {
+					BackgroundTransparency = 1,
+					Size = UDim2.new(1, -8, 0, 56),
 					Font = UI_FONT,
 					TextSize = 12,
 					TextWrapped = true,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = EE_MUTED,
-					Text = T("eeInspHint"),
+					Text = T("eeInspGroupHint"),
 					ZIndex = 43,
 				}, inspHolder)
-				inspScroll.CanvasSize = UDim2.new(0, 0, 0, 100)
+				inspScroll.CanvasSize = UDim2.new(0, 0, 0, 220)
 				return
 			end
-			local evSum = events[selectedEventName]
-			ensureEventExtras(evSum)
 			local en, tot = 0, #(evSum.commands or {})
 			for _, c in ipairs(evSum.commands or {}) do
 				local m = getMeta(c)
@@ -6508,6 +6708,7 @@ eventEditor = (function()
 			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 140)
 			return
 		end
+		shell:SetAttribute("EESelGroup", "")
 		local ev = events[selectedEventName]
 		local cmd = selectedCmd
 		local meta = getMeta(cmd)
@@ -6925,6 +7126,8 @@ eventEditor = (function()
 
 	refreshFlows = function()
 		flowCards = {}
+		local chromeTipHide = shell:FindFirstChild("EEChromeTip")
+		if chromeTipHide then chromeTipHide.Visible = false end
 		for _, c in ipairs(flowHolder:GetChildren()) do
 			if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
 		end
@@ -6977,13 +7180,11 @@ eventEditor = (function()
 				local rtErr = nil
 				if type(rtc) == "table" then rtErr = rtc.lastError or rtc.error or rtc.err end
 				if rtErr ~= nil and tostring(rtErr) ~= "" then
-					cardState, cardStateColor = "ERROR", EE_DANGER
+					cardState, cardStateColor = T("eeHistoryErr"), EE_DANGER
 				elseif meta.enabled == false then
-					cardState, cardStateColor = "OFF", Color3.fromRGB(132, 128, 154)
+					cardState, cardStateColor = T("eeOff"), Color3.fromRGB(132, 128, 154)
 				elseif ev.enabled == false then
-					cardState, cardStateColor = "PAUSED", Color3.fromRGB(232, 188, 118)
-				elseif not isGroupEnabled(ev, meta.group) then
-					cardState, cardStateColor = "GROUP OFF", Color3.fromRGB(232, 188, 118)
+					cardState, cardStateColor = T("eePause"), Color3.fromRGB(232, 188, 118)
 				end
 			end
 			if cardState then
@@ -6993,12 +7194,13 @@ eventEditor = (function()
 					cardStroke.Color = selected and EE_ACCENT or cardStateColor
 					cardStroke.Transparency = selected and 0.12 or 0.68
 				end
+				local stateLen = (utf8 and utf8.len and utf8.len(cardState)) or #cardState
 				local badge = mk("TextLabel", {
 					BackgroundColor3 = cardStateColor,
 					BackgroundTransparency = 0.84,
 					BorderSizePixel = 0,
-					Position = UDim2.new(1, -62 - (#cardState * 7 + 14), 0, showSummary and 9 or 15),
-					Size = UDim2.new(0, #cardState * 7 + 14, 0, 18),
+					Position = UDim2.new(1, -62 - (stateLen * 7 + 14), 0, showSummary and 9 or 15),
+					Size = UDim2.new(0, stateLen * 7 + 14, 0, 18),
 					Font = UI_FONT_MED,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Center,
@@ -7055,6 +7257,7 @@ eventEditor = (function()
 			hit.MouseButton1Click:Connect(function()
 				if selectedCmd == cmd then return end
 				selectedCmd = cmd
+				shell:SetAttribute("EESelGroup", "")
 				highlightSelectedCard()
 				refreshInspector()
 			end)
@@ -7091,7 +7294,7 @@ eventEditor = (function()
 			end
 			if named and st.enabled == false then en = 0 end
 			local header = mk("Frame", {
-				BackgroundColor3 = named and Color3.fromRGB(32, 30, 48) or EE_PANEL,
+				BackgroundColor3 = (named and tostring(shell:GetAttribute("EESelGroup") or "") == groupName) and EE_SELECTED or (named and Color3.fromRGB(32, 30, 48) or EE_PANEL),
 				BackgroundTransparency = named and 0 or 1,
 				BorderSizePixel = 0,
 				Size = UDim2.new(1, parentFrame and 0 or -4, 0, named and 40 or 22),
@@ -7108,6 +7311,30 @@ eventEditor = (function()
 					uiCorner(vertical, 1)
 				end
 			end
+			local function chromeTip(b, text)
+				b.MouseEnter:Connect(function()
+					local hint = shell:FindFirstChild("EEChromeTip")
+					if not hint or type(text) ~= "string" or text == "" then return end
+					local scale = shell.AbsoluteSize.X / EE_W
+					if not scale or scale < 0.05 then scale = 1 end
+					local n = (utf8 and utf8.len and utf8.len(text)) or #text
+					local hintWidth = math.max(58, n * 6 + 16)
+					local hintX = (b.AbsolutePosition.X - shell.AbsolutePosition.X + b.AbsoluteSize.X * 0.5) / scale
+					hintX = math.clamp(hintX, hintWidth * 0.5 + 8, EE_W - hintWidth * 0.5 - 8)
+					local hintY = (b.AbsolutePosition.Y - shell.AbsolutePosition.Y + b.AbsoluteSize.Y + 6) / scale
+					if hintY + 24 > EE_H - 8 then
+						hintY = (b.AbsolutePosition.Y - shell.AbsolutePosition.Y) / scale - 26
+					end
+					hint.Text = text
+					hint.Size = UDim2.fromOffset(hintWidth, 22)
+					hint.Position = UDim2.fromOffset(hintX, hintY)
+					hint.Visible = true
+				end)
+				b.MouseLeave:Connect(function()
+					local hint = shell:FindFirstChild("EEChromeTip")
+					if hint then hint.Visible = false end
+				end)
+			end
 			local rightPad = named and 168 or 50
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
@@ -7123,6 +7350,21 @@ eventEditor = (function()
 				ZIndex = 44,
 			}, header)
 			if named then
+				local headHit = mk("TextButton", {
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Position = UDim2.new(0, 0, 0, 0),
+					Size = UDim2.new(1, -rightPad, 1, 0),
+					Text = "",
+					AutoButtonColor = false,
+					ZIndex = 45,
+				}, header)
+				headHit.MouseButton1Click:Connect(function()
+					selectedCmd = nil
+					shell:SetAttribute("EESelGroup", groupName)
+					refreshInspector()
+					refreshFlows()
+				end)
 				local controls = mk("Frame", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(1, -156, 0, 0),
@@ -7143,6 +7385,7 @@ eventEditor = (function()
 					updateCountLabel()
 					refreshFlows()
 					refreshEventList()
+					refreshInspector()
 				end)
 				sw.LayoutOrder = 1
 				local play = btn(controls, "▶", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
@@ -7171,6 +7414,7 @@ eventEditor = (function()
 				play:SetAttribute("EEActive", true)
 				play:SetAttribute("EEActiveColor", EE_PRIMARY)
 				play.BackgroundColor3 = EE_PRIMARY
+				chromeTip(play, T("eeRun"))
 				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					st.collapsed = not st.collapsed
 					markEdited()
@@ -7178,6 +7422,7 @@ eventEditor = (function()
 				end)
 				fold.LayoutOrder = 3
 				styleFoldIcon(fold, st.collapsed)
+				chromeTip(fold, st.collapsed and T("eeExpanded") or T("eeCollapsed"))
 
 				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					promptText(T("eeRenameGroup"), groupName, function(text)
@@ -7193,6 +7438,9 @@ eventEditor = (function()
 						end
 						pushUndo()
 						if not renameGroup(ev, groupName, newName) then return end
+						if tostring(shell:GetAttribute("EESelGroup") or "") == groupName then
+							shell:SetAttribute("EESelGroup", newName)
+						end
 						markEdited()
 						refreshFlows()
 						refreshInspector()
@@ -7200,11 +7448,15 @@ eventEditor = (function()
 				end)
 				rename.LayoutOrder = 4
 				rename.TextSize = 10
+				chromeTip(rename, T("eeRenameGroup"))
 
 				local del = btn(controls, "×", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
 						pushUndo()
 						deleteGroup(ev, groupName)
+						if tostring(shell:GetAttribute("EESelGroup") or "") == groupName then
+							shell:SetAttribute("EESelGroup", "")
+						end
 						markEdited()
 						refreshFlows()
 						refreshInspector()
@@ -7215,6 +7467,7 @@ eventEditor = (function()
 				del.LayoutOrder = 5
 				del.TextColor3 = EE_DANGER
 				del.TextSize = 13
+				chromeTip(del, T("eeDeleteGroup"))
 
 			else
 				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
@@ -7310,6 +7563,13 @@ eventEditor = (function()
 				}, flowHolder)
 				uiCorner(groupShell, 8)
 				uiStroke(groupShell, EE_BORDER, 1, 0.65)
+				if tostring(shell:GetAttribute("EESelGroup") or "") == g then
+					local gs = groupShell:FindFirstChildOfClass("UIStroke")
+					if gs then
+						gs.Color = EE_ACCENT
+						gs.Transparency = 0.22
+					end
+				end
 				uiPad(groupShell, 6, 6, 6, 6)
 				mk("UIListLayout", {
 					SortOrder = Enum.SortOrder.LayoutOrder,
@@ -11264,6 +11524,7 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'showhistory / hist / cmdhistory', DESC = 'Shows the last saved commands'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12032,6 +12293,7 @@ do
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
 		lastcommand = 'Описание: Executes the previous command used',
+		showhistory = 'Показывает последние сохранённые команды',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -12795,7 +13057,8 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
+                        local histHead = string.lower((string.match(rawCmdStr, "^%s*;?%s*(%S+)") or ""))
+                        if cmdHistory[1] ~= rawCmdStr and histHead ~= "lastcommand" and histHead ~= "lastcmd" and histHead ~= "showhistory" and histHead ~= "hist" and histHead ~= "cmdhistory" then
                             table.insert(cmdHistory,1,rawCmdStr)
                         end
                     end
@@ -18192,9 +18455,28 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
     end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
+    end
+end)
+
+addcmd('showhistory',{'hist','cmdhistory'},function(args, speaker)
+    local title = T("histTitle")
+    if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+        notify(title, T("histEmpty"))
+        return
+    end
+    local n = math.min(8, #cmdHistory)
+    local lines = {}
+    for i = 1, n do
+        lines[i] = tostring(i) .. ". " .. tostring(cmdHistory[i])
+    end
+    notify(title, table.concat(lines, "\n"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)

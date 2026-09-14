@@ -1,5 +1,30 @@
 # Changelog
 
+## 7.64 — 2026-09-14
+
+### Added
+- Automation Studio: click a group header to open Inspector (count, enable, rename, run, delete, workflow list).
+- Group icon tooltips (Run / fold / rename / delete) on the Studio chrome.
+
+### Changed
+- Grouped workflow cards no longer show a duplicate GROUP OFF badge (the header already shows off-state).
+- Card badges use EN/RU (`ERR` / `Off` / `Pause`) with UTF-8 width.
+
+### Notes
+- One loadstring of `source`. `currentVersion` 7.64.
+
+## 7.63 — 2026-09-14
+
+### Added
+- `showhistory` (`hist`, `cmdhistory`) is in `source`: search it in the panel, run it, see the last 8 commands. One loadstring is enough.
+
+### Fixed
+- `lastcommand` / `lastcmd` notifies instead of erroring when history is empty.
+
+### Notes
+- `currentVersion` in `source` is 7.63 (it had stayed on 7.50 while badges said 7.62).
+- README loadstring is one line on `source`. Leftover hotfix files are not the product.
+
 ## 7.62 — 2026-09-14
 
 ### Added
