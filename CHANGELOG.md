@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.53 — 2026-09-14
+
+### Fixed
+- In-app `currentVersion` was still `7.50` while README / `version` said `7.52`.
+- `lastcommand` / `lastcmd` no longer errors when history is empty; shows a short RU/EN notice instead.
+- Command history is now written to and restored from `IY_FE.iy` (`updatesaves` previously never stored `cmdHistory`).
+
+### Improved
+- History persist uses the existing save path, capped at 30 string entries, and is sanitized on load.
+- Executing a command schedules `updatesaves` so ↑ / ↓ history survives reload and rejoin.
+
 ## 7.52 — 2026-09-14
 
 ### Fixed
