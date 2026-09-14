@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Improved
+- Command Palette (Ctrl+K) chrome is EN+RU via `T()` (`palTitle`, placeholder, sections, empty, footer). Changing language in Settings updates the palette chrome; the next open uses localized descriptions.
+- Palette search matches localized *and* English descriptions, folds Cyrillic case (А-Я/Ё), and keeps typed arguments when the query was a description (e.g. «телепорт me» runs `goto me`).
+- Empty-result labels are cleared on each refresh (they no longer stack after repeated misses). The placeholder “No description” is not indexed.
+
 ## 7.58 — 2026-09-14
 
 ### Added
