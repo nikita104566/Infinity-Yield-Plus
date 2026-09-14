@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.57 — 2026-09-14
+
+### Added
+- `checkupdate` (`upd`, `vercheck`) — compares local version with GitHub `version` file.
+- `copyhistory` (`copyhist`, `copycmd`) — copies the last command; `copyhistory all` copies the full list.
+- `starlast` (`favlast`, `pinlast`) — pins the last history command to favorites when the favorites API is present.
+
+### Notes
+- Main `source` is unchanged. Load `hotfix757.luau` after `source`. You can skip 754–756 if you only need the new commands; keep 756 if you want history dedup / `showhistory`.
+- Idempotent (`_G.__IYP_757_CMDS`). RU/EN strings for the new notices.
+
 ## 7.56 — 2026-09-14
 
 ### Improved
