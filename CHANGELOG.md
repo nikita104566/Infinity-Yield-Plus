@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.55 — 2026-09-14
+
+### Improved
+- Save-on-exec from 7.54 is now debounced (~0.35s). Rapid commands no longer hammer `IY_FE.iy`.
+- New command: `clearhistory` (`clrhist`, `wipehistory`) — clears ↑/↓ history and persists the empty list.
+- Version badge set to 7.55. Idempotent (`_G.__IYP_755_*` guards).
+
+### Notes
+- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix755.luau` after `source`. `hotfix754` is optional if you already load 755.
+
 ## 7.54 — 2026-09-14
 
 ### Fixed
@@ -32,7 +42,7 @@
 
 ### Improved
 - History persist uses the existing save path, capped at 30 string entries, and is sanitized on load.
-- Executing a command now schedules `updatesaves` so ↑ / ≥ history survives reload and rejoin.
+- Executing a command now schedules `updatesaves` so history survives reload and rejoin.
 
 ## 7.51 — 2026-09-14
 

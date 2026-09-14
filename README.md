@@ -7,24 +7,25 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.54-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.55-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix754.luau'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix755.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-The second line is the 7.54 hotfix (safe lastcommand, history persist, version badge). It does not replace the main script.
+The second line is the 7.55 hotfix (debounced history save, `clearhistory`, version badge). It does not replace the main script. You can skip `hotfix754` if you load 755.
 
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
+- `clearhistory` / `clrhist` wipes saved history
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
