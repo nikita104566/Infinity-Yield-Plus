@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.63 — 2026-09-14
+
+### Improved
+- Automation Studio group icons (run / fold / rename / delete) show EN+RU tooltips on hover, so `Aa` and ▶ are no longer mystery buttons.
+- Inspector ↑ / ↓ tooltips use `T("eeUp")` / `T("eeDown")` instead of hardcoded English.
+- Workflow cards inside a disabled group no longer repeat a wide `GROUP OFF` badge; the group header already shows that state, so command titles keep their width.
+- Remaining card badges (`ERR` / `Off` / `Pause`) follow the UI language.
+
+### Notes
+- Baked into main `source`. `hotfix762.luau` no longer downgrades the version badge when `currentVersion` is already newer than 7.62.
+
 ## 7.62 — 2026-09-14
 
 ### Added

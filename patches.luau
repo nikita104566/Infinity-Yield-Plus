@@ -15,6 +15,8 @@ local files = {
 	"hotfix762.luau",
 }
 
+local bakedVer = currentVersion
+
 local function fetch(url)
 	local lastErr = "no HttpGet"
 	for attempt = 1, 2 do
@@ -41,3 +43,22 @@ for i = 1, #files do
 		warn("[IYP patches] " .. name .. ": " .. tostring(err))
 	end
 end
+
+pcall(function()
+	local function verKey(s)
+		local maj, min = tostring(s or ""):match("^(%d+)%.(%d+)")
+		return (tonumber(maj) or 0) * 1000 + (tonumber(min) or 0)
+	end
+	if verKey(bakedVer) <= verKey(currentVersion) then
+		return
+	end
+	currentVersion = bakedVer
+	if type(applyHeaderBrand) == "function" then
+		applyHeaderBrand()
+	elseif VersionLabel then
+		VersionLabel.Text = "· " .. tostring(bakedVer)
+	end
+	if SubLabel then
+		SubLabel.Text = tostring(bakedVer)
+	end
+end)
