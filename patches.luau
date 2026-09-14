@@ -1,5 +1,5 @@
 -- Infinity Yield Plus patch loader
--- Load AFTER source. Pulls 756–761 in order. Idempotent per hotfix file.
+-- Load AFTER source. Pulls 756–762 in order. Idempotent per hotfix file.
 -- Example:
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
@@ -12,6 +12,7 @@ local files = {
 	"hotfix759.luau",
 	"hotfix760.luau",
 	"hotfix761.luau",
+	"hotfix762.luau",
 }
 
 for i = 1, #files do

@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.62 — 2026-09-14
+
+### Improved
+- Command Palette (Ctrl+K) uses RU/EN via `T()`: title, search placeholder, section, footer, empty state.
+- Result rows use `getLocalizedDesc` so Russian UI is not wrapped around English command text.
+- Search matches English *and* localized descriptions, including mixed-case Cyrillic.
+- If a command has no Russian description, the English text stays visible (not replaced with “No description”).
+- Empty-state labels are cleared on every refresh (they no longer stack).
+- Title no longer runs under the Ctrl+K badge; section, footer, and empty text truncate instead of overflowing.
+
+### Notes
+- Palette i18n is in main `source`. Load `hotfix762.luau` after 756–761 (or just `patches.luau`) for the 7.62 badge and `hotfixes` flag.
+- `hotfix761` no longer overwrites a newer version badge (so 7.62 survives the patch chain).
+- Idempotent (`_G.__IYP_762_CMDS`). Switching Language in settings refreshes an open palette.
+
 ## 7.61 — 2026-09-14
 
 ### Added

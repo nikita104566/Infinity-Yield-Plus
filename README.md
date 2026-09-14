@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.61-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.62-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -18,7 +18,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ```
 
 Open the panel with your prefix (default `;`).
-`patches.luau` loads 756–761 in order (history, update check, diagnostics, whoami, info dump). You can still load individual `hotfix7xx.luau` files if you want a subset. None of them replace the main script.
+`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, palette version). You can still load individual `hotfix7xx.luau` files if you want a subset. None of them replace the main script.
 
 ## Features
 
@@ -40,7 +40,7 @@ Open the panel with your prefix (default `;`).
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
 - Themes, keybinds, aliases, waypoints
-- Russian / English UI
+- Russian / English UI (including Command Palette / Ctrl+K)
 - Chain commands with `\\\\`
 - Hot reload via `reload`
 

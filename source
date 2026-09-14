@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.62'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -529,6 +529,12 @@ UI_L = {
 		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
 		noDesc = "No description",
+		palTitle = "Command Palette",
+		palSearch = "Search commands or type arguments...",
+		palFavRecent = "FAVORITES & RECENT",
+		palResults = "RESULTS · %d",
+		palFooter = "↑↓ navigate   Enter run   Esc close   Right-click in Cmdbar to favorite",
+		palEmpty = "No matching commands",
 		outdated = "Outdated",
 		outdatedBody = "Get the new version by executing it again",
 		player = "Player",
@@ -754,6 +760,12 @@ UI_L = {
 		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
 		noDesc = "Нет описания",
+		palTitle = "Палитра команд",
+		palSearch = "Поиск команд или аргументы...",
+		palFavRecent = "ИЗБРАННОЕ И НЕДАВНИЕ",
+		palResults = "РЕЗУЛЬТАТЫ · %d",
+		palFooter = "↑↓ навигация   Enter запуск   Esc закрыть   ПКМ в Cmdbar — избранное",
+		palEmpty = "Нет подходящих команд",
 		outdated = "Устарело",
 		outdatedBody = "Запусти скрипт ещё раз",
 		player = "Игрок",
@@ -1169,6 +1181,9 @@ function applyUiLanguage()
 	end
 	if eventEditor and type(eventEditor.ApplyLang) == "function" then
 		pcall(eventEditor.ApplyLang)
+	end
+	if scoreCache and scoreCache.palette and type(scoreCache.palette.ApplyLang) == "function" then
+		pcall(scoreCache.palette.ApplyLang)
 	end
 	if Plugins and Plugins:FindFirstChild("ButtonLabel") then Plugins.ButtonLabel.Text = T("managePlugins") end
 	if type(applyReferenceLanguage) == "function" then
@@ -13492,12 +13507,13 @@ if scoreCache then
         local title = Instance.new("TextLabel")
         title.BackgroundTransparency = 1
         title.Position = UDim2.fromOffset(20, 12)
-        title.Size = UDim2.new(1, -40, 0, 24)
+        title.Size = UDim2.new(1, -110, 0, 24)
         title.Font = UI_FONT_MED
         title.TextSize = 15
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.TextColor3 = Color3.fromRGB(248, 248, 252)
-        title.Text = "Command Palette"
+        title.Text = T("palTitle")
+        title.TextTruncate = Enum.TextTruncate.AtEnd
         title.ZIndex = 92
         title.Parent = panel
 
@@ -13526,7 +13542,7 @@ if scoreCache then
         search.TextSize = 14
        search.TextColor3 = Color3.fromRGB(248, 248, 252)
         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
-        search.PlaceholderText = "Search commands or type arguments..."
+        search.PlaceholderText = T("palSearch")
         search.Text = ""
         search.TextXAlignment = Enum.TextXAlignment.Left
         search.ZIndex = 92
@@ -13552,7 +13568,8 @@ if scoreCache then
         section.TextSize = 11
         section.TextXAlignment = Enum.TextXAlignment.Left
         section.TextColor3 = Color3.fromRGB(153, 145, 177)
-        section.Text = "FAVORITES & RECENT"
+        section.Text = T("palFavRecent")
+        section.TextTruncate = Enum.TextTruncate.AtEnd
         section.ZIndex = 92
         section.Parent = panel
 
@@ -13585,7 +13602,8 @@ if scoreCache then
         footer.TextSize = 11
         footer.TextXAlignment = Enum.TextXAlignment.Left
         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
+        footer.Text = T("palFooter")
+        footer.TextTruncate = Enum.TextTruncate.AtEnd
         footer.ZIndex = 92
         footer.Parent = panel
 
@@ -13594,6 +13612,28 @@ if scoreCache then
         end
         local function trim(text)
             return tostring(text or ""):match("^%s*(.-)%s*$") or ""
+        end
+        local function fold(text)
+            local s = tostring(text or ""):lower()
+            s = s:gsub("\208([\144-\159])", function(ch)
+                return "\208" .. string.char(ch:byte() + 32)
+            end)
+            s = s:gsub("\208([\160-\175])", function(ch)
+                return "\209" .. string.char(ch:byte() - 32)
+            end)
+            s = s:gsub("\208\129", "\209\145")
+            return s
+        end
+        local function palDesc(name, desc)
+            desc = tostring(desc or "")
+            local loc = getLocalizedDesc(name, desc)
+            if (loc == "" or loc == T("noDesc")) and desc ~= "" then
+                return desc
+            end
+            if loc == "" then
+                return T("noDesc")
+            end
+            return loc
         end
         local function isFav(name)
             local key = primary(name):lower()
@@ -13683,7 +13723,7 @@ if scoreCache then
             desc.TextSize = 11
             desc.TextXAlignment = Enum.TextXAlignment.Left
             desc.TextColor3 = Color3.fromRGB(151, 146, 169)
-            desc.Text = item.desc ~= "" and item.desc or item.key
+            desc.Text = (item.desc ~= "" and item.desc) or item.key
             desc.TextTruncate = Enum.TextTruncate.AtEnd
             desc.ZIndex = 94
             desc.Parent = row
@@ -13715,11 +13755,11 @@ if scoreCache then
             task.delay(0.025, function()
                 if token ~= state.refreshToken or not root.Visible then return end
                 for _, child in ipairs(holder:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
+                    if child:IsA("TextButton") or child.Name == "Empty" then child:Destroy() end
                 end
                 state.rows = {}
                 state.items = {}
-                local query = trim(search.Text):lower()
+                local query = fold(trim(search.Text))
                 local queryHead = query:match("^(%S+)") or ""
                 local candidates = {}
                 for index, info in ipairs(CMDs or {}) do
@@ -13727,7 +13767,8 @@ if scoreCache then
                     local key = primary(name)
                     if key ~= "" then
                         local desc = tostring(info.DESC or "")
-                        local hay = (name .. " " .. desc):lower()
+                        local loc = palDesc(name, desc)
+                        local hay = fold(name .. " " .. desc .. " " .. loc)
                         local fav = isFav(name)
                         local recent = recentRank(name)
                         local score = nil
@@ -13745,7 +13786,7 @@ if scoreCache then
                         if score then
                             score += fav and 900 or 0
                             score += recent and math.max(0, 500 - recent * 10) or 0
-                            candidates[#candidates + 1] = { name = name, key = key, desc = desc, fav = fav, recent = recent, score = score }
+                            candidates[#candidates + 1] = { name = name, key = key, desc = loc, fav = fav, recent = recent, score = score }
                         end
                     end
                 end
@@ -13756,7 +13797,7 @@ if scoreCache then
                 local limit = math.min(8, #candidates)
                 for i = 1, limit do state.items[i] = candidates[i] end
                 state.selected = limit > 0 and 1 or 0
-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
+                section.Text = queryHead == "" and T("palFavRecent") or string.format(T("palResults"), #candidates)
                 if limit == 0 then
                     local empty = Instance.new("TextLabel")
                     empty.Name = "Empty"
@@ -13765,12 +13806,12 @@ if scoreCache then
                     empty.Font = UI_FONT
                     empty.TextSize = 13
                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
-                    empty.Text = "No matching commands"
+                    empty.Text = T("palEmpty")
+                    empty.TextWrapped = true
+                    empty.TextTruncate = Enum.TextTruncate.AtEnd
                     empty.ZIndex = 93
                     empty.Parent = holder
                 else
-                    local oldEmpty = holder:FindFirstChild("Empty")
-                    if oldEmpty then oldEmpty:Destroy() end
                     for i, item in ipairs(state.items) do makeRow(item, i) end
                 end
                 holder.Size = UDim2.new(1, -6, 0, math.max(80, limit * 59))
@@ -13797,6 +13838,16 @@ if scoreCache then
         end
         function api.IsOpen()
             return root.Visible
+        end
+        function api.ApplyLang()
+            title.Text = T("palTitle")
+            search.PlaceholderText = T("palSearch")
+            footer.Text = T("palFooter")
+            if root.Visible then
+                refresh()
+            else
+                section.Text = T("palFavRecent")
+            end
         end
         api.Root = root
         api.Search = search
