@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.61 — 2026-09-14
+
+### Improved
+- Command Palette (Ctrl+K) title, search placeholder, section labels, empty state, and footer follow the current RU/EN language.
+- Empty "no match" rows no longer stack when you keep typing or switch language with the palette open.
+- Inspector ↑ / ↓ action tooltips use the same language pack (`Move up` / `Вверх`).
+- Switching Language in Settings refreshes the palette chrome immediately.
+- `hotfix760` no longer overwrites a newer in-app version badge.
+
+### Notes
+- Baked into main `source` (`currentVersion` 7.61). Keep loading 756–760 after `source` for the extra commands.
+
 ## 7.60 — 2026-09-14
 
 ### Added

@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.61'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -624,8 +624,14 @@ UI_L = {
 		eeCopy = "Copy",
 		eePreview = "Preview",
 		eeRun = "Run",
-		eeUp = "Up",
-		eeDown = "Down",
+		eeUp = "Move up",
+		eeDown = "Move down",
+		palTitle = "Command Palette",
+		palSearch = "Search commands or type arguments...",
+		palFavRecent = "FAVORITES & RECENT",
+		palResults = "RESULTS · %d",
+		palFooter = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite",
+		palEmpty = "No matching commands",
 		eeDel = "Del",
 		eePresetCurrent = "Add to current event",
 		eePresetPack = "Add safe pack",
@@ -851,6 +857,12 @@ UI_L = {
 		eeRun = "Запуск",
 		eeUp = "Вверх",
 		eeDown = "Вниз",
+		palTitle = "Палитра команд",
+		palSearch = "Поиск команд или аргументы...",
+		palFavRecent = "ИЗБРАННОЕ И НЕДАВНИЕ",
+		palResults = "РЕЗУЛЬТАТЫ · %d",
+		palFooter = "↑↓ навигация  Enter запуск  Esc закрыть  ПКМ — избранное",
+		palEmpty = "Нет подходящих команд",
 		eeDel = "Удал",
 		eePresetCurrent = "В текущее событие",
 		eePresetPack = "Безопасный набор",
@@ -1207,6 +1219,9 @@ function applyUiLanguage()
 		else
 			BindTriggerSelect.Text = T("keybindKeyDown")
 		end
+	end
+	if scoreCache and scoreCache.palette and type(scoreCache.palette.ApplyLang) == "function" then
+		pcall(scoreCache.palette.ApplyLang)
 	end
 end
 
@@ -6557,7 +6572,7 @@ eventEditor = (function()
 				uiCorner(front, 2)
 				uiStroke(front, EE_MUTED, 1, 0.08)
 			end
-			local hintText = order == 1 and "Move up" or (order == 2 and "Move down" or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
+			local hintText = order == 1 and T("eeUp") or (order == 2 and T("eeDown") or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
 			b.LayoutOrder = order
 			b.ZIndex = 47
 			b.TextSize = 14
@@ -13497,7 +13512,7 @@ if scoreCache then
         title.TextSize = 15
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.TextColor3 = Color3.fromRGB(248, 248, 252)
-        title.Text = "Command Palette"
+        title.Text = T("palTitle")
         title.ZIndex = 92
         title.Parent = panel
 
@@ -13526,7 +13541,7 @@ if scoreCache then
         search.TextSize = 14
        search.TextColor3 = Color3.fromRGB(248, 248, 252)
         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
-        search.PlaceholderText = "Search commands or type arguments..."
+        search.PlaceholderText = T("palSearch")
         search.Text = ""
         search.TextXAlignment = Enum.TextXAlignment.Left
         search.ZIndex = 92
@@ -13552,7 +13567,7 @@ if scoreCache then
         section.TextSize = 11
         section.TextXAlignment = Enum.TextXAlignment.Left
         section.TextColor3 = Color3.fromRGB(153, 145, 177)
-        section.Text = "FAVORITES & RECENT"
+        section.Text = T("palFavRecent")
         section.ZIndex = 92
         section.Parent = panel
 
@@ -13585,7 +13600,8 @@ if scoreCache then
         footer.TextSize = 11
         footer.TextXAlignment = Enum.TextXAlignment.Left
         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
+        footer.Text = T("palFooter")
+        footer.TextTruncate = Enum.TextTruncate.AtEnd
         footer.ZIndex = 92
         footer.Parent = panel
 
@@ -13715,7 +13731,7 @@ if scoreCache then
             task.delay(0.025, function()
                 if token ~= state.refreshToken or not root.Visible then return end
                 for _, child in ipairs(holder:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
+                    if child:IsA("TextButton") or child.Name == "Empty" then child:Destroy() end
                 end
                 state.rows = {}
                 state.items = {}
@@ -13756,7 +13772,12 @@ if scoreCache then
                 local limit = math.min(8, #candidates)
                 for i = 1, limit do state.items[i] = candidates[i] end
                 state.selected = limit > 0 and 1 or 0
-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
+                if queryHead == "" then
+                    section.Text = T("palFavRecent")
+                else
+                    local okFmt, labeled = pcall(string.format, T("palResults"), #candidates)
+                    section.Text = (okFmt and labeled) or tostring(#candidates)
+                end
                 if limit == 0 then
                     local empty = Instance.new("TextLabel")
                     empty.Name = "Empty"
@@ -13765,12 +13786,10 @@ if scoreCache then
                     empty.Font = UI_FONT
                     empty.TextSize = 13
                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
-                    empty.Text = "No matching commands"
+                    empty.Text = T("palEmpty")
                     empty.ZIndex = 93
                     empty.Parent = holder
                 else
-                    local oldEmpty = holder:FindFirstChild("Empty")
-                    if oldEmpty then oldEmpty:Destroy() end
                     for i, item in ipairs(state.items) do makeRow(item, i) end
                 end
                 holder.Size = UDim2.new(1, -6, 0, math.max(80, limit * 59))
@@ -13778,6 +13797,18 @@ if scoreCache then
                 list.CanvasPosition = Vector2.zero
                 styleRows()
             end)
+        end
+        function api.ApplyLang()
+            title.Text = T("palTitle")
+            search.PlaceholderText = T("palSearch")
+            footer.Text = T("palFooter")
+            local emptyNow = holder:FindFirstChild("Empty")
+            if emptyNow then emptyNow.Text = T("palEmpty") end
+            if root.Visible then
+                refresh()
+            else
+                section.Text = T("palFavRecent")
+            end
         end
         function api.Open()
             root.Visible = true
