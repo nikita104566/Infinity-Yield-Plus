@@ -73,6 +73,7 @@ end
 
 do
 	local addcmd = pick("addcmd")
+	local addcmdtext = pick("addcmdtext")
 	local notify = pick("notify")
 	local T = pick("T")
 	local findCmd = pick("findCmd")
@@ -113,5 +114,8 @@ do
 		end
 	elseif type(addcmd) == "function" then
 		addcmd("showhistory", {"hist", "cmdhistory"}, showHistory)
+	end
+	if type(addcmdtext) == "function" then
+		addcmdtext("showhistory / hist / cmdhistory", "showhistory", "Shows recent saved commands")
 	end
 end
