@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Automation Studio left list shows full event names (`OnCharacterRemoving`, not `OnCharact…`): count badge sits on the category line, names use the row minus the switch.
+
+### Notes
+- One `source` loadstring is enough. Leftover `hotfix762` no longer overwrites a newer in-app version.
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -14,6 +22,7 @@
 ### Notes
 - Main `source` is unchanged. Load `hotfix762.luau` after `source`, or just load `patches.luau`.
 - Idempotent (`_G.__IYP_762_CMDS`). RU/EN strings for the new notices.
+
 
 ## 7.61 — 2026-09-14
 
