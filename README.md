@@ -14,9 +14,11 @@
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix753.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
+The second line is the 7.53 hotfix (safe lastcommand + history persist). It does not replace the main script.
 
 ## Features
 
