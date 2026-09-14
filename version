@@ -1,4 +1,4 @@
 {
-	"Version": "7.61",
-	"Announcement": "7.61: info / copyjoin / creator / clock / maxplayers + patches.luau loader"
+	"Version": "7.62",
+	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
 }
