@@ -1,4 +1,4 @@
 {
-	"Version": "7.60",
-	"Announcement": "7.60: whoami / copyuserid / copyjob / serverage / memory"
+	"Version": "7.61",
+	"Announcement": "7.61: fold Ungrouped workflows in Automation Studio when groups exist"
 }

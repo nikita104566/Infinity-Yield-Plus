@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.61 — 2026-09-14
+
+### Improved
+- Automation Studio: when an event has named groups, ungrouped workflows now show a **No group** section with count and fold (same persist path as `__ungrouped`).
+- Folding hides only the ungrouped cards; fire/filter still treat ungrouped commands as always-enabled.
+- If there are no named groups, the extra header is omitted so a simple flow stays compact. A leftover Ungrouped collapse is cleared so creating a group later does not hide those cards.
+
+### Notes
+- `source` `currentVersion` is 7.61. `hotfix760` still adds whoami / ids / uptime / memory and will not downgrade a newer badge.
+
 ## 7.60 — 2026-09-14
 
 ### Added

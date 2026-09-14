@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.61'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -4436,6 +4436,12 @@ eventEditor = (function()
 				m.group = ""
 			end
 		end
+		if #listGroupNames(ev) == 0 then
+			local ung = ev.groupState["__ungrouped"]
+			if type(ung) == "table" then
+				ung.collapsed = false
+			end
+		end
 	end
 
 	local function getRuntime(cmd)
@@ -7291,6 +7297,14 @@ eventEditor = (function()
 
 		local anyNamed = #orderNames > 0
 		emptyFlow.Visible = #ev.commands == 0 and not anyNamed
+		if not anyNamed then
+			-- Header (the only fold control) is hidden without named groups.
+			-- Clear a leftover collapse so creating a group later does not hide cards.
+			local ung = ev.groupState["__ungrouped"]
+			if type(ung) == "table" then
+				ung.collapsed = false
+			end
+		end
 
 		for _, g in ipairs(sectionOrder) do
 			local peers = buckets[g] or {}
@@ -7325,6 +7339,14 @@ eventEditor = (function()
 				end
 				y += 14
 			else
+				-- Ungrouped header is only useful next to named groups (fold + count).
+				-- Fire/filter still treat "" as always-enabled; this is display-only.
+				if anyNamed then
+					local st = renderSectionHeader(g, peers, nil)
+					if st.collapsed == true then
+						continue
+					end
+				end
 				for _, idx in ipairs(peers) do
 					renderCard(ev.commands[idx], idx, peers, nil)
 				end
