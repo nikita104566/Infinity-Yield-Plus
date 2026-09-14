@@ -4,14 +4,14 @@
 -- Safe to run more than once.
 
 pcall(function()
-	currentVersion = "7.56"
+	currentVersion = "7.57"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
 	elseif VersionLabel then
-		VersionLabel.Text = "· 7.56"
+		VersionLabel.Text = "· 7.57"
 	end
 	if SubLabel then
-		SubLabel.Text = "7.56"
+		SubLabel.Text = "7.57"
 	end
 end)
 
