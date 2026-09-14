@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.60-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.61-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -22,7 +22,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ```
 
 Open the panel with your prefix (default `;`).
-`hotfix756` keeps history dedup / `showhistory`. `hotfix757` adds update check, clipboard copy, and favorite-last. `hotfix758` adds repeat-last, ping, fps, and command count. `hotfix759` adds session diagnostics. `hotfix760` adds whoami / ids / server age / memory. None of them replace the main script.
+`hotfix756` keeps history dedup / `showhistory`. `hotfix757` adds update check, clipboard copy, and favorite-last. `hotfix758` adds repeat-last, ping, fps, and command count. `hotfix759` adds session diagnostics. `hotfix760` adds whoami / ids / server age / memory. None of them replace the main script. 7.61 localizes the Command Palette and Inspector ↑/↓ tooltips.
 
 ## Features
 

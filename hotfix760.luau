@@ -4,6 +4,14 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function parseVer(v)
+		local a, b = tostring(v or ""):match("^(%d+)%.(%d+)")
+		if not a then return 0 end
+		return (tonumber(a) or 0) * 1000 + (tonumber(b) or 0)
+	end
+	if parseVer(currentVersion) > parseVer("7.60") then
+		return
+	end
 	currentVersion = "7.60"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
