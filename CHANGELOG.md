@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.57 — 2026-09-14
+
+### Improved
+- Automation Studio: turning a group off no longer stamps **GROUP OFF** on every workflow card (command names stay readable). The group header prefixes `Off` / `Выкл` so the status remains visible when the name is long.
+- Group header icons (run, collapse, rename, delete) now show EN/RU hover tooltips.
+
+### Notes
+- History persist / `showhistory` still come from `hotfix756.luau` if you load it after `source`.
+
 ## 7.56 — 2026-09-14
 
 ### Improved

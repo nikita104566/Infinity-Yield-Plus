@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.57'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -669,6 +669,9 @@ UI_L = {
 		eeAddToGroupPh = "Command for %s",
 		eeRunGroupEmpty = "No enabled commands in this group",
 		eeRunGroupOk = "Ran %d commands",
+		eeRunGroup = "Run group",
+		eeTipCollapse = "Collapse",
+		eeTipExpand = "Expand",
 		eeGroupReserved = "That group name is reserved",
 		eeSkipBusy = "Fire skipped (busy / depth)",
 		eeSkipNotBelow = "Health not below threshold",
@@ -894,6 +897,9 @@ UI_L = {
 		eeAddToGroupPh = "Команда для %s",
 		eeRunGroupEmpty = "В группе нет включённых команд",
 		eeRunGroupOk = "Запущено команд: %d",
+		eeRunGroup = "Запустить группу",
+		eeTipCollapse = "Свернуть",
+		eeTipExpand = "Развернуть",
 		eeGroupReserved = "Это имя группы зарезервировано",
 		eeSkipBusy = "Пропуск (занято / глубина)",
 		eeSkipNotBelow = "Здоровье не ниже порога",
@@ -5414,6 +5420,22 @@ eventEditor = (function()
 	uiCorner(emptyFlow, 8)
 	uiStroke(emptyFlow, EE_BORDER, 1, 0.72)
 	uiPad(emptyFlow, 16, 12, 16, 12)
+	uiCorner(mk("TextLabel", {
+		Name = "EEFlowTooltip",
+		BackgroundColor3 = Color3.fromRGB(12, 11, 20),
+		BackgroundTransparency = 0.02,
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromOffset(120, 76),
+		Size = UDim2.fromOffset(58, 24),
+		Font = UI_FONT_MED,
+		TextSize = 10,
+		TextColor3 = EE_TEXT,
+		Text = "",
+		Visible = false,
+		ZIndex = 120,
+	}, center), 7)
+	uiStroke(center:FindFirstChild("EEFlowTooltip"), EE_ACCENT, 1, 0.25)
 
 	local flowList = mk("ScrollingFrame", {
 		BackgroundTransparency = 1,
@@ -5429,6 +5451,10 @@ eventEditor = (function()
 	}, center)
 	uiPad(flowList, 0, 0, 0, 8)
 	table.insert(scroll, flowList)
+	flowList:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		local tip = center:FindFirstChild("EEFlowTooltip")
+		if tip then tip.Visible = false end
+	end)
 	local flowHolder = mk("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -4, 0, 0),
@@ -6925,6 +6951,8 @@ eventEditor = (function()
 
 	refreshFlows = function()
 		flowCards = {}
+		local flowTip = center:FindFirstChild("EEFlowTooltip")
+		if flowTip then flowTip.Visible = false end
 		for _, c in ipairs(flowHolder:GetChildren()) do
 			if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
 		end
@@ -6982,8 +7010,6 @@ eventEditor = (function()
 					cardState, cardStateColor = "OFF", Color3.fromRGB(132, 128, 154)
 				elseif ev.enabled == false then
 					cardState, cardStateColor = "PAUSED", Color3.fromRGB(232, 188, 118)
-				elseif not isGroupEnabled(ev, meta.group) then
-					cardState, cardStateColor = "GROUP OFF", Color3.fromRGB(232, 188, 118)
 				end
 			end
 			if cardState then
@@ -7108,7 +7134,34 @@ eventEditor = (function()
 					uiCorner(vertical, 1)
 				end
 			end
+			local function attachFlowTip(b, hintText)
+				if not (b and hintText and hintText ~= "") then return end
+				b.MouseEnter:Connect(function()
+					local hint = center:FindFirstChild("EEFlowTooltip")
+					if not hint then return end
+					local hintWidth = math.max(58, (utf8.len(hintText) or #hintText) * 6 + 16)
+					local hintX = b.AbsolutePosition.X - center.AbsolutePosition.X + b.AbsoluteSize.X * 0.5
+					hintX = math.clamp(hintX, hintWidth * 0.5 + 8, math.max(hintWidth * 0.5 + 8, center.AbsoluteSize.X - hintWidth * 0.5 - 8))
+					local hintY = b.AbsolutePosition.Y - center.AbsolutePosition.Y + b.AbsoluteSize.Y + 5
+					if hintY + 24 > center.AbsoluteSize.Y - 8 then
+						hintY = b.AbsolutePosition.Y - center.AbsolutePosition.Y - 29
+					end
+					hintY = math.clamp(hintY, 8, math.max(8, center.AbsoluteSize.Y - 32))
+					hint.Text = hintText
+					hint.Size = UDim2.fromOffset(hintWidth, 24)
+					hint.Position = UDim2.fromOffset(hintX, hintY)
+					hint.Visible = true
+				end)
+				b.MouseLeave:Connect(function()
+					local hint = center:FindFirstChild("EEFlowTooltip")
+					if hint then hint.Visible = false end
+				end)
+			end
 			local rightPad = named and 168 or 50
+			local titleText = string.format("%s · %d/%d", label, en, #peers)
+			if named and st.enabled == false then
+				titleText = T("eeOff") .. " · " .. titleText
+			end
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
 				Position = UDim2.new(0, named and 12 or 10, 0, 0),
@@ -7118,7 +7171,7 @@ eventEditor = (function()
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextYAlignment = Enum.TextYAlignment.Center,
 				TextColor3 = (named and st.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247),
-				Text = string.format("%s · %d/%d", label, en, #peers),
+				Text = titleText,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				ZIndex = 44,
 			}, header)
@@ -7171,6 +7224,7 @@ eventEditor = (function()
 				play:SetAttribute("EEActive", true)
 				play:SetAttribute("EEActiveColor", EE_PRIMARY)
 				play.BackgroundColor3 = EE_PRIMARY
+				attachFlowTip(play, T("eeRunGroup"))
 				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					st.collapsed = not st.collapsed
 					markEdited()
@@ -7178,6 +7232,7 @@ eventEditor = (function()
 				end)
 				fold.LayoutOrder = 3
 				styleFoldIcon(fold, st.collapsed)
+				attachFlowTip(fold, st.collapsed and T("eeTipExpand") or T("eeTipCollapse"))
 
 				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					promptText(T("eeRenameGroup"), groupName, function(text)
@@ -7200,6 +7255,7 @@ eventEditor = (function()
 				end)
 				rename.LayoutOrder = 4
 				rename.TextSize = 10
+				attachFlowTip(rename, T("eeRenameGroup"))
 
 				local del = btn(controls, "×", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
@@ -7215,6 +7271,7 @@ eventEditor = (function()
 				del.LayoutOrder = 5
 				del.TextColor3 = EE_DANGER
 				del.TextSize = 13
+				attachFlowTip(del, T("eeDeleteGroup"))
 
 			else
 				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
@@ -7223,6 +7280,7 @@ eventEditor = (function()
 					refreshFlows()
 				end)
 				styleFoldIcon(fold, st.collapsed)
+				attachFlowTip(fold, st.collapsed and T("eeTipExpand") or T("eeTipCollapse"))
 
 			end
 			y += named and 46 or 26

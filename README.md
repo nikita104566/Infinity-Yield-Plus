@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.56-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.57-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -18,7 +18,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ```
 
 Open the panel with your prefix (default `;`).
-The second line is the 7.56 hotfix (history dedup, `showhistory`, skip meta-commands). It does not replace the main script. You can skip `hotfix754` / `hotfix755` if you load 756.
+The second line is the 7.56 hotfix (history dedup, `showhistory`, skip meta-commands). It does not replace the main script. You can skip `hotfix754` / `hotfix755` if you load 756. Automation Studio group chrome (7.57) is in `source`.
 
 ## Features
 
