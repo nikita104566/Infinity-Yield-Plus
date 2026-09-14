@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.65 — 2026-09-14
+
+### Added
+- Command history is stored in `IY_FE.iy`, so ↑/↓ and `lastcommand` survive reload and rejoin; empty history notifies instead of crashing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
