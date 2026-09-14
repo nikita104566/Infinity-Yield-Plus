@@ -7,18 +7,17 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.56-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.57-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix756.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-The second line is the 7.56 hotfix (history dedup, `showhistory`, skip meta-commands). It does not replace the main script. You can skip `hotfix754` / `hotfix755` if you load 756.
+A second hotfix line is no longer required. `hotfix753`–`hotfix756` are compatibility stubs if you still have an old two-line loadstring.
 
 ## Features
 
@@ -26,6 +25,7 @@ The second line is the 7.56 hotfix (history dedup, `showhistory`, skip meta-comm
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands are not stored in history
+- `lastcommand` / `lastcmd` repeats the previous command, or shows a notice if history is empty
 - `showhistory` / `hist` lists recent saved commands
 - `clearhistory` / `clrhist` wipes saved history
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events

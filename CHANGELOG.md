@@ -1,5 +1,22 @@
 # Changelog
 
+## 7.57 — 2026-09-14
+
+### Fixed
+- Baked history persist, safe `lastcommand`, `showhistory`, and `clearhistory` into `source`. A single loadstring is enough; 754–756 no longer wrap `updatesaves` / `execCmd`.
+- `lastcommand` / `lastcmd` no longer errors when history is empty; shows a RU/EN notice instead.
+- `currentVersion` in `source` is **7.57** (panel badge, title, and `version` file stay in sync).
+- History is written to and restored from `IY_FE.iy` in the native save payload (no reread/rewrite wrap that could clobber settings).
+- `clearhistory` persists an empty list. `showhistory` lists the newest entries, not the oldest.
+- History cap drops the oldest entries (tail), matching newest-first insert.
+- History UI strings live in `UI_L` (`T(...)`) instead of a non-existent `I18N` table.
+- `showhistory` / `clearhistory` appear in the command list and have RU descriptions.
+- Meta-command skip uses the current prefix, not a hardcoded `;`.
+- History is recorded synchronously when a command is stored, so `lastcommand` works immediately.
+
+### Notes
+- `hotfix753`–`hotfix756` are compatibility stubs. You can drop the second loadstring.
+
 ## 7.56 — 2026-09-14
 
 ### Improved
@@ -10,7 +27,7 @@
 - Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
 
 ### Notes
-- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix756.luau` after `source`. You can skip 754/755 if you load 756.
+- 7.56 shipped as a hotfix on top of the 7.50 core. **7.57 bakes this into `source`.** You can skip `hotfix754` / `hotfix755` / `hotfix756` if you load current `source`.
 
 ## 7.55 — 2026-09-14
 
