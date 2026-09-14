@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.59'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -598,6 +598,12 @@ UI_L = {
 		eeInspector = "Inspector",
 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
 		eeInspEventHint = "No workflow selected.\nAdd a command below, or select a workflow card to edit it.",
+		eeInspVars = "Variables",
+		eeInspGroups = "Groups",
+		eeInspNoGroups = "No groups yet. Workflows stay in No group.",
+		eeInspGroupHint = "Group selected. Toggle it here, or pick a workflow card to edit.",
+		eeInspEmptyEvent = "No workflows yet. Type a command below and press Add.",
+		eeGroupEnabled = "Group enabled",
 		eeFlowCount = "%d/%d on",
 		eeCatAll = "All",
 		eeCatCharacter = "Character",
@@ -823,6 +829,12 @@ UI_L = {
 		eeInspector = "Инспектор",
 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
 		eeInspEventHint = "Workflow не выбран.\nДобавь команду ниже или выбери карточку для редактирования.",
+		eeInspVars = "Переменные",
+		eeInspGroups = "Группы",
+		eeInspNoGroups = "Групп пока нет. Workflow остаются в «Без группы».",
+		eeInspGroupHint = "Группа выбрана. Переключи её здесь или выбери карточку workflow.",
+		eeInspEmptyEvent = "Пока нет workflow. Введи команду ниже и нажми «Добавить».",
+		eeGroupEnabled = "Группа включена",
 		eeFlowCount = "%d/%d вкл.",
 		eeCatAll = "Все",
 		eeCatCharacter = "Персонаж",
@@ -6142,6 +6154,7 @@ eventEditor = (function()
 	local function selectEvent(name)
 		selectedEventName = name
 		selectedCmd = nil
+		inspHolder:SetAttribute("EEGroup", "")
 		local ev = events[name]
 		if not ev then return end
 		eventTitle.Text = name
@@ -6442,6 +6455,30 @@ eventEditor = (function()
 			makeSwitch(row, isOn, UDim2.new(1, -38, 0.5, -9), onToggle)
 		end
 
+		local function inspNote(text, height)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -8, 0, height or 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				Font = UI_FONT,
+				TextSize = 12,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextColor3 = EE_MUTED,
+				Text = text,
+				ZIndex = 43,
+			}, inspHolder)
+		end
+		local function fitEmptyInsp()
+			inspScroll.CanvasPosition = Vector2.new(0, 0)
+			task.defer(function()
+				local topFade = right:FindFirstChild("EEInspTopFade")
+				local bottomFade = right:FindFirstChild("EEInspBottomFade")
+				if topFade then topFade.Visible = inspScroll.CanvasPosition.Y > 1 end
+				if bottomFade then bottomFade.Visible = inspScroll.AbsoluteCanvasSize.Y > inspScroll.AbsoluteWindowSize.Y + 1 end
+			end)
+		end
 		if not selectedCmd or not selectedEventName then
 			inspTitle.Text = T("eeInspector")
 			inspHolder:SetAttribute("EESel", "")
@@ -6449,19 +6486,8 @@ eventEditor = (function()
 			local leftover = inspHolder:FindFirstChildOfClass("UIScale")
 			if leftover then leftover:Destroy() end
 			if not selectedEventName then
-				mk("TextLabel", {
-					BackgroundTransparency = 1,
-					Size = UDim2.new(1, -8, 0, 72),
-					Font = UI_FONT,
-					TextSize = 12,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Top,
-					TextColor3 = EE_MUTED,
-					Text = T("eeInspHint"),
-					ZIndex = 43,
-				}, inspHolder)
-				inspScroll.CanvasSize = UDim2.new(0, 0, 0, 100)
+				inspNote(T("eeInspHint"), 72)
+				fitEmptyInsp()
 				return
 			end
 			local evSum = events[selectedEventName]
@@ -6472,19 +6498,53 @@ eventEditor = (function()
 				if m.enabled ~= false and isGroupEnabled(evSum, m.group) then en += 1 end
 			end
 			if evSum.enabled == false then en = 0 end
-			local statusRow = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 36), ZIndex = 43 }, inspHolder)
-			mk("TextLabel", {
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -44, 1, 0),
-				Font = UI_FONT_MED,
-				TextSize = 12,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				TextColor3 = EE_ACCENT,
-				Text = string.format(T("eeFlowCount"), en, tot),
-				ZIndex = 44,
-			}, statusRow)
-			makeSwitch(statusRow, evSum.enabled ~= false, UDim2.new(1, -38, 0.5, -9), function()
+			local selGroup = tostring(inspHolder:GetAttribute("EEGroup") or "")
+			if selGroup ~= "" then
+				local groupOk = false
+				for _, g in ipairs(listGroupNames(evSum)) do
+					if g == selGroup then groupOk = true break end
+				end
+				if not groupOk then
+					inspHolder:SetAttribute("EEGroup", "")
+					selGroup = ""
+				end
+			end
+			if selGroup ~= "" then
+				local st = getGroupState(evSum, selGroup)
+				local gEn, gTot = 0, 0
+				for _, c in ipairs(evSum.commands or {}) do
+					if normalizeGroupName(getMeta(c).group) == selGroup then
+						gTot += 1
+						if getMeta(c).enabled ~= false then gEn += 1 end
+					end
+				end
+				if st.enabled == false or evSum.enabled == false then gEn = 0 end
+				inspTitle.Text = selGroup
+				switchRow(T("eeGroupEnabled"), st.enabled ~= false, function()
+					pushUndo()
+					st.enabled = not (st.enabled ~= false)
+					markEdited()
+					updateCountLabel()
+					refreshEventList()
+					refreshFlows()
+					refreshInspector()
+				end)
+				mk("TextLabel", {
+					BackgroundTransparency = 1,
+					Size = UDim2.new(1, -4, 0, 18),
+					Font = UI_FONT_MED,
+					TextSize = 12,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextColor3 = EE_ACCENT,
+					Text = string.format(T("eeFlowCount"), gEn, gTot),
+					ZIndex = 43,
+				}, inspHolder)
+				inspNote(T("eeInspGroupHint"), 56)
+				fitEmptyInsp()
+				return
+			end
+			inspTitle.Text = selectedEventName
+			switchRow(T("eeEventEnabled"), evSum.enabled ~= false, function()
 				pushUndo()
 				evSum.enabled = evSum.enabled == false
 				markEdited()
@@ -6495,19 +6555,75 @@ eventEditor = (function()
 			end)
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -8, 0, 72),
-				Font = UI_FONT,
+				Size = UDim2.new(1, -4, 0, 18),
+				Font = UI_FONT_MED,
 				TextSize = 12,
-				TextWrapped = true,
 				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Top,
-				TextColor3 = EE_MUTED,
-				Text = T("eeInspEventHint"),
+				TextColor3 = EE_ACCENT,
+				Text = string.format(T("eeFlowCount"), en, tot),
 				ZIndex = 43,
 			}, inspHolder)
-			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 140)
+			local desc = eventDescText(evSum)
+			if desc ~= "" then
+				inspNote(desc, 44)
+			end
+			section(T("eeInspVars"))
+			do
+				local bits = {}
+				for i, set in ipairs(evSum.sets or {}) do
+					local hint = evSum.argHints and evSum.argHints[i]
+					bits[#bits + 1] = "$" .. tostring(i) .. (hint and ("/" .. hint) or "") .. " = " .. (set.Name or ("#" .. i))
+				end
+				bits[#bits + 1] = "$me"
+				bits[#bits + 1] = "$place"
+				bits[#bits + 1] = "$job"
+				bits[#bits + 1] = "$time"
+				bits[#bits + 1] = "$event"
+				inspNote(table.concat(bits, "  ·  "), 36)
+			end
+			section(T("eeInspGroups"))
+			do
+				local names = listGroupNames(evSum)
+				if #names == 0 then
+					inspNote(T("eeInspNoGroups"), 36)
+				else
+					for _, g in ipairs(names) do
+						local st = getGroupState(evSum, g)
+						local gEn, gTot = 0, 0
+						for _, c in ipairs(evSum.commands or {}) do
+							if normalizeGroupName(getMeta(c).group) == g then
+								gTot += 1
+								if getMeta(c).enabled ~= false then gEn += 1 end
+							end
+						end
+						if st.enabled == false or evSum.enabled == false then gEn = 0 end
+						local row = mk("TextButton", {
+							BackgroundColor3 = EE_SURFACE,
+							BorderSizePixel = 0,
+							Size = UDim2.new(1, -4, 0, 28),
+							Font = UI_FONT,
+							TextSize = 11,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							TextColor3 = st.enabled == false and EE_MUTED or EE_TEXT,
+							Text = "  " .. g .. " · " .. string.format(T("eeFlowCount"), gEn, gTot) .. (st.enabled == false and (" · " .. T("eeOff")) or ""),
+							TextTruncate = Enum.TextTruncate.AtEnd,
+							AutoButtonColor = false,
+							ZIndex = 43,
+						}, inspHolder)
+						uiCorner(row, 6)
+						row.MouseButton1Click:Connect(function()
+							selectedCmd = nil
+							inspHolder:SetAttribute("EEGroup", g)
+							refreshInspector()
+						end)
+					end
+				end
+			end
+			inspNote(tot == 0 and T("eeInspEmptyEvent") or T("eeInspEventHint"), tot == 0 and 56 or 48)
+			fitEmptyInsp()
 			return
 		end
+		inspHolder:SetAttribute("EEGroup", "")
 		local ev = events[selectedEventName]
 		local cmd = selectedCmd
 		local meta = getMeta(cmd)
@@ -6901,23 +7017,31 @@ eventEditor = (function()
 	local function highlightSelectedCard()
 		local ev = selectedEventName and events[selectedEventName]
 		local tw = TweenInfo.new(0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local selGroup = tostring(inspHolder:GetAttribute("EEGroup") or "")
 		for _, entry in ipairs(flowCards) do
 			if entry.card.Parent then
-				local sel = entry.cmd == selectedCmd
-				local meta = getMeta(entry.cmd)
-				local muted = ev and (meta.enabled == false or not isGroupEnabled(ev, meta.group) or ev.enabled == false)
-				local col = EE_SURFACE
-				if sel then
-					col = EE_SELECTED
-				elseif muted then
-					col = Color3.fromRGB(20, 20, 28)
-				end
-				TweenService:Create(entry.card, tw, { BackgroundColor3 = col }):Play()
-				local stroke = entry.card:FindFirstChildOfClass("UIStroke")
-				if stroke then
-					local stateColor = entry.card:GetAttribute("EEStateColor")
-					stroke.Color = stateColor or EE_BORDER
-					TweenService:Create(stroke, tw, { Transparency = stateColor and (sel and 0.3 or 0.55) or (sel and 0.45 or 1) }):Play()
+				if entry.group ~= nil then
+					local sel = selectedCmd == nil and entry.group ~= "" and entry.group == selGroup
+					local col = entry.group ~= "" and Color3.fromRGB(32, 30, 48) or EE_PANEL
+					if sel then col = EE_SELECTED end
+					TweenService:Create(entry.card, tw, { BackgroundColor3 = col }):Play()
+				else
+					local sel = entry.cmd == selectedCmd
+					local meta = getMeta(entry.cmd)
+					local muted = ev and (meta.enabled == false or not isGroupEnabled(ev, meta.group) or ev.enabled == false)
+					local col = EE_SURFACE
+					if sel then
+						col = EE_SELECTED
+					elseif muted then
+						col = Color3.fromRGB(20, 20, 28)
+					end
+					TweenService:Create(entry.card, tw, { BackgroundColor3 = col }):Play()
+					local stroke = entry.card:FindFirstChildOfClass("UIStroke")
+					if stroke then
+						local stateColor = entry.card:GetAttribute("EEStateColor")
+						stroke.Color = stateColor or EE_BORDER
+						TweenService:Create(stroke, tw, { Transparency = stateColor and (sel and 0.3 or 0.55) or (sel and 0.45 or 1) }):Play()
+					end
 				end
 			end
 		end
@@ -6980,10 +7104,6 @@ eventEditor = (function()
 					cardState, cardStateColor = "ERROR", EE_DANGER
 				elseif meta.enabled == false then
 					cardState, cardStateColor = "OFF", Color3.fromRGB(132, 128, 154)
-				elseif ev.enabled == false then
-					cardState, cardStateColor = "PAUSED", Color3.fromRGB(232, 188, 118)
-				elseif not isGroupEnabled(ev, meta.group) then
-					cardState, cardStateColor = "GROUP OFF", Color3.fromRGB(232, 188, 118)
 				end
 			end
 			if cardState then
@@ -7054,6 +7174,7 @@ eventEditor = (function()
 			end)
 			hit.MouseButton1Click:Connect(function()
 				if selectedCmd == cmd then return end
+				inspHolder:SetAttribute("EEGroup", "")
 				selectedCmd = cmd
 				highlightSelectedCard()
 				refreshInspector()
@@ -7090,8 +7211,10 @@ eventEditor = (function()
 				if getMeta(ev.commands[idx]).enabled ~= false then en += 1 end
 			end
 			if named and st.enabled == false then en = 0 end
+			if ev.enabled == false then en = 0 end
+			local groupSelected = named and selectedCmd == nil and tostring(inspHolder:GetAttribute("EEGroup") or "") == groupName
 			local header = mk("Frame", {
-				BackgroundColor3 = named and Color3.fromRGB(32, 30, 48) or EE_PANEL,
+				BackgroundColor3 = groupSelected and EE_SELECTED or (named and Color3.fromRGB(32, 30, 48) or EE_PANEL),
 				BackgroundTransparency = named and 0 or 1,
 				BorderSizePixel = 0,
 				Size = UDim2.new(1, parentFrame and 0 or -4, 0, named and 40 or 22),
@@ -7099,6 +7222,7 @@ eventEditor = (function()
 				ZIndex = 43,
 			}, parentFrame or flowHolder)
 			uiCorner(header, 8)
+			table.insert(flowCards, { card = header, group = named and groupName or "" })
 			local function styleFoldIcon(button, collapsed)
 				button.Text = ""
 				local horizontal = mk("Frame", { BackgroundColor3 = EE_MUTED, BorderSizePixel = 0, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(0, 10, 0, 2), ZIndex = 47 }, button)
@@ -7109,6 +7233,10 @@ eventEditor = (function()
 				end
 			end
 			local rightPad = named and 168 or 50
+			local titleText = string.format("%s · %d/%d", label, en, #peers)
+			if (named and st.enabled == false) or ev.enabled == false then
+				titleText = titleText .. " · " .. T("eeOff")
+			end
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
 				Position = UDim2.new(0, named and 12 or 10, 0, 0),
@@ -7117,11 +7245,25 @@ eventEditor = (function()
 				TextSize = 12,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextYAlignment = Enum.TextYAlignment.Center,
-				TextColor3 = (named and st.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247),
-				Text = string.format("%s · %d/%d", label, en, #peers),
+				TextColor3 = ((named and st.enabled == false) or ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247),
+				Text = titleText,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				ZIndex = 44,
 			}, header)
+			local headHit = mk("TextButton", {
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -rightPad, 1, 0),
+				Text = "",
+				AutoButtonColor = false,
+				ZIndex = 45,
+			}, header)
+			headHit.MouseButton1Click:Connect(function()
+				selectedCmd = nil
+				inspHolder:SetAttribute("EEGroup", named and groupName or "")
+				highlightSelectedCard()
+				refreshInspector()
+			end)
 			if named then
 				local controls = mk("Frame", {
 					BackgroundTransparency = 1,
@@ -7143,6 +7285,7 @@ eventEditor = (function()
 					updateCountLabel()
 					refreshFlows()
 					refreshEventList()
+					refreshInspector()
 				end)
 				sw.LayoutOrder = 1
 				local play = btn(controls, "▶", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
@@ -7193,6 +7336,9 @@ eventEditor = (function()
 						end
 						pushUndo()
 						if not renameGroup(ev, groupName, newName) then return end
+						if tostring(inspHolder:GetAttribute("EEGroup") or "") == groupName then
+							inspHolder:SetAttribute("EEGroup", newName)
+						end
 						markEdited()
 						refreshFlows()
 						refreshInspector()
@@ -7205,6 +7351,9 @@ eventEditor = (function()
 					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
 						pushUndo()
 						deleteGroup(ev, groupName)
+						if tostring(inspHolder:GetAttribute("EEGroup") or "") == groupName then
+							inspHolder:SetAttribute("EEGroup", "")
+						end
 						markEdited()
 						refreshFlows()
 						refreshInspector()
@@ -7640,6 +7789,8 @@ eventEditor = (function()
 			end
 			pushUndo()
 			evG.groupState[name] = { enabled = true, collapsed = false }
+			selectedCmd = nil
+			inspHolder:SetAttribute("EEGroup", name)
 			markEdited()
 			refreshFlows()
 			refreshInspector()
@@ -7940,6 +8091,7 @@ eventEditor = (function()
 			ev.groupState = {}
 			ev.enabled = true
 			selectedCmd = nil
+			inspHolder:SetAttribute("EEGroup", "")
 			markEdited()
 			updateCountLabel()
 			refreshFlows()
@@ -7997,6 +8149,7 @@ eventEditor = (function()
 		updateCountLabel()
 		refreshFlows()
 		refreshEventList()
+		refreshInspector()
 		notify(T("autoStudio"), T("eePresetsAdded"))
 	end)
 
@@ -8020,6 +8173,7 @@ eventEditor = (function()
 		updateCountLabel()
 		refreshEventList()
 		if selectedEventName then refreshFlows() end
+		refreshInspector()
 		notify(T("autoStudio"), T("eePresetsAdded"))
 	end)
 

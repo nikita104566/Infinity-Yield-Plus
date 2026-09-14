@@ -1,4 +1,4 @@
 {
-	"Version": "7.58",
-	"Announcement": "7.58: repeatlast / ping / fps / cmdcount"
+	"Version": "7.59",
+	"Announcement": "7.59: Studio Inspector shows event/group details; group Off is on the header, not every card"
 }

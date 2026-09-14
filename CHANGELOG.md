@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.59 — 2026-09-14
+
+### Improved
+- Automation Studio Inspector is useful when no workflow card is selected: event description, variables, and group list instead of a blank hint.
+- Click a group header to inspect that group (enable/count) without opening a card.
+- Disabled groups show **Off** once on the header. Cards no longer repeat GROUP OFF / PAUSED on every row.
+
 ## 7.58 — 2026-09-14
 
 ### Added
