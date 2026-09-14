@@ -1,1 +1,117 @@
--- see local patched file; placeholder if this fails
+-- Infinity Yield Plus 7.63
+-- One user loadstring. Runs pinned core, then registers showhistory in the same env.
+-- Core pin: e30e0ec (main source before this tick).
+
+local CORE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+
+local function g()
+	return (getgenv and getgenv()) or _G
+end
+
+local okFetch, src = pcall(function()
+	return game:HttpGet(CORE)
+end)
+assert(okFetch and type(src) == "string" and #src > 1000, "IYP 7.63: failed to fetch core source")
+
+local fn, loadErr = loadstring(src)
+assert(fn, loadErr or "IYP 7.63: core compile failed")
+fn()
+
+local env = g()
+local function pick(name)
+	local v = rawget(_G, name)
+	if v == nil and env then
+		v = env[name]
+	end
+	return v
+end
+
+currentVersion = "7.63"
+if env then
+	env.currentVersion = "7.63"
+end
+pcall(function()
+	local apply = pick("applyHeaderBrand")
+	if type(apply) == "function" then
+		apply()
+	end
+end)
+
+do
+	local UI_L = pick("UI_L")
+	if type(UI_L) == "table" then
+		if type(UI_L.en) == "table" then
+			UI_L.en.histTitle = "History"
+			UI_L.en.histEmpty = "History is empty"
+		end
+		if type(UI_L.ru) == "table" then
+			UI_L.ru.histTitle = "История"
+			UI_L.ru.histEmpty = "История пуста"
+		end
+	end
+end
+
+do
+	local CMDs = pick("CMDs")
+	if type(CMDs) == "table" then
+		local exists = false
+		for i = 1, #CMDs do
+			local row = CMDs[i]
+			if type(row) == "table" and type(row.NAME) == "string" and string.find(row.NAME, "showhistory", 1, true) then
+				exists = true
+				break
+			end
+		end
+		if not exists then
+			CMDs[#CMDs + 1] = {
+				NAME = "showhistory / hist / cmdhistory",
+				DESC = "Shows recent saved commands",
+			}
+		end
+	end
+end
+
+do
+	local addcmd = pick("addcmd")
+	local notify = pick("notify")
+	local T = pick("T")
+	local findCmd = pick("findCmd")
+	local function say(title, body)
+		if type(notify) == "function" then
+			notify(title, body)
+		end
+	end
+	local function tr(key, fallback)
+		if type(T) == "function" then
+			local s = T(key)
+			if type(s) == "string" and s ~= key then
+				return s
+			end
+		end
+		return fallback
+	end
+	local function showHistory()
+		local cmdHistory = pick("cmdHistory")
+		if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+			say(tr("histTitle", "History"), tr("histEmpty", "History is empty"))
+			return
+		end
+		local n = math.min(8, #cmdHistory)
+		local lines = {}
+		for i = 1, n do
+			lines[#lines + 1] = tostring(i) .. ". " .. tostring(cmdHistory[i])
+		end
+		say(tr("histTitle", "History"), table.concat(lines, "\n"))
+	end
+	local already = false
+	if type(findCmd) == "function" then
+		already = findCmd("showhistory") or findCmd("hist") or findCmd("cmdhistory")
+	end
+	if already then
+		if type(already) == "table" then
+			already.FUNC = showHistory
+		end
+	elseif type(addcmd) == "function" then
+		addcmd("showhistory", {"hist", "cmdhistory"}, showHistory)
+	end
+end
