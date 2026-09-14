@@ -1,5 +1,19 @@
 # Changelog
 
+## 7.60 — 2026-09-14
+
+### Added
+- `whoami` (`myinfo`, `iypme`) — local name, display name, UserId.
+- `copyuserid` (`cpuid`, `copyuid`) — copies your UserId when clipboard is available.
+- `copyjob` (`cpjob`, `copyjobid`) — copies JobId.
+- `serverage` (`uptime`, `srvage`) — `DistributedGameTime` as h/m/s.
+- `memory` (`mem`, `ram`) — total client memory usage when Stats allows it.
+- `hotfixes` now also reports the 760 flag.
+
+### Notes
+- Main `source` is unchanged. Load `hotfix760.luau` after `source` (and after 756–759 if you still use them).
+- Idempotent (`_G.__IYP_760_CMDS`). RU/EN strings for the new notices.
+
 ## 7.59 — 2026-09-14
 
 ### Added
