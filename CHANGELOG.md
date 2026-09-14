@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.60 — 2026-09-14
+
+### Improved
+- Automation Studio named group icons (enable, run, fold, rename, delete) show EN/RU hover tooltips.
+- Inspector up/down action hints now use the same localized Up/Down strings.
+
+### Notes
+- Baked into main `source`. Existing 754–759 hotfixes still add their commands if you load them after `source`.
+- `hotfix759` only raises the version badge when it is older than 7.59, so it no longer overwrites 7.60.
+
 ## 7.59 — 2026-09-14
 
 ### Added

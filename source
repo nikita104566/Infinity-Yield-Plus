@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.60'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -669,6 +669,11 @@ UI_L = {
 		eeAddToGroupPh = "Command for %s",
 		eeRunGroupEmpty = "No enabled commands in this group",
 		eeRunGroupOk = "Ran %d commands",
+		eeRunGroup = "Run group",
+		eeFold = "Collapse",
+		eeUnfold = "Expand",
+		eeGroupOn = "Enable group",
+		eeGroupOff = "Disable group",
 		eeGroupReserved = "That group name is reserved",
 		eeSkipBusy = "Fire skipped (busy / depth)",
 		eeSkipNotBelow = "Health not below threshold",
@@ -894,6 +899,11 @@ UI_L = {
 		eeAddToGroupPh = "Команда для %s",
 		eeRunGroupEmpty = "В группе нет включённых команд",
 		eeRunGroupOk = "Запущено команд: %d",
+		eeRunGroup = "Запустить группу",
+		eeFold = "Свернуть",
+		eeUnfold = "Развернуть",
+		eeGroupOn = "Включить группу",
+		eeGroupOff = "Выключить группу",
 		eeGroupReserved = "Это имя группы зарезервировано",
 		eeSkipBusy = "Пропуск (занято / глубина)",
 		eeSkipNotBelow = "Здоровье не ниже порога",
@@ -5609,6 +5619,28 @@ eventEditor = (function()
 		ZIndex = 120,
 	}, right), 7)
 	uiStroke(right:FindFirstChild("EEInspTooltip"), EE_ACCENT, 1, 0.25)
+	uiCorner(mk("TextLabel", {
+		Name = "EEFlowTooltip",
+		BackgroundColor3 = Color3.fromRGB(12, 11, 20),
+		BackgroundTransparency = 0.02,
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromOffset(0, 0),
+		Size = UDim2.fromOffset(58, 24),
+		Font = UI_FONT_MED,
+		TextSize = 10,
+		TextColor3 = EE_TEXT,
+		Text = "",
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Visible = false,
+		Active = false,
+		ZIndex = 120,
+	}, shell), 7)
+	uiStroke(shell:FindFirstChild("EEFlowTooltip"), EE_ACCENT, 1, 0.25)
+	flowList:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		local flowHint = shell:FindFirstChild("EEFlowTooltip")
+		if flowHint then flowHint.Visible = false end
+	end)
 
 	local inspHolder = mk("Frame", {
 		BackgroundTransparency = 1,
@@ -5981,6 +6013,12 @@ eventEditor = (function()
 	uiCorner(modalDimmer, 14)
 	setModalDimmer = function(on)
 		modalDimmer.Visible = on == true
+		if on == true then
+			local flowHint = shell:FindFirstChild("EEFlowTooltip")
+			if flowHint then flowHint.Visible = false end
+			local inspHint = right:FindFirstChild("EEInspTooltip")
+			if inspHint then inspHint.Visible = false end
+		end
 	end
 	modalDimmer.MouseButton1Click:Connect(function()
 		if promptFrame.Visible then
@@ -6557,7 +6595,7 @@ eventEditor = (function()
 				uiCorner(front, 2)
 				uiStroke(front, EE_MUTED, 1, 0.08)
 			end
-			local hintText = order == 1 and "Move up" or (order == 2 and "Move down" or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
+			local hintText = order == 1 and T("eeUp") or (order == 2 and T("eeDown") or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
 			b.LayoutOrder = order
 			b.ZIndex = 47
 			b.TextSize = 14
@@ -6571,11 +6609,18 @@ eventEditor = (function()
 				if enabled then b.BackgroundColor3 = order == 3 and EE_ACCENT or EE_SURFACE_HOVER end
 				local hint = right:FindFirstChild("EEInspTooltip")
 				if hint then
+					local s = right.AbsoluteSize.X / EE_RIGHT_W
+					if not s or s <= 0 then s = 1 end
 					local hintWidth = math.max(58, (utf8.len(hintText) or #hintText) * 6 + 16)
-					local hintX = b.AbsolutePosition.X - right.AbsolutePosition.X + b.AbsoluteSize.X * 0.5
-					hintX = math.clamp(hintX, hintWidth * 0.5 + 8, right.AbsoluteSize.X - hintWidth * 0.5 - 8)
-					local hintY = b.AbsolutePosition.Y - right.AbsolutePosition.Y + b.AbsoluteSize.Y + 5
-					if hintY + 24 > right.AbsoluteSize.Y - 8 then hintY = b.AbsolutePosition.Y - right.AbsolutePosition.Y - 29 end
+					local panelW = right.AbsoluteSize.X / s
+					local panelH = right.AbsoluteSize.Y / s
+					local hintX = (b.AbsolutePosition.X - right.AbsolutePosition.X + b.AbsoluteSize.X * 0.5) / s
+					hintX = math.clamp(hintX, hintWidth * 0.5 + 8, panelW - hintWidth * 0.5 - 8)
+					local hintY = (b.AbsolutePosition.Y - right.AbsolutePosition.Y + b.AbsoluteSize.Y + 5) / s
+					if hintY + 24 > panelH - 8 then
+						hintY = (b.AbsolutePosition.Y - right.AbsolutePosition.Y) / s - 29
+					end
+					if hintY < 8 then hintY = 8 end
 					hint.Text = hintText
 					hint.Size = UDim2.fromOffset(hintWidth, 24)
 					hint.Position = UDim2.fromOffset(hintX, hintY)
@@ -6925,6 +6970,10 @@ eventEditor = (function()
 
 	refreshFlows = function()
 		flowCards = {}
+		do
+			local flowHint = shell:FindFirstChild("EEFlowTooltip")
+			if flowHint then flowHint.Visible = false end
+		end
 		for _, c in ipairs(flowHolder:GetChildren()) do
 			if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
 		end
@@ -6939,6 +6988,34 @@ eventEditor = (function()
 		emptyFlow.Text = T("eeNoFlows")
 		local y = 0
 		local layoutOrder = 0
+		local function bindHint(gui, hintText)
+			if not (gui and hintText and hintText ~= "") then return end
+			gui.MouseEnter:Connect(function()
+				local hint = shell:FindFirstChild("EEFlowTooltip")
+				if not hint then return end
+				local s = shell.AbsoluteSize.X / EE_W
+				if not s or s <= 0 then s = 1 end
+				local hintWidth = math.max(58, (utf8.len(hintText) or #hintText) * 6 + 16)
+				local shellW = shell.AbsoluteSize.X / s
+				local shellH = shell.AbsoluteSize.Y / s
+				local hintX = (gui.AbsolutePosition.X - shell.AbsolutePosition.X + gui.AbsoluteSize.X * 0.5) / s
+				hintX = math.clamp(hintX, hintWidth * 0.5 + 8, shellW - hintWidth * 0.5 - 8)
+				local hintY = (gui.AbsolutePosition.Y - shell.AbsolutePosition.Y + gui.AbsoluteSize.Y + 5) / s
+				local colBottom = (center.AbsolutePosition.Y + center.AbsoluteSize.Y - shell.AbsolutePosition.Y) / s
+				if hintY + 24 > math.min(shellH, colBottom) - 8 then
+					hintY = (gui.AbsolutePosition.Y - shell.AbsolutePosition.Y) / s - 29
+				end
+				if hintY < 8 then hintY = 8 end
+				hint.Text = hintText
+				hint.Size = UDim2.fromOffset(hintWidth, 24)
+				hint.Position = UDim2.fromOffset(hintX, hintY)
+				hint.Visible = true
+			end)
+			gui.MouseLeave:Connect(function()
+				local hint = shell:FindFirstChild("EEFlowTooltip")
+				if hint then hint.Visible = false end
+			end)
+		end
 
 		local function renderCard(cmd, absoluteIndex, groupPeers, parentFrame)
 			layoutOrder += 1
@@ -7145,6 +7222,7 @@ eventEditor = (function()
 					refreshEventList()
 				end)
 				sw.LayoutOrder = 1
+				bindHint(sw, (st.enabled ~= false) and T("eeGroupOff") or T("eeGroupOn"))
 				local play = btn(controls, "▶", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					local args = testArgsFor(ev)
 					local n = 0
@@ -7171,6 +7249,7 @@ eventEditor = (function()
 				play:SetAttribute("EEActive", true)
 				play:SetAttribute("EEActiveColor", EE_PRIMARY)
 				play.BackgroundColor3 = EE_PRIMARY
+				bindHint(play, T("eeRunGroup"))
 				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					st.collapsed = not st.collapsed
 					markEdited()
@@ -7178,6 +7257,7 @@ eventEditor = (function()
 				end)
 				fold.LayoutOrder = 3
 				styleFoldIcon(fold, st.collapsed)
+				bindHint(fold, st.collapsed and T("eeUnfold") or T("eeFold"))
 
 				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					promptText(T("eeRenameGroup"), groupName, function(text)
@@ -7200,6 +7280,7 @@ eventEditor = (function()
 				end)
 				rename.LayoutOrder = 4
 				rename.TextSize = 10
+				bindHint(rename, T("eeRenameGroup"))
 
 				local del = btn(controls, "×", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
@@ -7215,6 +7296,7 @@ eventEditor = (function()
 				del.LayoutOrder = 5
 				del.TextColor3 = EE_DANGER
 				del.TextSize = 13
+				bindHint(del, T("eeDeleteGroup"))
 
 			else
 				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
@@ -7223,6 +7305,7 @@ eventEditor = (function()
 					refreshFlows()
 				end)
 				styleFoldIcon(fold, st.collapsed)
+				bindHint(fold, st.collapsed and T("eeUnfold") or T("eeFold"))
 
 			end
 			y += named and 46 or 26
@@ -7889,6 +7972,12 @@ eventEditor = (function()
 	local function closeStudio()
 		setPickerVisible(false)
 		hideInspDrop()
+		do
+			local flowHint = shell:FindFirstChild("EEFlowTooltip")
+			if flowHint then flowHint.Visible = false end
+			local inspHint = right:FindFirstChild("EEInspTooltip")
+			if inspHint then inspHint.Visible = false end
+		end
 		historyFrame.Visible = false
 		importFrame.Visible = false
 		if confirmFrame then confirmFrame.Visible = false end
