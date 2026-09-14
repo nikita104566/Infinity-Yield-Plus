@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.56 — 2026-09-14
+
+### Improved
+- Consecutive duplicate history entries are collapsed.
+- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in ↑/↓ history.
+- New command: `showhistory` (`hist`, `cmdhistory`) — shows the last few saved commands.
+- History is re-sanitized and capped at 30 after each exec (still debounced ~0.35s).
+- Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
+
+### Notes
+- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix756.luau` after `source`. You can skip 754/755 if you load 756.
+
 ## 7.55 — 2026-09-14
 
 ### Improved
