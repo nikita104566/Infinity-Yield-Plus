@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list now shows a short empty state (EN/RU) when the bar filter matches nothing, instead of a blank scroll area.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
