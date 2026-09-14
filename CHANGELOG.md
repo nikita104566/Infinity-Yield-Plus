@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.63 — 2026-09-14
+
+### Improved
+- Automation Studio Inspector now covers a selected group: count, enable switch, rename, run all, delete, and the workflows in it.
+- Group header icons show tooltips. Cards no longer repeat a GROUP OFF badge (the header already shows it).
+- Inspector ↑/↓ hints follow the language toggle.
+
+### Notes
+- One loadstring: `source`. `currentVersion` is 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
