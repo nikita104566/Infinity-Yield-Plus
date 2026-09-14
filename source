@@ -741,6 +741,13 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		palTitle = "Command Palette",
+		palShortcut = "Ctrl K",
+		palPlaceholder = "Search commands or type arguments...",
+		palSectionRecent = "FAVORITES & RECENT",
+		palSectionResults = "RESULTS · %d",
+		palEmpty = "No matching commands",
+		palFooter = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +973,13 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		palTitle = "Палитра команд",
+		palShortcut = "Ctrl K",
+		palPlaceholder = "Поиск команд или аргументы...",
+		palSectionRecent = "ИЗБРАННОЕ И НЕДАВНИЕ",
+		palSectionResults = "РЕЗУЛЬТАТЫ · %d",
+		palEmpty = "Нет подходящих команд",
+		palFooter = "↑↓ навигация   Enter запуск   Esc закрыть   ПКМ — избранное",
 	},
 }
 
@@ -1190,6 +1204,9 @@ function applyUiLanguage()
 	if type(updateKbToggleLabel) == "function" then updateKbToggleLabel() end
 	if TriggerLabel then TriggerLabel.Text = T("keybindTrigger") end
 	if Add then Add.Text = T("keybindAdd") end
+	if scoreCache and scoreCache.palette and type(scoreCache.palette.ApplyLang) == "function" then
+		pcall(scoreCache.palette.ApplyLang)
+	end
 	if BindTo then
 		local idleEn = UI_L.en and UI_L.en.keybindClickToBind
 		local idleRu = UI_L.ru and UI_L.ru.keybindClickToBind
@@ -13448,7 +13465,7 @@ end))
 if scoreCache then
     scoreCache.palette = (function()
         local api = {}
-        local state = { rows = {}, items = {}, selected = 1, refreshToken = 0 }
+        local state = { rows = {}, items = {}, selected = 1, refreshToken = 0, descCache = {}, descCacheLang = nil }
         local old = ScaledHolder and ScaledHolder:FindFirstChild("IYR_COMMAND_PALETTE")
         if old then old:Destroy() end
 
@@ -13492,12 +13509,13 @@ if scoreCache then
         local title = Instance.new("TextLabel")
         title.BackgroundTransparency = 1
         title.Position = UDim2.fromOffset(20, 12)
-        title.Size = UDim2.new(1, -40, 0, 24)
+        title.Size = UDim2.new(1, -110, 0, 24)
         title.Font = UI_FONT_MED
         title.TextSize = 15
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.TextColor3 = Color3.fromRGB(248, 248, 252)
-        title.Text = "Command Palette"
+        title.Text = T("palTitle")
+        title.TextTruncate = Enum.TextTruncate.AtEnd
         title.ZIndex = 92
         title.Parent = panel
 
@@ -13508,7 +13526,7 @@ if scoreCache then
         shortcut.Font = UI_FONT_MED
         shortcut.TextSize = 11
         shortcut.TextColor3 = Color3.fromRGB(198, 187, 230)
-        shortcut.Text = "Ctrl K"
+        shortcut.Text = T("palShortcut")
         shortcut.ZIndex = 93
         shortcut.Parent = panel
         local shortcutCorner = Instance.new("UICorner")
@@ -13526,7 +13544,7 @@ if scoreCache then
         search.TextSize = 14
        search.TextColor3 = Color3.fromRGB(248, 248, 252)
         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
-        search.PlaceholderText = "Search commands or type arguments..."
+        search.PlaceholderText = T("palPlaceholder")
         search.Text = ""
         search.TextXAlignment = Enum.TextXAlignment.Left
         search.ZIndex = 92
@@ -13552,7 +13570,7 @@ if scoreCache then
         section.TextSize = 11
         section.TextXAlignment = Enum.TextXAlignment.Left
         section.TextColor3 = Color3.fromRGB(153, 145, 177)
-        section.Text = "FAVORITES & RECENT"
+        section.Text = T("palSectionRecent")
         section.ZIndex = 92
         section.Parent = panel
 
@@ -13585,7 +13603,8 @@ if scoreCache then
         footer.TextSize = 11
         footer.TextXAlignment = Enum.TextXAlignment.Left
         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
+        footer.Text = T("palFooter")
+        footer.TextTruncate = Enum.TextTruncate.AtEnd
         footer.ZIndex = 92
         footer.Parent = panel
 
@@ -13594,6 +13613,18 @@ if scoreCache then
         end
         local function trim(text)
             return tostring(text or ""):match("^%s*(.-)%s*$") or ""
+        end
+        -- ASCII lower plus Cyrillic А-Я/Ё so RU description search is case-insensitive.
+        local function fold(text)
+            text = tostring(text or ""):lower()
+            text = text:gsub("\208([\144-\159])", function(b)
+                return "\208" .. string.char(string.byte(b) + 32)
+            end)
+            text = text:gsub("\208([\160-\175])", function(b)
+                return "\209" .. string.char(string.byte(b) - 32)
+            end)
+            text = text:gsub("\208\129", "\209\145")
+            return text
         end
         local function isFav(name)
             local key = primary(name):lower()
@@ -13633,12 +13664,15 @@ if scoreCache then
             if not item then return end
             local typed = trim(search.Text)
             local first = typed:match("^(%S+)")
+            local rest = typed:match("^%S+%s+(.+)$")
             local runText = item.key
-            if first and typed:find("%s") then
-                local firstLower = first:lower()
-                local names = ("/" .. tostring(item.name):lower():gsub("%s+", "") .. "/")
-                if firstLower == item.key:lower() or names:find("/" .. firstLower .. "/", 1, true) then
+            if first and rest then
+                local firstFold = fold(first)
+                local names = ("/" .. fold(tostring(item.name)):gsub("%s+", "") .. "/")
+                if firstFold == fold(item.key) or names:find("/" .. firstFold .. "/", 1, true) then
                     runText = typed
+                else
+                    runText = item.key .. " " .. rest
                 end
             end
             api.Close()
@@ -13715,37 +13749,59 @@ if scoreCache then
             task.delay(0.025, function()
                 if token ~= state.refreshToken or not root.Visible then return end
                 for _, child in ipairs(holder:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
+                    if child:IsA("TextButton") or child.Name == "Empty" then child:Destroy() end
                 end
                 state.rows = {}
                 state.items = {}
-                local query = trim(search.Text):lower()
+                local query = fold(trim(search.Text))
                 local queryHead = query:match("^(%S+)") or ""
                 local candidates = {}
+                local noDesc = T("noDesc")
+                if state.descCacheLang ~= uiLang then
+                    state.descCacheLang = uiLang
+                    state.descCache = {}
+                end
                 for index, info in ipairs(CMDs or {}) do
                     local name = tostring(info.NAME or "")
                     local key = primary(name)
                     if key ~= "" then
-                        local desc = tostring(info.DESC or "")
-                        local hay = (name .. " " .. desc):lower()
+                        local cacheKey = key:lower()
+                        local rawDesc = tostring(info.DESC or "")
+                        local packed = state.descCache[cacheKey]
+                        if packed == nil then
+                            local locDesc = getLocalizedDesc(name, rawDesc)
+                            if locDesc == noDesc then locDesc = "" end
+                            packed = {
+                                loc = locDesc,
+                                hay = fold(name .. " " .. locDesc .. " " .. rawDesc),
+                            }
+                            state.descCache[cacheKey] = packed
+                        end
+                        local locDesc, hay = packed.loc, packed.hay
                         local fav = isFav(name)
                         local recent = recentRank(name)
                         local score = nil
                         if queryHead == "" then
                             score = (fav and 20000 or 0) + (recent and (10000 - recent * 20) or 0) - index * 0.001
-                        elseif key:lower() == queryHead then
-                            score = 50000
-                        elseif key:lower():sub(1, #queryHead) == queryHead then
-                            score = 40000 - #key
-                        elseif name:lower():find(queryHead, 1, true) then
-                            score = 30000
-                        elseif hay:find(query, 1, true) then
-                            score = 20000
+                        else
+                            local keyFold = cacheKey
+                            local nameFold = name:lower()
+                            if keyFold == queryHead then
+                                score = 50000
+                            elseif keyFold:sub(1, #queryHead) == queryHead then
+                                score = 40000 - #key
+                            elseif nameFold:find(queryHead, 1, true) then
+                                score = 30000
+                            elseif query ~= queryHead and hay:find(query, 1, true) then
+                                score = 22000
+                            elseif hay:find(queryHead, 1, true) then
+                                score = 20000
+                            end
                         end
                         if score then
                             score += fav and 900 or 0
                             score += recent and math.max(0, 500 - recent * 10) or 0
-                            candidates[#candidates + 1] = { name = name, key = key, desc = desc, fav = fav, recent = recent, score = score }
+                            candidates[#candidates + 1] = { name = name, key = key, desc = locDesc, fav = fav, recent = recent, score = score }
                         end
                     end
                 end
@@ -13756,7 +13812,7 @@ if scoreCache then
                 local limit = math.min(8, #candidates)
                 for i = 1, limit do state.items[i] = candidates[i] end
                 state.selected = limit > 0 and 1 or 0
-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
+                section.Text = queryHead == "" and T("palSectionRecent") or (T("palSectionResults"):gsub("%%d", tostring(#candidates), 1))
                 if limit == 0 then
                     local empty = Instance.new("TextLabel")
                     empty.Name = "Empty"
@@ -13765,12 +13821,10 @@ if scoreCache then
                     empty.Font = UI_FONT
                     empty.TextSize = 13
                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
-                    empty.Text = "No matching commands"
+                    empty.Text = T("palEmpty")
                     empty.ZIndex = 93
                     empty.Parent = holder
                 else
-                    local oldEmpty = holder:FindFirstChild("Empty")
-                    if oldEmpty then oldEmpty:Destroy() end
                     for i, item in ipairs(state.items) do makeRow(item, i) end
                 end
                 holder.Size = UDim2.new(1, -6, 0, math.max(80, limit * 59))
@@ -13797,6 +13851,17 @@ if scoreCache then
         end
         function api.IsOpen()
             return root.Visible
+        end
+        function api.ApplyLang()
+            title.Text = T("palTitle")
+            shortcut.Text = T("palShortcut")
+            search.PlaceholderText = T("palPlaceholder")
+            footer.Text = T("palFooter")
+            if root.Visible then
+                refresh()
+            else
+                section.Text = T("palSectionRecent")
+            end
         end
         api.Root = root
         api.Search = search
@@ -13828,6 +13893,7 @@ if scoreCache then
                 task.defer(executeSelected)
             end
         end))
+        api.ApplyLang()
         return api
     end)()
 end
