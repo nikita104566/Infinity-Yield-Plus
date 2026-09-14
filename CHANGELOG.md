@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.66 — 2026-09-14
+
+### Improved
+- Automation Studio command picker sits in the center column, sizes to its rows (no empty slots), and shows “No commands match” when the typed name hits nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
