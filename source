@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.60'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -588,6 +588,8 @@ UI_L = {
 		autoPaused = "Automations paused",
 		autoResumed = "Automations resumed",
 		eeSearch = "Search events...",
+		eeFlowSearch = "Filter commands...",
+		eeNoFlowMatch = "No commands match this filter.",
 		eeSelectEvent = "Select an event",
 		eeNoFlows = "No workflows yet\nAdd a command below to create one.",
 		eePickEvent = "Select an event to view its workflows.",
@@ -813,6 +815,8 @@ UI_L = {
 		autoPaused = "Автоматизации на паузе",
 		autoResumed = "Автоматизации возобновлены",
 		eeSearch = "Поиск событий...",
+		eeFlowSearch = "Фильтр команд...",
+		eeNoFlowMatch = "Нет команд по этому фильтру.",
 		eeSelectEvent = "Выбери событие",
 		eeNoFlows = "Пока нет workflow\nДобавь команду ниже.",
 		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
@@ -5332,9 +5336,49 @@ eventEditor = (function()
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(245, 245, 247),
 		Text = "Select an event",
+		TextTruncate = Enum.TextTruncate.AtEnd,
 		ZIndex = 42,
 	}, center)
 	table.insert(text1, eventTitle)
+	do
+		local flowSearch = mk("TextBox", {
+			Name = "EEFlowSearch",
+			BackgroundColor3 = EE_SURFACE,
+			BorderSizePixel = 0,
+			Position = UDim2.new(1, -140, 0, 8),
+			Size = UDim2.new(0, 128, 0, 22),
+			Font = UI_FONT,
+			TextSize = 11,
+			Text = "",
+			PlaceholderText = T("eeFlowSearch"),
+			PlaceholderColor3 = EE_MUTED,
+			TextColor3 = Color3.fromRGB(245, 245, 247),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			ClearTextOnFocus = false,
+			Visible = false,
+			ZIndex = 42,
+		}, center)
+		uiCorner(flowSearch, 7)
+		uiStroke(flowSearch, EE_BORDER, 1, 0.35)
+		uiPad(flowSearch, 8, 0, 8, 0)
+		table.insert(shade2, flowSearch)
+		local flowStroke = flowSearch:FindFirstChildOfClass("UIStroke")
+		flowSearch.Focused:Connect(function()
+			flowSearch.BackgroundColor3 = Color3.fromRGB(34, 31, 48)
+			if flowStroke then
+				flowStroke.Color = EE_ACCENT
+				flowStroke.Transparency = 0.08
+			end
+		end)
+		flowSearch.FocusLost:Connect(function()
+			flowSearch.BackgroundColor3 = EE_SURFACE
+			if flowStroke then
+				flowStroke.Color = EE_BORDER
+				flowStroke.Transparency = 0.35
+			end
+		end)
+	end
 
 	local eventDesc = mk("TextLabel", {
 		BackgroundTransparency = 1,
@@ -6929,18 +6973,31 @@ eventEditor = (function()
 			if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
 		end
 		local ev = selectedEventName and events[selectedEventName]
+		local q = string.lower((tostring(center:GetAttribute("EEFlowQ") or ""):gsub("^%s+", ""):gsub("%s+$", "")))
+		local flowSearchBox = center:FindFirstChild("EEFlowSearch")
 		if not ev then
 			emptyFlow.Visible = true
 			emptyFlow.Text = T("eePickEvent")
 			flowList.CanvasSize = UDim2.new(0, 0, 0, 0)
+			eventTitle.Size = UDim2.new(1, -24, 0, 22)
+			if flowSearchBox then flowSearchBox.Visible = false end
 			return
 		end
+		eventTitle.Size = UDim2.new(1, -160, 0, 22)
+		if flowSearchBox then flowSearchBox.Visible = true end
 		ensureEventExtras(ev)
 		emptyFlow.Text = T("eeNoFlows")
 		local y = 0
 		local layoutOrder = 0
+		local shownN = 0
+
+		local function cmdMatches(cmd)
+			if q == "" then return true end
+			return tostring(cmd[1] or ""):lower():find(q, 1, true) ~= nil
+		end
 
 		local function renderCard(cmd, absoluteIndex, groupPeers, parentFrame)
+			shownN += 1
 			layoutOrder += 1
 			local meta = getMeta(cmd)
 			local selected = selectedCmd == cmd
@@ -7080,10 +7137,11 @@ eventEditor = (function()
 			return ung
 		end
 
-		local function renderSectionHeader(groupName, peers, parentFrame)
+		local function renderSectionHeader(groupName, peers, parentFrame, ignoreCollapsed)
 			layoutOrder += 1
 			local named = groupName ~= ""
 			local st = named and getGroupState(ev, groupName) or ungroupedState()
+			local visCollapsed = st.collapsed == true and not ignoreCollapsed
 			local label = named and groupName or T("eeNoGroup")
 			local en = 0
 			for _, idx in ipairs(peers) do
@@ -7172,12 +7230,13 @@ eventEditor = (function()
 				play:SetAttribute("EEActiveColor", EE_PRIMARY)
 				play.BackgroundColor3 = EE_PRIMARY
 				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
+					if ignoreCollapsed then return end
 					st.collapsed = not st.collapsed
 					markEdited()
 					refreshFlows()
 				end)
 				fold.LayoutOrder = 3
-				styleFoldIcon(fold, st.collapsed)
+				styleFoldIcon(fold, visCollapsed)
 
 				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					promptText(T("eeRenameGroup"), groupName, function(text)
@@ -7218,11 +7277,12 @@ eventEditor = (function()
 
 			else
 				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
+					if ignoreCollapsed then return end
 					st.collapsed = not st.collapsed
 					markEdited()
 					refreshFlows()
 				end)
-				styleFoldIcon(fold, st.collapsed)
+				styleFoldIcon(fold, visCollapsed)
 
 			end
 			y += named and 46 or 26
@@ -7297,6 +7357,21 @@ eventEditor = (function()
 			if g == "" and #peers == 0 then
 				continue
 			end
+			local shownPeers = peers
+			if q ~= "" then
+				local groupHit = g ~= "" and string.lower(g):find(q, 1, true) ~= nil
+				if not groupHit then
+					shownPeers = {}
+					for _, idx in ipairs(peers) do
+						if cmdMatches(ev.commands[idx]) then
+							shownPeers[#shownPeers + 1] = idx
+						end
+					end
+				end
+				if #shownPeers == 0 then
+					continue
+				end
+			end
 			if g ~= "" then
 				layoutOrder += 1
 				local shellOrder = layoutOrder
@@ -7315,20 +7390,27 @@ eventEditor = (function()
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = UDim.new(0, 6),
 				}, groupShell)
-				local st = renderSectionHeader(g, peers, groupShell)
-				local collapsed = st.collapsed == true
+				local st = renderSectionHeader(g, peers, groupShell, q ~= "")
+				local collapsed = st.collapsed == true and q == ""
 				if not collapsed then
-					for _, idx in ipairs(peers) do
-						renderCard(ev.commands[idx], idx, peers, groupShell)
+					for _, idx in ipairs(shownPeers) do
+						renderCard(ev.commands[idx], idx, shownPeers, groupShell)
 					end
-					renderGroupAddRow(g, groupShell)
+					if q == "" then
+						renderGroupAddRow(g, groupShell)
+					end
 				end
 				y += 14
 			else
-				for _, idx in ipairs(peers) do
-					renderCard(ev.commands[idx], idx, peers, nil)
+				for _, idx in ipairs(shownPeers) do
+					renderCard(ev.commands[idx], idx, shownPeers, nil)
 				end
 			end
+		end
+
+		if q ~= "" and shownN == 0 then
+			emptyFlow.Visible = true
+			emptyFlow.Text = T("eeNoFlowMatch")
 		end
 
 		flowList.CanvasSize = UDim2.new(0, 0, 0, y + 12)
@@ -7578,6 +7660,19 @@ eventEditor = (function()
 			if tok ~= eventSearchTok then return end
 			eventList.CanvasPosition = Vector2.new(0, 0)
 			refreshEventList()
+		end)
+	end)
+	pcall(function()
+		center.EEFlowSearch:GetPropertyChangedSignal("Text"):Connect(function()
+			local qBox = center:FindFirstChild("EEFlowSearch")
+			if not qBox then return end
+			center:SetAttribute("EEFlowQ", qBox.Text)
+			local tok = (tonumber(center:GetAttribute("EEFlowQTok")) or 0) + 1
+			center:SetAttribute("EEFlowQTok", tok)
+			task.delay(0.04, function()
+				if center:GetAttribute("EEFlowQTok") ~= tok then return end
+				if selectedEventName then refreshFlows() end
+			end)
 		end)
 	end)
 
@@ -8257,6 +8352,10 @@ eventEditor = (function()
 	local function applyStudioLang()
 		title.Text = T("autoStudio")
 		searchBox.PlaceholderText = T("eeSearch")
+		pcall(function()
+			local fs = center:FindFirstChild("EEFlowSearch")
+			if fs then fs.PlaceholderText = T("eeFlowSearch") end
+		end)
 		pauseBtn.Text = masterPaused and T("eeResume") or T("eePause")
 		histBtn.Text = T("eeHistory")
 		addBtn.Text = T("eeAdd")

@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.60 — 2026-09-14
+
+### Improved
+- Automation Studio: filter box on the event flow filters command cards and group names as you type.
+- Matching groups stay expanded while filtering; empty match shows a RU/EN empty state.
+- Group ▶ /  n/m counts still use the full group (filter only hides cards).
+- Event title truncates instead of running under the new filter field.
+
+### Notes
+- Query lives on the Studio `center` instance (`EEFlowQ`), not on `runtime`.
+- `hotfix759` no longer overwrites a newer in-app version badge (7.60+).
+
 ## 7.59 — 2026-09-14
 
 ### Added
