@@ -2,6 +2,14 @@
 -- Load after source (and after hotfix755 if you still use it).
 -- Dedup consecutive history, skip meta-commands, showhistory, version badge.
 -- Safe to run more than once.
+-- No-op on 7.59+ (these fixes are baked into source).
+
+do
+	local a, b = string.match(tostring(currentVersion or ""), "^(%d+)%.(%d+)")
+	if (tonumber(a) or 0) > 7 or ((tonumber(a) or 0) == 7 and (tonumber(b) or 0) >= 59) then
+		return
+	end
+end
 
 pcall(function()
 	currentVersion = "7.56"
