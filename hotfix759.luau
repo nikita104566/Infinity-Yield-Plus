@@ -4,6 +4,13 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function verKey(v)
+		local a, b = tostring(v or ""):match("^(%d+)%.(%d+)")
+		return (tonumber(a) or 0) * 1000 + (tonumber(b) or 0)
+	end
+	if verKey(currentVersion) >= verKey("7.59") then
+		return
+	end
 	currentVersion = "7.59"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()

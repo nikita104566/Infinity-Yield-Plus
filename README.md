@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.59-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.60-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -37,7 +37,7 @@ Open the panel with your prefix (default `;`).
 - `ping` / `fps` / `cmdcount` — quick diagnostics
 - `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and loaded patches
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
-- Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
+- Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events; group icons show hover labels
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
 - Chain commands with `\\\\`
