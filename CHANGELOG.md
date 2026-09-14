@@ -3,15 +3,14 @@
 ## 7.54 — 2026-09-14
 
 ### Fixed
-- `lastcommand` / `lastcmd` is now safe in the main `source` (empty history no longer errors).
-- Command history is loaded and saved inside `IY_FE.iy` without a separate hotfix file.
-- `currentVersion` in the panel now matches README / `version` (7.54).
+- `lastcommand` / `lastcmd` no longer errors when history is empty; shows a short RU/EN notice instead.
+- Command history is written to and restored from `IY_FE.iy`.
+- Panel version badge is set to 7.54 by `hotfix754.luau` (main `source` still ships as 7.50 core).
 
 ### Improved
-- History is sanitized (strings only, max 30) on both load and save.
-- Executing a command schedules `updatesaves`, so ↑ / ↓ history survives reload and rejoin.
-- Single loadstring is enough; `hotfix753.luau` is kept as a no-op compatibility stub.
-
+- History persist is sanitized (strings only, max 30) on load and save.
+- Executing a command schedules `updatesaves` so ↑ / ↓ history survives reload and rejoin.
+- Hotfix is idempotent (`_G.__IYP_754_*` guards) and safe if loaded twice.
 
 ## 7.53 — 2026-09-14
 
@@ -33,7 +32,7 @@
 
 ### Improved
 - History persist uses the existing save path, capped at 30 string entries, and is sanitized on load.
-- Executing a command now schedules `updatesaves` so ↑ / ↓ history survives reload and rejoin.
+- Executing a command now schedules `updatesaves` so ↑ / ≥ history survives reload and rejoin.
 
 ## 7.51 — 2026-09-14
 

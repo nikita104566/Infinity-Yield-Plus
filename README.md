@@ -14,10 +14,11 @@
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix754.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-History persist and safe `lastcommand` are built into 7.54 — a second hotfix loadstring is no longer required.
+The second line is the 7.54 hotfix (safe lastcommand, history persist, version badge). It does not replace the main script.
 
 ## Features
 
