@@ -1,5 +1,18 @@
 # Changelog
 
+## 7.54 — 2026-09-14
+
+### Fixed
+- `lastcommand` / `lastcmd` is now safe in the main `source` (empty history no longer errors).
+- Command history is loaded and saved inside `IY_FE.iy` without a separate hotfix file.
+- `currentVersion` in the panel now matches README / `version` (7.54).
+
+### Improved
+- History is sanitized (strings only, max 30) on both load and save.
+- Executing a command schedules `updatesaves`, so ↑ / ↓ history survives reload and rejoin.
+- Single loadstring is enough; `hotfix753.luau` is kept as a no-op compatibility stub.
+
+
 ## 7.53 — 2026-09-14
 
 ### Fixed
