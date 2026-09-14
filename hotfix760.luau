@@ -4,6 +4,14 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function verNum(s)
+		local a, b = tostring(s or ""):match("^(%d+)%.(%d+)")
+		return (tonumber(a) or 0) * 1000 + (tonumber(b) or 0)
+	end
+	-- Do not clobber a badge that is already 7.60 or newer (this hotfix's floor).
+	if verNum(currentVersion) >= 7060 then
+		return
+	end
 	currentVersion = "7.60"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
