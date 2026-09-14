@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.58-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.59-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -17,10 +17,11 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix756.luau'))()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix757.luau'))()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix758.luau'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix759.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-`hotfix756` keeps history dedup / `showhistory`. `hotfix757` adds update check, clipboard copy, and favorite-last. `hotfix758` adds repeat-last, ping, fps, and command count. None of them replace the main script.
+`hotfix756` keeps history dedup / `showhistory`. `hotfix757` adds update check, clipboard copy, and favorite-last. `hotfix758` adds repeat-last, ping, fps, and command count. `hotfix759` adds session diagnostics. None of them replace the main script.
 
 ## Features
 
@@ -34,6 +35,7 @@ Open the panel with your prefix (default `;`).
 - `starlast` / `favlast` pins the last command to favorites
 - `repeatlast` / `again` re-runs the last real command
 - `ping` / `fps` / `cmdcount` — quick diagnostics
+- `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and loaded patches
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
 - Themes, keybinds, aliases, waypoints

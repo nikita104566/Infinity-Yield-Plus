@@ -1,5 +1,18 @@
 # Changelog
 
+## 7.59 — 2026-09-14
+
+### Added
+- `placeinfo` (`gameinfo`, `placeid`) — shows PlaceId, GameId, and JobId.
+- `copyplace` (`cpplace`) — copies PlaceId to the clipboard when available.
+- `players` (`plrs`, `plrlist`) — player count plus a short name sample.
+- `session` (`ses`, `status`) — one-line snapshot: version, place, players, ping, fps.
+- `hotfixes` (`hf`, `patches`) — which 754–759 hotfix flags are loaded.
+
+### Notes
+- Main `source` is unchanged. Load `hotfix759.luau` after `source` (and after 756–758 if you still use them).
+- Idempotent (`_G.__IYP_759_CMDS`). RU/EN strings for the new notices.
+
 ## 7.58 — 2026-09-14
 
 ### Added
