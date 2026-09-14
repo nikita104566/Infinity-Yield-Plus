@@ -2,6 +2,14 @@
 -- Load after source (and after 756/757 if you still use them).
 -- Adds repeatlast, ping, fps, cmdcount. Enhances checkupdate with announcement.
 -- Safe to run more than once. Does not replace main source.
+-- No-op on 7.59+ (these commands are baked into source).
+
+do
+	local a, b = string.match(tostring(currentVersion or ""), "^(%d+)%.(%d+)")
+	if (tonumber(a) or 0) > 7 or ((tonumber(a) or 0) == 7 and (tonumber(b) or 0) >= 59) then
+		return
+	end
+end
 
 pcall(function()
 	currentVersion = "7.58"

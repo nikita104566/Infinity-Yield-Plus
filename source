@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.59'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +741,30 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
+		histCleared = "History",
+		histClearedText = "Command history cleared",
+		histTitle = "History",
+		histEmpty = "History is empty",
+		updTitle = "Updates",
+		updLatest = "You are on the latest version",
+		updNewer = "A newer version is available",
+		updFail = "Could not check for updates",
+		copyTitle = "History",
+		copyOk = "Copied to clipboard",
+		copyFail = "Clipboard is not available",
+		copyEmpty = "Nothing to copy",
+		starTitle = "Favorites",
+		starOk = "Last command added to favorites",
+		starEmpty = "No command to favorite",
+		starFail = "Favorites API not found",
+		repTitle = "Repeat",
+		repEmpty = "Nothing to repeat",
+		repOk = "Re-running last command",
+		pingTitle = "Network",
+		fpsTitle = "Performance",
+		cntTitle = "Commands",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +990,30 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
+		histCleared = "История",
+		histClearedText = "История команд очищена",
+		histTitle = "История",
+		histEmpty = "История пуста",
+		updTitle = "Обновления",
+		updLatest = "У вас последняя версия",
+		updNewer = "Доступна новая версия",
+		updFail = "Не удалось проверить обновления",
+		copyTitle = "История",
+		copyOk = "Скопировано в буфер",
+		copyFail = "Буфер обмена недоступен",
+		copyEmpty = "Нечего копировать",
+		starTitle = "Избранное",
+		starOk = "Последняя команда добавлена в избранное",
+		starEmpty = "Нет команды для избранного",
+		starFail = "API избранного не найден",
+		repTitle = "Повтор",
+		repEmpty = "Нечего повторять",
+		repOk = "Повтор последней команды",
+		pingTitle = "Сеть",
+		fpsTitle = "Производительность",
+		cntTitle = "Команды",
 	},
 }
 
@@ -8614,6 +8662,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8641,6 +8690,7 @@ useFactorySettings = function()
 	WayPoints = {}
 	PluginsTable = {}
 	favCmds = {}
+	cmdHistory = {}
 end
 
 themeCustomColors = themeCustomColors or {}
@@ -8725,6 +8775,67 @@ createPopup = function(text)
     end)
 end
 
+-- Persist ↑/↓ history and skip meta-commands. Table (not locals) for register budget.
+IYP_HIST = {
+	MAX = 30,
+	META = {
+		lastcommand = true, lastcmd = true,
+		clearhistory = true, clrhist = true, wipehistory = true,
+		showhistory = true, hist = true, cmdhistory = true,
+		copyhistory = true, copyhist = true, copycmd = true,
+		starlast = true, favlast = true, pinlast = true,
+		checkupdate = true, upd = true, vercheck = true,
+		repeatlast = true, again = true, rerun = true,
+		ping = true, latency = true, notifyping = true, fps = true, cmdcount = true, cmdn = true,
+	},
+}
+function IYP_HIST.token(s)
+	if type(s) ~= "string" then return "" end
+	local tok = string.match(s, "^%s*;?%s*(%S+)")
+	return tok and string.lower(tok) or ""
+end
+function IYP_HIST.cleanList(src)
+	local out = {}
+	local last = nil
+	if type(src) ~= "table" then return out end
+	for i = 1, #src do
+		local item = src[i]
+		if type(item) == "string" then
+			local trimmed = string.match(item, "^%s*(.-)%s*$") or item
+			if trimmed ~= "" and not IYP_HIST.META[IYP_HIST.token(trimmed)] and trimmed ~= last then
+				out[#out + 1] = trimmed
+				last = trimmed
+				if #out >= IYP_HIST.MAX then break end
+			end
+		end
+	end
+	return out
+end
+function IYP_HIST.apply(src)
+	local out = IYP_HIST.cleanList(src or cmdHistory)
+	if type(cmdHistory) ~= "table" then
+		cmdHistory = out
+		return cmdHistory
+	end
+	for i = #cmdHistory, 1, -1 do
+		cmdHistory[i] = nil
+	end
+	for i = 1, #out do
+		cmdHistory[i] = out[i]
+	end
+	return cmdHistory
+end
+function IYP_HIST.newestReal()
+	if type(cmdHistory) ~= "table" then return nil end
+	for i = 1, #cmdHistory do
+		local line = cmdHistory[i]
+		if type(line) == "string" and line ~= "" and not IYP_HIST.META[IYP_HIST.token(line)] then
+			return line
+		end
+	end
+	return nil
+end
+
 local loadedEventData = nil
 local jsonAttempts = 0
 function saves()
@@ -8751,6 +8862,7 @@ function saves()
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
+                    if vtype(json.cmdHistory, "table") then cmdHistory = IYP_HIST.cleanList(json.cmdHistory) else cmdHistory = cmdHistory or {} end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -8838,6 +8950,7 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = IYP_HIST.cleanList(cmdHistory);
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -11264,6 +11377,14 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'showhistory / hist / cmdhistory', DESC = 'Shows recent command history'}
+CMDs[#CMDs + 1] = {NAME = 'clearhistory / clrhist / wipehistory', DESC = 'Clears saved command history'}
+CMDs[#CMDs + 1] = {NAME = 'copyhistory / copyhist / copycmd [all]', DESC = 'Copies last command (or all) to clipboard'}
+CMDs[#CMDs + 1] = {NAME = 'starlast / favlast / pinlast', DESC = 'Adds the last command to favorites'}
+CMDs[#CMDs + 1] = {NAME = 'repeatlast / again / rerun', DESC = 'Re-runs the last real command'}
+CMDs[#CMDs + 1] = {NAME = 'checkupdate / upd / vercheck', DESC = 'Checks GitHub for a newer version'}
+CMDs[#CMDs + 1] = {NAME = 'fps', DESC = 'Shows physics / frame estimate'}
+CMDs[#CMDs + 1] = {NAME = 'cmdcount / cmdn', DESC = 'Reports how many commands are registered'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -11629,7 +11750,7 @@ CMDs[#CMDs + 1] = {NAME = 'breakloops / break (cmd loops)', DESC = 'Stops any cm
 CMDs[#CMDs + 1] = {NAME = 'removecmd / deletecmd', DESC = 'Removes a command until the admin is reloaded'}
 CMDs[#CMDs + 1] = {NAME = 'tpwalk / teleportwalk / cspeed / cframespeed /cws / cwalkspeed / cframews / cframewalkspeed [num]', DESC = 'Teleports you to your move direction (aka cframe speed which is used in scripts)'}
 CMDs[#CMDs + 1] = {NAME = 'untpwalk / unteleportwalk / uncspeed / uncframespeed / uncs / uncwalkspeed / uncframews / uncframewalkspeed', DESC = 'Undoes tpwalk / teleportwalk'}
-CMDs[#CMDs + 1] = {NAME = 'notifyping / ping', DESC = 'Notify yourself your ping'}
+CMDs[#CMDs + 1] = {NAME = 'notifyping / ping / latency', DESC = 'Shows current Data Ping'}
 CMDs[#CMDs + 1] = {NAME = 'trip', DESC = 'Makes your character fall over'}
 CMDs[#CMDs + 1] = {NAME = 'norender', DESC = 'Disable 3d Rendering to decrease the amount of CPU the client uses'}
 CMDs[#CMDs + 1] = {NAME = 'render', DESC = 'Enable 3d Rendering'}
@@ -11738,7 +11859,7 @@ do
 		removeads = "Убрать рекламные билборды",
 		scare = "Телепорт перед игроком на полсекунды",
 		trip = "Упасть персонажем",
-		notifyping = "Показать твой пинг",
+		notifyping = "Показать текущий Data Ping",
 		wallwalk = "Ходьба по стенам",
 		ctrllock = "Shiftlock на LeftControl",
 		unctrllock = "Вернуть Shiftlock на LeftShift",
@@ -11812,8 +11933,8 @@ do
 		unequiptools = "Снять инструменты",
 		tools = "Показать инструменты",
 		age = "Возраст аккаунта игрока",
-		ping = "Показать пинг",
-		fps = "Показать FPS",
+		ping = "Показать текущий Data Ping",
+		fps = "Показать оценку FPS",
 		time = "Время суток",
 		day = "День",
 		night = "Ночь",
@@ -12031,7 +12152,14 @@ do
 		joinlogs = 'Описание: Log when people join',
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
-		lastcommand = 'Описание: Executes the previous command used',
+		lastcommand = 'Запускает предыдущую команду',
+		showhistory = 'Показывает недавнюю историю команд',
+		clearhistory = 'Очищает сохранённую историю команд',
+		copyhistory = 'Копирует последнюю команду (all — весь список)',
+		starlast = 'Добавляет последнюю команду в избранное',
+		repeatlast = 'Повторяет последнюю настоящую команду',
+		checkupdate = 'Сверяет локальную версию с GitHub',
+		cmdcount = 'Сколько команд зарегистрировано',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -12735,7 +12863,11 @@ function splitString(str,delim)
     return broken
 end
 
-cmdHistory = {}
+if type(cmdHistory) ~= "table" then
+    cmdHistory = {}
+else
+    IYP_HIST.apply(cmdHistory)
+end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12795,11 +12927,13 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
+                        local histTok = IYP_HIST.token(rawCmdStr)
+                        if not IYP_HIST.META[histTok] and cmdHistory[1] ~= rawCmdStr then
                             table.insert(cmdHistory,1,rawCmdStr)
+                            if #cmdHistory > IYP_HIST.MAX then table.remove(cmdHistory) end
+                            pcall(updatesaves)
                         end
                     end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
 
                     lastCmds[cmdName] = v
                 end
@@ -18192,9 +18326,161 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
     end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
+    end
+end)
+
+addcmd('showhistory',{'hist','cmdhistory'},function(args, speaker)
+    IYP_HIST.apply()
+    if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+        notify(T("histTitle"), T("histEmpty"))
+        return
+    end
+    local n = math.min(#cmdHistory, 8)
+    local lines = {}
+    for i = 1, n do
+        lines[i] = tostring(i) .. ". " .. cmdHistory[i]
+    end
+    notify(T("histTitle"), table.concat(lines, "\n"))
+end)
+
+addcmd('clearhistory',{'clrhist','wipehistory'},function(args, speaker)
+    if type(cmdHistory) == "table" then
+        for i = #cmdHistory, 1, -1 do
+            cmdHistory[i] = nil
+        end
+    else
+        cmdHistory = {}
+    end
+    pcall(updatesaves)
+    notify(T("histCleared"), T("histClearedText"))
+end)
+
+addcmd('copyhistory',{'copyhist','copycmd'},function(args, speaker)
+    local clip = everyClipboard
+    if type(clip) ~= "function" then
+        notify(T("copyTitle"), T("copyFail"))
+        return
+    end
+    local mode = string.lower(tostring((args and args[1]) or ""))
+    local text
+    if mode == "all" or mode == "full" then
+        if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+            notify(T("copyTitle"), T("copyEmpty"))
+            return
+        end
+        text = table.concat(cmdHistory, "\n")
+    else
+        text = IYP_HIST.newestReal()
+        if not text then
+            notify(T("copyTitle"), T("copyEmpty"))
+            return
+        end
+    end
+    local ok = pcall(clip, text)
+    notify(T("copyTitle"), ok and T("copyOk") or T("copyFail"))
+end)
+
+addcmd('starlast',{'favlast','pinlast'},function(args, speaker)
+    local cmd = IYP_HIST.newestReal()
+    if not cmd or cmd == "" then
+        notify(T("starTitle"), T("starEmpty"))
+        return
+    end
+    local key = cmdPrimaryKey(cmd)
+    if key == "" then
+        notify(T("starTitle"), T("starEmpty"))
+        return
+    end
+    if type(isFavoriteCmd) == "function" and isFavoriteCmd(key) then
+        notify(T("starTitle"), T("starOk"))
+        return
+    end
+    if type(toggleFavoriteCmd) == "function" then
+        toggleFavoriteCmd(key)
+    else
+        notify(T("starTitle"), T("starFail"))
+    end
+end)
+
+addcmd('repeatlast',{'again','rerun'},function(args, speaker)
+    local cmd = IYP_HIST.newestReal()
+    if not cmd then
+        notify(T("repTitle"), T("repEmpty"))
+        return
+    end
+    notify(T("repTitle"), T("repOk") .. ": " .. cmd)
+    execCmd(cmd, speaker or Players.LocalPlayer, true)
+end)
+
+addcmd('checkupdate',{'upd','vercheck'},function(args, speaker)
+    local getter
+    if game and game.HttpGet then
+        getter = function(url) return game:HttpGet(url) end
+    elseif type(httpget) == "function" then
+        getter = httpget
+    end
+    if type(getter) ~= "function" then
+        notify(T("updTitle"), T("updFail"))
+        return
+    end
+    local ok, body = pcall(getter, "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/version")
+    if not ok or type(body) ~= "string" then
+        notify(T("updTitle"), T("updFail"))
+        return
+    end
+    local remote = string.match(body, '"Version"%s*:%s*"([^"]+)"')
+    local ann = string.match(body, '"Announcement"%s*:%s*"([^"]*)"')
+    if not remote then
+        notify(T("updTitle"), T("updFail"))
+        return
+    end
+    local function verTuple(s)
+        local a, b, c = string.match(tostring(s or ""), "^(%d+)%.(%d+)%.(%d+)")
+        if not a then
+            a, b = string.match(tostring(s or ""), "^(%d+)%.(%d+)")
+            c = "0"
+        end
+        return tonumber(a) or 0, tonumber(b) or 0, tonumber(c) or 0
+    end
+    local ra, rb, rc = verTuple(remote)
+    local la, lb, lc = verTuple(currentVersion)
+    local newer = ra > la or (ra == la and rb > lb) or (ra == la and rb == lb and rc > lc)
+    local msg = newer and (T("updNewer") .. " (" .. remote .. ")") or (T("updLatest") .. " (" .. tostring(currentVersion) .. ")")
+    if type(ann) == "string" and ann ~= "" then
+        msg = msg .. "\n" .. ann
+    end
+    notify(T("updTitle"), msg)
+end)
+
+addcmd('fps',{},function(args, speaker)
+    local fps
+    pcall(function()
+        fps = workspace:GetRealPhysicsFPS()
+    end)
+    if type(fps) ~= "number" then
+        pcall(function()
+            local t0 = os.clock()
+            game:GetService("RunService").Heartbeat:Wait()
+            local dt = os.clock() - t0
+            if dt > 0 then fps = 1 / dt end
+        end)
+    end
+    if type(fps) == "number" then
+        notify(T("fpsTitle"), string.format("%.0f FPS", fps))
+    else
+        notify(T("fpsTitle"), "n/a")
+    end
+end)
+
+addcmd('cmdcount',{'cmdn'},function(args, speaker)
+    notify(T("cntTitle"), tostring((type(cmds) == "table" and #cmds) or 0))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
@@ -22682,8 +22968,21 @@ addcmd('uninstantproximityprompts',{'uninstantpp'},function(args, speaker)
     end
 end)
 
-addcmd('notifyping',{'ping'},function(args, speaker)
-    notify("Ping", math.round(speaker:GetNetworkPing() * 1000) .. "ms")
+addcmd('notifyping',{'ping','latency'},function(args, speaker)
+    local ms
+    pcall(function()
+        ms = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    if type(ms) ~= "number" then
+        pcall(function()
+            ms = speaker:GetNetworkPing() * 1000
+        end)
+    end
+    if type(ms) == "number" then
+        notify(T("pingTitle"), string.format("%.0f ms", ms))
+    else
+        notify(T("pingTitle"), "n/a")
+    end
 end)
 
 

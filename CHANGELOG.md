@@ -1,5 +1,21 @@
 # Changelog
 
+## 7.59 — 2026-09-14
+
+### Fixed
+- `lastcommand` / `lastcmd` no longer errors when history is empty; shows a short RU/EN notice instead.
+- Command history is written to and restored from `IY_FE.iy` (was advertised earlier, missing from `source`).
+- `showhistory` lists the newest commands first (matches ↑/↓). `copyhistory` copies the newest line, not the oldest.
+
+### Added
+- Baked into `source`: `showhistory`, `clearhistory`, `copyhistory`, `starlast`, `repeatlast`, `checkupdate`, `fps`, `cmdcount`.
+- `notifyping` / `ping` also accepts `latency` and prefers Stats Data Ping (falls back to `GetNetworkPing`).
+- History skips meta-commands and consecutive duplicates. Saves go through the existing write cooldown.
+
+### Notes
+- Panel version is **7.59**. `hotfix754`–`hotfix758` are optional compatibility shims and no-op on 7.59+.
+- One `source` loadstring is enough.
+
 ## 7.58 — 2026-09-14
 
 ### Added
