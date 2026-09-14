@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.57'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -561,6 +561,12 @@ UI_L = {
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
 		favHintRemove = "★  Favorited · right-click to remove",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
+		histCleared = "History",
+		histClearedText = "Command history cleared",
+		histTitle = "History",
+		histEmpty = "History is empty",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -786,6 +792,12 @@ UI_L = {
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
 		favHintRemove = "★  В избранном · ПКМ — убрать",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
+		histCleared = "История",
+		histClearedText = "История команд очищена",
+		histTitle = "История",
+		histEmpty = "История пуста",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -8614,6 +8626,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8641,9 +8654,81 @@ useFactorySettings = function()
 	WayPoints = {}
 	PluginsTable = {}
 	favCmds = {}
+	cmdHistory = {}
 end
 
 themeCustomColors = themeCustomColors or {}
+
+cmdHistory = {}
+HISTORY_META = {
+    clearhistory = true,
+    clrhist = true,
+    wipehistory = true,
+    showhistory = true,
+    hist = true,
+    cmdhistory = true,
+    lastcommand = true,
+    lastcmd = true,
+}
+
+function historyFirstToken(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    local t = string.match(s, "^%s*(.-)%s*$") or s
+    local p = tostring(prefix or "")
+    if p ~= "" and string.sub(t, 1, #p) == p then
+        t = string.sub(t, #p + 1)
+        t = string.match(t, "^%s*(.-)%s*$") or t
+    end
+    local tok = string.match(t, "^(%S+)")
+    return tok and string.lower(tok) or ""
+end
+
+function sanitizeCmdHistory(src)
+    local out = {}
+    local last = nil
+    if type(src) ~= "table" then
+        return out
+    end
+    for i = 1, #src do
+        local item = src[i]
+        if type(item) == "string" then
+            local trimmed = string.match(item, "^%s*(.-)%s*$") or item
+            if trimmed ~= "" and not HISTORY_META[historyFirstToken(trimmed)] and trimmed ~= last then
+                out[#out + 1] = trimmed
+                last = trimmed
+            end
+        end
+    end
+    while #out > 30 do
+        table.remove(out)
+    end
+    return out
+end
+
+function recordCmdHistory(rawCmdStr)
+    if type(rawCmdStr) ~= "string" then
+        return
+    end
+    local trimmed = string.match(rawCmdStr, "^%s*(.-)%s*$") or rawCmdStr
+    if trimmed == "" or HISTORY_META[historyFirstToken(trimmed)] then
+        return
+    end
+    if type(cmdHistory) ~= "table" then
+        cmdHistory = {}
+    end
+    if cmdHistory[1] == trimmed then
+        return
+    end
+    table.insert(cmdHistory, 1, trimmed)
+    while #cmdHistory > 30 do
+        table.remove(cmdHistory)
+    end
+    if type(updatesaves) == "function" then
+        pcall(updatesaves)
+    end
+end
 
 createPopup = function(text)
     local FileError = Instance.new("Frame")
@@ -8751,6 +8836,7 @@ function saves()
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
+                    if vtype(json.cmdHistory, "table") then cmdHistory = sanitizeCmdHistory(json.cmdHistory) else cmdHistory = cmdHistory or {} end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -8823,6 +8909,7 @@ function updatesaves()
                 customSave[i] = {c.R, c.G, c.B}
             end
         end
+        cmdHistory = sanitizeCmdHistory(cmdHistory)
         local update = {
             prefix = prefix;
             StayOpen = StayOpen;
@@ -8838,6 +8925,7 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = cmdHistory;
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -11264,6 +11352,8 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'showhistory / hist / cmdhistory', DESC = 'Shows recent saved commands'}
+CMDs[#CMDs + 1] = {NAME = 'clearhistory / clrhist / wipehistory', DESC = 'Clears saved command history'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12031,7 +12121,9 @@ do
 		joinlogs = 'Описание: Log when people join',
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
-		lastcommand = 'Описание: Executes the previous command used',
+		lastcommand = 'Повторяет предыдущую команду',
+		showhistory = 'Показывает недавние сохранённые команды',
+		clearhistory = 'Очищает сохранённую историю команд',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -12735,21 +12827,29 @@ function splitString(str,delim)
     return broken
 end
 
-cmdHistory = {}
+cmdHistory = cmdHistory or {}
 local lastCmds = {}
 local historyCount = 0
 local split=" "
 local lastBreakTime = 0
 IYP_EE_FROM_QUEUE = false
 function execCmd(cmdStr,speaker,store)
-    cmdStr = cmdStr:gsub("%s+$","")
+    cmdStr = tostring(cmdStr or ""):gsub("%s+$","")
+    if cmdStr == "" then
+        return
+    end
+    if store then
+        local who = speaker or Players.LocalPlayer
+        if who == Players.LocalPlayer then
+            recordCmdHistory(cmdStr)
+        end
+    end
     if not IYP_EE_FROM_QUEUE and eventEditor and type(eventEditor.IsBusy) == "function" and not eventEditor.IsBusy() then
         pcall(function()
             eventEditor.FireEvent("OnCommand", tostring(cmdStr or ""))
         end)
     end
     task.spawn(function()
-        local rawCmdStr = cmdStr
         cmdStr = string.gsub(cmdStr,"\\\\","%%BackSlash%%")
         local commandsToRun = splitString(cmdStr,"\\")
         for i,v in pairs(commandsToRun) do
@@ -12794,13 +12894,6 @@ function execCmd(cmdStr,speaker,store)
                 cargs = args
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
-                    if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
-                            table.insert(cmdHistory,1,rawCmdStr)
-                        end
-                    end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
-
                     lastCmds[cmdName] = v
                 end
                 local cmdStartTime = tick()
@@ -18192,9 +18285,47 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
     end
+    if not HISTORY_META[historyFirstToken(prev)] then
+        execCmd(prev)
+    end
+end)
+
+addcmd('showhistory',{'hist','cmdhistory'},function(args, speaker)
+    cmdHistory = sanitizeCmdHistory(cmdHistory)
+    local title = T("histTitle")
+    if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+        notify(title, T("histEmpty"))
+        return
+    end
+    local lines = {}
+    local count = math.min(8, #cmdHistory)
+    for i = 1, count do
+        lines[#lines + 1] = tostring(i) .. ". " .. cmdHistory[i]
+    end
+    notify(title, table.concat(lines, "\n"))
+end)
+
+addcmd('clearhistory',{'clrhist','wipehistory'},function(args, speaker)
+    if type(cmdHistory) == "table" then
+        if type(table.clear) == "function" then
+            table.clear(cmdHistory)
+        else
+            for i = #cmdHistory, 1, -1 do
+                cmdHistory[i] = nil
+            end
+        end
+    else
+        cmdHistory = {}
+    end
+    if type(updatesaves) == "function" then
+        pcall(updatesaves)
+    end
+    notify(T("histCleared"), T("histClearedText"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
