@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -661,6 +661,9 @@ UI_L = {
 		eeGroupDeleted = "Group deleted (workflows kept)",
 		eeCollapsed = "Collapsed",
 		eeExpanded = "Expanded",
+		eeCollapse = "Collapse",
+		eeExpand = "Expand",
+		eeRunGroup = "Run group",
 		eeLastTrace = "Last fire trace",
 		eeTraceQueued = "queued",
 		eeTraceSkip = "skip",
@@ -886,6 +889,9 @@ UI_L = {
 		eeGroupDeleted = "Группа удалена (команды сохранены)",
 		eeCollapsed = "Свернуто",
 		eeExpanded = "Развернуто",
+		eeCollapse = "Свернуть",
+		eeExpand = "Развернуть",
+		eeRunGroup = "Запустить группу",
 		eeLastTrace = "Последний trace",
 		eeTraceQueued = "в очередь",
 		eeTraceSkip = "пропуск",
@@ -4992,6 +4998,33 @@ eventEditor = (function()
 				BackgroundTransparency = transparency or 0,
 			}):Play()
 		end
+		local function chromeTip(show)
+			local root = b.Parent
+			while root and root.Name ~= "Shell" do
+				root = root.Parent
+			end
+			local hint = root and root:FindFirstChild("EEChromeTip")
+			if not hint then return end
+			local tipText = b:GetAttribute("EETip")
+			if not show or type(tipText) ~= "string" or tipText == "" then
+				hint.Visible = false
+				return
+			end
+			local scale = root.AbsoluteSize.X / EE_W
+			if not scale or scale <= 0 then scale = 1 end
+			local hintWidth = math.max(58, (utf8.len(tipText) or #tipText) * 6 + 16)
+			local hintX = (b.AbsolutePosition.X - root.AbsolutePosition.X + b.AbsoluteSize.X * 0.5) / scale
+			hintX = math.clamp(hintX, hintWidth * 0.5 + 8, EE_W - hintWidth * 0.5 - 8)
+			local hintY = (b.AbsolutePosition.Y - root.AbsolutePosition.Y + b.AbsoluteSize.Y) / scale + 6
+			if hintY + 24 > EE_H - 8 then
+				hintY = (b.AbsolutePosition.Y - root.AbsolutePosition.Y) / scale - 30
+			end
+			hintY = math.clamp(hintY, 8, EE_H - 32)
+			hint.Text = tipText
+			hint.Size = UDim2.fromOffset(hintWidth, 24)
+			hint.Position = UDim2.fromOffset(hintX, hintY)
+			hint.Visible = true
+		end
 		b.MouseEnter:Connect(function()
 			b:SetAttribute("EEHovered", true)
 			motion(1.025, 0.14)
@@ -5003,6 +5036,7 @@ eventEditor = (function()
 				background(hoverColor or EE_SURFACE_HOVER)
 			end
 			if stroke then TweenService:Create(stroke, TweenInfo.new(0.13), { Transparency = 0.2 }):Play() end
+			chromeTip(true)
 		end)
 		b.MouseLeave:Connect(function()
 			b:SetAttribute("EEHovered", false)
@@ -5010,6 +5044,7 @@ eventEditor = (function()
 			local activeColor = b:GetAttribute("EEActiveColor")
 			background(b:GetAttribute("EEActive") and (activeColor or Color3.fromRGB(66, 52, 105)) or EE_SURFACE)
 			if stroke then TweenService:Create(stroke, TweenInfo.new(0.16), { Transparency = b:GetAttribute("EEActive") and 0.35 or 0.45 }):Play() end
+			chromeTip(false)
 		end)
 		b.MouseButton1Down:Connect(function()
 			motion(0.965, 0.07)
@@ -5097,6 +5132,24 @@ eventEditor = (function()
 	uiCorner(shell, 14)
 	uiStroke(shell, EE_BORDER, 1, 0.55)
 	table.insert(shade1, shell)
+	uiCorner(mk("TextLabel", {
+		Name = "EEChromeTip",
+		BackgroundColor3 = Color3.fromRGB(12, 11, 20),
+		BackgroundTransparency = 0.02,
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromOffset(0, 0),
+		Size = UDim2.fromOffset(58, 24),
+		Font = UI_FONT_MED,
+		TextSize = 10,
+		TextColor3 = EE_TEXT,
+		Text = "",
+		TextXAlignment = Enum.TextXAlignment.Center,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Visible = false,
+		ZIndex = 120,
+	}, shell), 7)
+	uiStroke(shell:FindFirstChild("EEChromeTip"), EE_ACCENT, 1, 0.25)
 
 	local top = mk("Frame", {
 		BackgroundColor3 = EE_PANEL,
@@ -6557,7 +6610,7 @@ eventEditor = (function()
 				uiCorner(front, 2)
 				uiStroke(front, EE_MUTED, 1, 0.08)
 			end
-			local hintText = order == 1 and "Move up" or (order == 2 and "Move down" or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
+			local hintText = order == 1 and T("eeUp") or (order == 2 and T("eeDown") or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
 			b.LayoutOrder = order
 			b.ZIndex = 47
 			b.TextSize = 14
@@ -6924,6 +6977,8 @@ eventEditor = (function()
 	end
 
 	refreshFlows = function()
+		local chromeHint = shell:FindFirstChild("EEChromeTip")
+		if chromeHint then chromeHint.Visible = false end
 		flowCards = {}
 		for _, c in ipairs(flowHolder:GetChildren()) do
 			if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
@@ -6977,15 +7032,14 @@ eventEditor = (function()
 				local rtErr = nil
 				if type(rtc) == "table" then rtErr = rtc.lastError or rtc.error or rtc.err end
 				if rtErr ~= nil and tostring(rtErr) ~= "" then
-					cardState, cardStateColor = "ERROR", EE_DANGER
+					cardState, cardStateColor = T("eeHistoryErr"), EE_DANGER
 				elseif meta.enabled == false then
-					cardState, cardStateColor = "OFF", Color3.fromRGB(132, 128, 154)
+					cardState, cardStateColor = T("eeOff"), Color3.fromRGB(132, 128, 154)
 				elseif ev.enabled == false then
-					cardState, cardStateColor = "PAUSED", Color3.fromRGB(232, 188, 118)
-				elseif not isGroupEnabled(ev, meta.group) then
-					cardState, cardStateColor = "GROUP OFF", Color3.fromRGB(232, 188, 118)
+					cardState, cardStateColor = T("eePause"), Color3.fromRGB(232, 188, 118)
 				end
 			end
+			local stateLen = cardState and (utf8.len(cardState) or #cardState) or 0
 			if cardState then
 				card:SetAttribute("EEStateColor", cardStateColor)
 				local cardStroke = card:FindFirstChildOfClass("UIStroke")
@@ -6997,8 +7051,8 @@ eventEditor = (function()
 					BackgroundColor3 = cardStateColor,
 					BackgroundTransparency = 0.84,
 					BorderSizePixel = 0,
-					Position = UDim2.new(1, -62 - (#cardState * 7 + 14), 0, showSummary and 9 or 15),
-					Size = UDim2.new(0, #cardState * 7 + 14, 0, 18),
+					Position = UDim2.new(1, -62 - (stateLen * 7 + 14), 0, showSummary and 9 or 15),
+					Size = UDim2.new(0, stateLen * 7 + 14, 0, 18),
 					Font = UI_FONT_MED,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Center,
@@ -7012,7 +7066,7 @@ eventEditor = (function()
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
 				Position = UDim2.new(0, 12, 0, showSummary and 8 or 14),
-				Size = UDim2.new(1, cardState and -(100 + #cardState * 7) or -64, 0, 20),
+				Size = UDim2.new(1, cardState and -(100 + stateLen * 7) or -64, 0, 20),
 				Font = UI_FONT_MED,
 				TextSize = 14,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -7170,6 +7224,7 @@ eventEditor = (function()
 				play.TextSize = 12
 				play:SetAttribute("EEActive", true)
 				play:SetAttribute("EEActiveColor", EE_PRIMARY)
+				play:SetAttribute("EETip", T("eeRunGroup"))
 				play.BackgroundColor3 = EE_PRIMARY
 				local fold = btn(controls, "", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					st.collapsed = not st.collapsed
@@ -7177,6 +7232,7 @@ eventEditor = (function()
 					refreshFlows()
 				end)
 				fold.LayoutOrder = 3
+				fold:SetAttribute("EETip", st.collapsed and T("eeExpand") or T("eeCollapse"))
 				styleFoldIcon(fold, st.collapsed)
 
 				local rename = btn(controls, "Aa", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
@@ -7200,6 +7256,7 @@ eventEditor = (function()
 				end)
 				rename.LayoutOrder = 4
 				rename.TextSize = 10
+				rename:SetAttribute("EETip", T("eeRenameGroup"))
 
 				local del = btn(controls, "×", UDim2.new(0, 24, 0, 24), UDim2.new(0, 0, 0, 0), function()
 					askConfirm(T("eeDeleteGroup"), T("eeDeleteGroupConfirm"), function()
@@ -7215,6 +7272,7 @@ eventEditor = (function()
 				del.LayoutOrder = 5
 				del.TextColor3 = EE_DANGER
 				del.TextSize = 13
+				del:SetAttribute("EETip", T("eeDeleteGroup"))
 
 			else
 				local fold = btn(header, "", UDim2.new(0, 28, 0, 22), UDim2.new(1, -36, 0.5, -11), function()
@@ -7222,6 +7280,7 @@ eventEditor = (function()
 					markEdited()
 					refreshFlows()
 				end)
+				fold:SetAttribute("EETip", st.collapsed and T("eeExpand") or T("eeCollapse"))
 				styleFoldIcon(fold, st.collapsed)
 
 			end

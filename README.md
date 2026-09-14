@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.62-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -39,7 +39,7 @@ Open the panel with your prefix (default `;`).
 - `creator` / `clock` / `maxplayers` — owner, local time, player cap
 - `env` / `device` / `showprefix` / `timezone` / `display` — executor, input, prefix, zone, viewport
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
-- Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
+- Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events; group header icons explain run / fold / rename / delete on hover
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
 - Chain commands with `\\\\`
