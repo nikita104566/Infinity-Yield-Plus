@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.57 — 2026-09-14
+
+### Fixed
+- `lastcommand` / `lastcmd` no longer errors when history is empty; shows a short RU/EN notice instead.
+- Command history (↑/↓) is written to and restored from `IY_FE.iy` in the main script.
+
+### Improved
+- Consecutive duplicate history entries are collapsed.
+- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in ↑/↓ history.
+- New commands in `source`: `showhistory` (`hist`, `cmdhistory`) and `clearhistory` (`clrhist`, `wipehistory`).
+- History is sanitized and capped at 30; disk writes are debounced ~0.35s after stored exec.
+- `lastcommand` refuses chains that would re-enter itself (`fly\lastcommand`, `1^lastcmd`).
+- Version badge set to 7.57. Second loadstring (`hotfix756`) is optional.
+
+### Notes
+- History reliability from 7.51–7.56 is now baked into `source`. You can load only `source`.
+- If you still load `hotfix756.luau` after 7.57, it is a full no-op (no badge downgrade, no command override).
+
 ## 7.56 — 2026-09-14
 
 ### Improved

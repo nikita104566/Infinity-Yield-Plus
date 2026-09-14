@@ -1,7 +1,14 @@
 -- Infinity Yield Plus 7.56 hotfix
 -- Load after source (and after hotfix755 if you still use it).
 -- Dedup consecutive history, skip meta-commands, showhistory, version badge.
--- Safe to run more than once.
+-- Safe to run more than once. No-op on 7.57+ (history is baked into source).
+
+do
+	local n = tonumber((tostring(currentVersion or ""):match("^%d+%.?%d*"))) or 0
+	if n >= 7.57 then
+		return
+	end
+end
 
 pcall(function()
 	currentVersion = "7.56"

@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.57'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -529,6 +529,12 @@ UI_L = {
 		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
 		noDesc = "No description",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
+		histCleared = "History",
+		histClearedText = "Command history cleared",
+		histTitle = "History",
+		histEmpty = "History is empty",
 		outdated = "Outdated",
 		outdatedBody = "Get the new version by executing it again",
 		player = "Player",
@@ -754,6 +760,12 @@ UI_L = {
 		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
 		noDesc = "Нет описания",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
+		histCleared = "История",
+		histClearedText = "История команд очищена",
+		histTitle = "История",
+		histEmpty = "История пуста",
 		outdated = "Устарело",
 		outdatedBody = "Запусти скрипт ещё раз",
 		player = "Игрок",
@@ -8614,6 +8626,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8641,6 +8654,7 @@ useFactorySettings = function()
 	WayPoints = {}
 	PluginsTable = {}
 	favCmds = {}
+	cmdHistory = {}
 end
 
 themeCustomColors = themeCustomColors or {}
@@ -8726,6 +8740,7 @@ createPopup = function(text)
 end
 
 local loadedEventData = nil
+IYP_loadedCmdHistory = nil
 local jsonAttempts = 0
 function saves()
     if writefileExploit() and type(waxreadfile) == "function" and jsonAttempts < 10 then
@@ -8767,6 +8782,7 @@ function saves()
                         end
                     end
                     if vtype(json.eventBinds, "string") then loadedEventData = json.eventBinds end
+                    if vtype(json.cmdHistory, "table") then IYP_loadedCmdHistory = json.cmdHistory end
                 end)
                 if not success then
                     jsonAttempts = jsonAttempts + 1
@@ -8838,6 +8854,10 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = (type(IYP_sanitizeCmdHistory) == "function" and IYP_sanitizeCmdHistory())
+                or (type(cmdHistory) == "table" and #cmdHistory > 0 and cmdHistory)
+                or IYP_loadedCmdHistory
+                or {};
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -11264,6 +11284,8 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'showhistory / hist / cmdhistory', DESC = 'Shows the last saved commands'}
+CMDs[#CMDs + 1] = {NAME = 'clearhistory / clrhist / wipehistory', DESC = 'Clears saved command history'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12031,7 +12053,9 @@ do
 		joinlogs = 'Описание: Log when people join',
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
-		lastcommand = 'Описание: Executes the previous command used',
+		lastcommand = 'Повторяет предыдущую команду',
+		showhistory = 'Показывает последние сохранённые команды',
+		clearhistory = 'Очищает сохранённую историю команд',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -12736,6 +12760,80 @@ function splitString(str,delim)
 end
 
 cmdHistory = {}
+IYP_HIST_META = {
+	clearhistory = true,
+	clrhist = true,
+	wipehistory = true,
+	showhistory = true,
+	hist = true,
+	cmdhistory = true,
+	lastcommand = true,
+	lastcmd = true,
+}
+function IYP_histToken(s)
+	if type(s) ~= "string" then return "" end
+	s = string.match(s, "^%s*;?%s*(.-)%s*$") or s
+	s = string.gsub(s, "^%d+%^", "")
+	s = string.gsub(s, "^inf%^", "")
+	s = string.gsub(s, "^[%d%.]+%^", "")
+	local tok = string.match(s, "^(%S+)")
+	return tok and string.lower(tok) or ""
+end
+function IYP_histLineHasLast(s)
+	if type(s) ~= "string" then return false end
+	s = string.gsub(s, "\\\\", "\0")
+	local parts = splitString(s, "\\")
+	for i = 1, #parts do
+		local tok = IYP_histToken((string.gsub(parts[i], "\0", "\\")))
+		if tok == "lastcommand" or tok == "lastcmd" then
+			return true
+		end
+	end
+	return false
+end
+function IYP_scheduleHistSave()
+	IYP_histSaveTok = (IYP_histSaveTok or 0) + 1
+	local my = IYP_histSaveTok
+	local delayFn = (typeof(task) == "table" and task.delay) or delay
+	if type(delayFn) ~= "function" then
+		pcall(updatesaves)
+		return
+	end
+	delayFn(0.35, function()
+		if my ~= IYP_histSaveTok then return end
+		if type(IYP_sanitizeCmdHistory) == "function" then
+			IYP_sanitizeCmdHistory()
+		end
+		pcall(updatesaves)
+	end)
+end
+function IYP_sanitizeCmdHistory()
+	if type(cmdHistory) ~= "table" then
+		cmdHistory = {}
+		return cmdHistory
+	end
+	local out = {}
+	local last = nil
+	local limit = math.min(#cmdHistory, 80)
+	for i = 1, limit do
+		local item = cmdHistory[i]
+		if type(item) == "string" then
+			local trimmed = string.match(item, "^%s*(.-)%s*$") or item
+			if trimmed ~= "" and not IYP_HIST_META[IYP_histToken(trimmed)] and trimmed ~= last then
+				out[#out + 1] = trimmed
+				last = trimmed
+				if #out >= 30 then break end
+			end
+		end
+	end
+	cmdHistory = out
+	return cmdHistory
+end
+if type(IYP_loadedCmdHistory) == "table" then
+	cmdHistory = IYP_loadedCmdHistory
+	IYP_loadedCmdHistory = nil
+	IYP_sanitizeCmdHistory()
+end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12795,12 +12893,12 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
-                            table.insert(cmdHistory,1,rawCmdStr)
+                        if not IYP_HIST_META[IYP_histToken(rawCmdStr)] and cmdHistory[1] ~= rawCmdStr then
+                            table.insert(cmdHistory, 1, rawCmdStr)
                         end
                     end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
-
+                    IYP_sanitizeCmdHistory()
+                    IYP_scheduleHistSave()
                     lastCmds[cmdName] = v
                 end
                 local cmdStartTime = tick()
@@ -18192,9 +18290,34 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    IYP_sanitizeCmdHistory()
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" or IYP_histLineHasLast(prev) then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
     end
+    execCmd(prev)
+end)
+
+addcmd('showhistory',{'hist','cmdhistory'},function(args, speaker)
+    IYP_sanitizeCmdHistory()
+    if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+        notify(T("histTitle"), T("histEmpty"))
+        return
+    end
+    local n = math.min(8, #cmdHistory)
+    local lines = {}
+    for i = 1, n do
+        lines[#lines + 1] = tostring(i) .. ". " .. cmdHistory[i]
+    end
+    notify(T("histTitle"), table.concat(lines, "\n"))
+end)
+
+addcmd('clearhistory',{'clrhist','wipehistory'},function(args, speaker)
+    cmdHistory = {}
+    historyCount = 0
+    pcall(updatesaves)
+    notify(T("histCleared"), T("histClearedText"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
