@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.58 — 2026-09-14
+
+### Improved
+- Command Palette (Ctrl+K) follows the panel language: title, search hint, section, empty state, and footer are RU/EN.
+- Palette result descriptions use the same localized command text as the main list; switching Language live-updates an open palette.
+- Empty palette results no longer stack leftover labels when the query or language changes.
+- Version badge in `source` is 7.58. Hotfixes 754–757 no longer overwrite a newer badge.
+
 ## 7.57 — 2026-09-14
 
 ### Added

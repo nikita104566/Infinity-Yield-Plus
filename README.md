@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.57-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.58-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -24,6 +24,7 @@ Open the panel with your prefix (default `;`).
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
+- Command palette (Ctrl+K) searches commands, favorites, and history; chrome follows RU/EN
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands are not stored in history

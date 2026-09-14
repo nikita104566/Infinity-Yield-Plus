@@ -4,6 +4,11 @@
 -- Does not replace main source.
 
 pcall(function()
+	local a, b = string.match(tostring(currentVersion or ""), "^(%d+)%.(%d+)")
+	local major, minor = tonumber(a) or 0, tonumber(b) or 0
+	if major > 7 or (major == 7 and minor >= 58) then
+		return
+	end
 	currentVersion = "7.57"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()

@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.58'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +741,12 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		palTitle = "Command Palette",
+		palPlaceholder = "Search commands or type arguments...",
+		palSectionRecent = "FAVORITES & RECENT",
+		palSectionResults = "RESULTS · %d",
+		palEmpty = "No matching commands",
+		palFooter = "↑↓ navigate   Enter run   Esc close   Right-click in Cmdbar to favorite",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +972,12 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		palTitle = "Палитра команд",
+		palPlaceholder = "Поиск команд или ввод аргументов...",
+		palSectionRecent = "ИЗБРАННОЕ И НЕДАВНИЕ",
+		palSectionResults = "РЕЗУЛЬТАТЫ · %d",
+		palEmpty = "Нет подходящих команд",
+		palFooter = "↑↓ навигация   Enter запуск   Esc закрыть   ПКМ в Cmdbar — избранное",
 	},
 }
 
@@ -1176,6 +1188,9 @@ function applyUiLanguage()
 	end
 	if type(updateHintAndGhost) == "function" then
 		updateHintAndGhost()
+	end
+	if scoreCache and type(scoreCache.palette) == "table" and type(scoreCache.palette.ApplyLang) == "function" then
+		pcall(scoreCache.palette.ApplyLang)
 	end
 	if type(refreshKbCmdPicker) == "function" then
 		refreshKbCmdPicker()
@@ -13492,12 +13507,13 @@ if scoreCache then
         local title = Instance.new("TextLabel")
         title.BackgroundTransparency = 1
         title.Position = UDim2.fromOffset(20, 12)
-        title.Size = UDim2.new(1, -40, 0, 24)
+        title.Size = UDim2.new(1, -108, 0, 24)
         title.Font = UI_FONT_MED
         title.TextSize = 15
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.TextColor3 = Color3.fromRGB(248, 248, 252)
-        title.Text = "Command Palette"
+        title.Text = T("palTitle")
+        title.TextTruncate = Enum.TextTruncate.AtEnd
         title.ZIndex = 92
         title.Parent = panel
 
@@ -13526,7 +13542,7 @@ if scoreCache then
         search.TextSize = 14
        search.TextColor3 = Color3.fromRGB(248, 248, 252)
         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
-        search.PlaceholderText = "Search commands or type arguments..."
+        search.PlaceholderText = T("palPlaceholder")
         search.Text = ""
         search.TextXAlignment = Enum.TextXAlignment.Left
         search.ZIndex = 92
@@ -13552,7 +13568,8 @@ if scoreCache then
         section.TextSize = 11
         section.TextXAlignment = Enum.TextXAlignment.Left
         section.TextColor3 = Color3.fromRGB(153, 145, 177)
-        section.Text = "FAVORITES & RECENT"
+        section.Text = T("palSectionRecent")
+        section.TextTruncate = Enum.TextTruncate.AtEnd
         section.ZIndex = 92
         section.Parent = panel
 
@@ -13585,7 +13602,8 @@ if scoreCache then
         footer.TextSize = 11
         footer.TextXAlignment = Enum.TextXAlignment.Left
         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
+        footer.Text = T("palFooter")
+        footer.TextTruncate = Enum.TextTruncate.AtEnd
         footer.ZIndex = 92
         footer.Parent = panel
 
@@ -13715,7 +13733,7 @@ if scoreCache then
             task.delay(0.025, function()
                 if token ~= state.refreshToken or not root.Visible then return end
                 for _, child in ipairs(holder:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
+                    if child:IsA("TextButton") or child.Name == "Empty" then child:Destroy() end
                 end
                 state.rows = {}
                 state.items = {}
@@ -13726,8 +13744,19 @@ if scoreCache then
                     local name = tostring(info.NAME or "")
                     local key = primary(name)
                     if key ~= "" then
-                        local desc = tostring(info.DESC or "")
-                        local hay = (name .. " " .. desc):lower()
+                        local rawDesc = tostring(info.DESC or "")
+                        local desc = rawDesc
+                        if type(getLocalizedDesc) == "function" then
+                            local loc = getLocalizedDesc(name, rawDesc)
+                            if loc ~= "" and loc ~= T("noDesc") then
+                                desc = loc
+                            end
+                        end
+                        local hay = (name .. " " .. rawDesc)
+                        if desc ~= rawDesc then
+                            hay = hay .. " " .. desc
+                        end
+                        hay = hay:lower()
                         local fav = isFav(name)
                         local recent = recentRank(name)
                         local score = nil
@@ -13756,7 +13785,7 @@ if scoreCache then
                 local limit = math.min(8, #candidates)
                 for i = 1, limit do state.items[i] = candidates[i] end
                 state.selected = limit > 0 and 1 or 0
-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
+                section.Text = queryHead == "" and T("palSectionRecent") or string.format(T("palSectionResults"), #candidates)
                 if limit == 0 then
                     local empty = Instance.new("TextLabel")
                     empty.Name = "Empty"
@@ -13765,12 +13794,10 @@ if scoreCache then
                     empty.Font = UI_FONT
                     empty.TextSize = 13
                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
-                    empty.Text = "No matching commands"
+                    empty.Text = T("palEmpty")
                     empty.ZIndex = 93
                     empty.Parent = holder
                 else
-                    local oldEmpty = holder:FindFirstChild("Empty")
-                    if oldEmpty then oldEmpty:Destroy() end
                     for i, item in ipairs(state.items) do makeRow(item, i) end
                 end
                 holder.Size = UDim2.new(1, -6, 0, math.max(80, limit * 59))
@@ -13797,6 +13824,16 @@ if scoreCache then
         end
         function api.IsOpen()
             return root.Visible
+        end
+        function api.ApplyLang()
+            title.Text = T("palTitle")
+            search.PlaceholderText = T("palPlaceholder")
+            footer.Text = T("palFooter")
+            if root.Visible then
+                refresh()
+            else
+                section.Text = T("palSectionRecent")
+            end
         end
         api.Root = root
         api.Search = search
