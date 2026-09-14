@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.63 — 2026-09-14
+
+### Added
+- `showhistory` (`hist`, `cmdhistory`) is in `source`: search it in the panel, run it, see the last 8 commands. One loadstring is enough.
+
+### Fixed
+- `lastcommand` / `lastcmd` notifies instead of erroring when history is empty.
+
+### Notes
+- `currentVersion` in `source` is 7.63 (it had stayed on 7.50 while badges said 7.62).
+- README loadstring is one line on `source`. Leftover hotfix files are not the product.
+
 ## 7.62 — 2026-09-14
 
 ### Added
