@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Changed
+- Automation Studio left list shows full event names (`OnCharacterRemoving`, not `OnCharact…`); the count badge sits on the category line so the switch stays on the right.
+
 ## 7.62 — 2026-09-14
 
 ### Added
