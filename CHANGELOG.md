@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command panel keeps the list open and shows “No matching commands” / «Нет подходящих команд» when search matches nothing.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
