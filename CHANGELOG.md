@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Automation Studio Inspector: selecting an event (no card) shows the event name, what fires it, clickable `$` variables that insert into the command box, and a list of commands to open for editing — empty events say to type one below.
+
 ## 7.62 — 2026-09-14
 
 ### Added
