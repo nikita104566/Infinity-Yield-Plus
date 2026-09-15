@@ -8,7 +8,6 @@
 ### Notes
 - One `source` loadstring. No new hotfix.
 
-
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -23,3 +22,9 @@
 ### Notes
 - Main `source` is unchanged. Load `hotfix762.luau` after `source`, or just load `patches.luau`.
 - Idempotent (`_G.__IYP_762_CMDS`). RU/EN strings for the new notices.
+
+## 7.50 — 2026-09-09
+
+### Changed
+- Bumped release version to **7.50** (`version`, README badge, in-app `currentVersion`).
+- Synced Automation Studio build from the latest GPT polish pass into `source`.
