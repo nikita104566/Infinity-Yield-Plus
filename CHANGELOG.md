@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command panel stays open and shows a short empty-state line when search matches no commands.
+
 ## 7.62 — 2026-09-14
 
 ### Added
