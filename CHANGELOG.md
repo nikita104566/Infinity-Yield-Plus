@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list headers show visible counts; a typed search with no hits shows an empty state instead of a blank panel.
+
 ## 7.62 — 2026-09-14
 
 ### Added
