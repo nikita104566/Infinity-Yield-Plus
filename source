@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -585,6 +585,7 @@ UI_L = {
 		refExample = "Example:",
 		refEventsEx = "OnChatted: $1/$player = who chatted, $2/$message = text. Command: goto $player. Use Preview to see substitution without running.",
 		autoStudio = "Automation Studio",
+		studioMissing = "Automation Studio could not open",
 		autoPaused = "Automations paused",
 		autoResumed = "Automations resumed",
 		eeSearch = "Search events...",
@@ -810,6 +811,7 @@ UI_L = {
 		refExample = "Пример:",
 		refEventsEx = "OnChatted: $1/$player = кто написал, $2/$message = текст. Команда: goto $player. Preview показывает подстановку без запуска.",
 		autoStudio = "Automation Studio",
+		studioMissing = "Не удалось открыть Automation Studio",
 		autoPaused = "Автоматизации на паузе",
 		autoResumed = "Автоматизации возобновлены",
 		eeSearch = "Поиск событий...",
@@ -11264,6 +11266,7 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'studio / autostudio / eventstudio', DESC = 'Opens Automation Studio'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12219,6 +12222,9 @@ do
 		walltp = 'Описание: Teleports you above/over any wall you run into',
 		waypointpos = 'Ставит waypoint по координатам',
 		weaken = 'Меняет твой/твою character less dense',
+		studio = 'Открывает Automation Studio',
+		autostudio = 'Открывает Automation Studio',
+		eventstudio = 'Открывает Automation Studio',
 		-- IYP_RU_EXTRA_END
 	}
 	for k, v in pairs(ru) do
@@ -18195,6 +18201,20 @@ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
     if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
         execCmd(cmdHistory[1])
     end
+end)
+
+addcmd('studio', {'autostudio', 'eventstudio'}, function(args, speaker)
+    if eventEditor and type(eventEditor.IsOpen) == "function" and eventEditor.IsOpen() then
+        if type(eventEditor.Close) == "function" then
+            eventEditor.Close()
+        end
+        return
+    end
+    if eventEditor and type(eventEditor.Open) == "function" then
+        eventEditor.Open()
+        return
+    end
+    notify(T("autoStudio"), T("studioMissing"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
