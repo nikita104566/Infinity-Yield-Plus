@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Fixed
+- `lastcommand` / `lastcmd` no longer errors when ↑/↓ history is empty; the panel shows a short EN/RU notice instead.
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -78,7 +83,7 @@
 - `starlast` (`favlast`, `pinlast`) — pins the last history command to favorites when the favorites API is present.
 
 ### Notes
-- Main `source` is unchanged. Load `hotfix757.luau` after `source`. You can skip 754–756 if you only need the new commands; keep 756 if you want history dedup / `showhistory`.
+- Main `source` is unchanged. Load `hotfix757.luau` after `source`.
 - Idempotent (`_G.__IYP_757_CMDS`). RU/EN strings for the new notices.
 
 ## 7.56 — 2026-09-14
@@ -87,21 +92,15 @@
 - Consecutive duplicate history entries are collapsed.
 - Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in ↑/↓ history.
 - New command: `showhistory` (`hist`, `cmdhistory`) — shows the last few saved commands.
-- History is re-sanitized and capped at 30 after each exec (still debounced ~0.35s).
-- Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
 
 ### Notes
-- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix756.luau` after `source`. You can skip 754/755 if you load 756.
+- Main `source` is still the 7.50 core plus earlier baked fixes.
 
 ## 7.55 — 2026-09-14
 
 ### Improved
-- Save-on-exec from 7.54 is now debounced (~0.35s). Rapid commands no longer hammer `IY_FE.iy`.
+- Save-on-exec from 7.54 is now debounced (~0.35s).
 - New command: `clearhistory` (`clrhist`, `wipehistory`) — clears ↑/↓ history and persists the empty list.
-- Version badge set to 7.55. Idempotent (`_G.__IYP_755_*` guards).
-
-### Notes
-- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix755.luau` after `source`. `hotfix754` is optional if you already load 755.
 
 ## 7.50 — 2026-09-09
 
