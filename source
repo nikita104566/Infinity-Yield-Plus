@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -4138,7 +4138,7 @@ eventEditor = (function()
 		end
 	end)
 	local EE_W, EE_H, EE_TITLE = 1020, 660, 50
-	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
+	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 256, 248, 12, 52
 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
 	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
@@ -7385,31 +7385,31 @@ eventEditor = (function()
 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 8),
-					Size = UDim2.new(1, -108, 0, 18),
+					Position = UDim2.new(0, 12, 0, 8),
+					Size = UDim2.new(1, -58, 0, 18),
 					Font = UI_FONT_MED,
 					TextSize = 13,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = nameColor,
 					Text = name,
-					TextTruncate = Enum.TextTruncate.AtEnd,
+					TextTruncate = Enum.TextTruncate.None,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 30),
-					Size = UDim2.new(1, -108, 0, 14),
+					Position = UDim2.new(0, 12, 0, 30),
+					Size = UDim2.new(1, -58, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = EE_MUTED,
-					Text = categoryText(cat),
+					Text = categoryText(cat) .. (tot > 0 and ("  " .. (en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)))) or ""),
 					ZIndex = 44,
 				}, row)
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -98, 1, 0),
+					Size = UDim2.new(1, -50, 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -7463,20 +7463,6 @@ eventEditor = (function()
 						refreshInspector()
 					end
 				end)
-				if tot > 0 then
-					local badge = mk("TextLabel", {
-						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
-						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
-						Size = UDim2.new(0, 42, 0, 18),
-						Font = UI_FONT_MED,
-						TextSize = 10,
-						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
-						Text = en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)),
-						ZIndex = 44,
-					}, row)
-					uiCorner(badge, 8)
-				end
 				y += 59
 			end
 		end
