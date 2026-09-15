@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.66",
+	"Announcement": "7.66: open the aliases list from the command panel"
 }

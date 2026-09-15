@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.66 — 2026-09-15
+
+### Added
+- `aliases` (`listaliases`, `showaliases`) opens the aliases list from the command panel; an empty list tells you to use `addalias`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
