@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command tooltip ★ is a real button: hover a row and click it to pin or unpin a favorite.
+
 ## 7.62 — 2026-09-14
 
 ### Added

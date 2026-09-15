@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -559,8 +559,8 @@ UI_L = {
 		allCommands = "Commands",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
-		favHintAdd = "★  Right-click to favorite",
-		favHintRemove = "★  Favorited · right-click to remove",
+		favHintAdd = "★  Click to favorite",
+		favHintRemove = "★  Favorited — click to remove",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -784,8 +784,8 @@ UI_L = {
 		allCommands = "Команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
-		favHintAdd = "★  ПКМ — в избранное",
-		favHintRemove = "★  В избранном · ПКМ — убрать",
+		favHintAdd = "★  Нажми — в избранное",
+		favHintRemove = "★  В избранном — нажми, чтобы убрать",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -2141,6 +2141,9 @@ function styleCmdRow(btn)
 			if m then m.Visible = false end
 		end
 		if not splashBlocksUi() and holderIsExpanded() and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
+			if Tooltip then
+				Tooltip:SetAttribute("AnchorY", btn.AbsolutePosition.Y)
+			end
 			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
 		elseif type(hideHelper) == "function" then
 			hideHelper()
@@ -2316,8 +2319,14 @@ HelperFavBtn.TextColor3 = Color3.fromRGB(255, 214, 102)
 HelperFavBtn.AutoButtonColor = false
 HelperFavBtn.ZIndex = 28
 HelperFavBtn.Visible = false
-HelperFavBtn.Active = false
+HelperFavBtn.Active = true
 uiCorner(HelperFavBtn, 6)
+HelperFavBtn.MouseEnter:Connect(function()
+	HelperFavBtn.BackgroundColor3 = Color3.fromRGB(58, 52, 78)
+end)
+HelperFavBtn.MouseLeave:Connect(function()
+	HelperFavBtn.BackgroundColor3 = Color3.fromRGB(42, 38, 58)
+end)
 
 IntroBackground.Name = "IntroBackground"
 IntroBackground.Parent = Holder
@@ -10562,30 +10571,28 @@ function placeHelper()
     local th = Tooltip.Size.Y.Offset
     if th < 1 then th = 96 end
 
-    local gap = 6
-    local x = IYMouse.X + gap
-    local y = IYMouse.Y + gap
-
     local parent = Tooltip.Parent
-    if parent then
-        local pp = parent.AbsolutePosition
-        local ps = parent.AbsoluteSize
-        local minX = pp.X + 8
-        local minY = pp.Y + 8
-        local maxX = pp.X + ps.X - tw - 8
-        local maxY = pp.Y + ps.Y - th - 8
-        if maxX < minX then maxX = minX end
-        if maxY < minY then maxY = minY end
-        -- If it would go past the right edge, flip to the left of the cursor
-        if x > maxX then
-            x = IYMouse.X - tw - gap
-        end
-        if y > maxY then
-            y = IYMouse.Y - th - gap
-        end
-        x = math.clamp(x, minX, maxX)
-        y = math.clamp(y, minY, maxY)
+    if not parent then return end
+    local pp = parent.AbsolutePosition
+    local ps = parent.AbsoluteSize
+    local minX = pp.X + 8
+    local minY = pp.Y + 8
+    local maxX = pp.X + ps.X - tw - 8
+    local maxY = pp.Y + ps.Y - th - 8
+    if maxX < minX then maxX = minX end
+    if maxY < minY then maxY = minY end
+
+    -- Dock to the panel edge and stay put so the ★ button can be clicked
+    local hp = Holder.AbsolutePosition
+    local hs = Holder.AbsoluteSize
+    local x = hp.X + hs.X - 48
+    if x > maxX then
+        x = hp.X - tw + 48
     end
+    local ay = Tooltip:GetAttribute("AnchorY")
+    local y = (type(ay) == "number") and ay or IYMouse.Y
+    x = math.clamp(x, minX, maxX)
+    y = math.clamp(y, minY, maxY)
     Tooltip.Position = UDim2.fromOffset(math.floor(x), math.floor(y))
 end
 
@@ -10599,6 +10606,7 @@ function hideHelper()
 	if not Tooltip then return end
 	helperShownKey = nil
 	Tooltip.Visible = false
+	Tooltip.Active = false
 	Tooltip.BackgroundTransparency = 0
 	if Title_3 then Title_3.TextTransparency = 0 end
 	if Description then Description.TextTransparency = 0 end
@@ -10617,7 +10625,7 @@ function showHelper(title, desc)
     end
     local key = title .. "\0" .. desc
     if Tooltip.Visible and helperShownKey == key then
-        placeHelper()
+        -- Stay put so the cursor can reach the ★ button
         return
     end
     helperShownKey = key
@@ -10635,7 +10643,6 @@ function showHelper(title, desc)
     local titleH = 28
     local gap = 6
     local bottomPad = 12
-    -- Tooltip follows the cursor, so the fav row is a hint only: right-click the row to toggle
     local favHint = nil
     if HelperFavBtn and type(isFavoriteCmd) == "function" then
         local ok, fav = pcall(isFavoriteCmd, title)
@@ -10653,7 +10660,7 @@ function showHelper(title, desc)
         HelperAccent.Position = UDim2.new(0, 12, 0, titleH - 1)
     end
     if HelperFavBtn then
-        HelperFavBtn.Active = false
+        HelperFavBtn.Active = true
         HelperFavBtn.Visible = favHint ~= nil
         if favHint ~= nil then
             HelperFavBtn.Text = favHint and T("favHintRemove") or T("favHintAdd")
@@ -10664,6 +10671,7 @@ function showHelper(title, desc)
     end
     Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
     Tooltip.BackgroundTransparency = 0
+    Tooltip.Active = true
     if Title_3 then Title_3.TextTransparency = 0 end
     if Description then Description.TextTransparency = 0 end
     Tooltip.Visible = true
@@ -12393,6 +12401,26 @@ isFavoriteCmd = FavCmds.is
 applyFavoriteStyle = FavCmds.apply
 toggleFavoriteCmd = FavCmds.toggle
 
+if HelperFavBtn and not HelperFavBtn:GetAttribute("IYPFavClick") then
+	HelperFavBtn:SetAttribute("IYPFavClick", true)
+	HelperFavBtn.MouseButton1Click:Connect(function()
+		local title = Tooltip and Tooltip:GetAttribute("CmdTitle")
+		if type(title) ~= "string" or title == "" or type(toggleFavoriteCmd) ~= "function" then
+			return
+		end
+		local ay = Tooltip:GetAttribute("AnchorY")
+		local desc = Tooltip:GetAttribute("CmdDesc")
+		toggleFavoriteCmd(title)
+		helperShownKey = nil
+		if type(ay) == "number" then
+			Tooltip:SetAttribute("AnchorY", ay)
+		end
+		if type(showHelper) == "function" then
+			showHelper(title, desc)
+		end
+	end)
+end
+
 for i = 1, #CMDs do
     local newcmd = Example:Clone()
     newcmd.Parent = CMDsF
@@ -12479,6 +12507,17 @@ function checkTT()
         return
     end
 
+    local mx, my = IYMouse.X, IYMouse.Y
+    local function pointIn(gui)
+        if not (gui and gui.Parent) then return false end
+        local p = gui.AbsolutePosition
+        local s = gui.AbsoluteSize
+        return mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y
+    end
+    if Tooltip.Visible and pointIn(Tooltip) then
+        return
+    end
+
     -- Right gutter / scrollbar: allow scrolling without opening the helper
     local listPos = CMDsF.AbsolutePosition
     local listSize = CMDsF.AbsoluteSize
@@ -12489,18 +12528,11 @@ function checkTT()
         return
     end
 
-    local mx, my = IYMouse.X, IYMouse.Y
     -- Nothing outside the list has a description, so skip the row scans entirely
     if mx < listPos.X or mx > listPos.X + listSize.X
         or my < listPos.Y or my > listPos.Y + listSize.Y then
         hideHelper()
         return
-    end
-    local function pointIn(gui)
-        if not (gui and gui.Parent) then return false end
-        local p = gui.AbsolutePosition
-        local s = gui.AbsoluteSize
-        return mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y
     end
 
     local hovered
@@ -12540,6 +12572,7 @@ function checkTT()
     end
 
     if hovered then
+        Tooltip:SetAttribute("AnchorY", hovered.AbsolutePosition.Y)
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
         return
     end
