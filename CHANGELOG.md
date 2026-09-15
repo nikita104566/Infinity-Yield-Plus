@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.64 — 2026-09-15
+
+### Fixed
+- `lastcommand` / `lastcmd` no longer errors when ↑/↓ history is empty; shows an EN/RU notify instead.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
