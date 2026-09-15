@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio left list shows full event names (`OnCharacterRemoving`, `OnHealthBelow`) instead of cutting them to `OnCharact…`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
