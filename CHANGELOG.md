@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Automation Studio left list shows full event names (`OnCharacterRemoving` no longer clips to `OnCharact…`); workflow counts sit on the category line.
+
 ## 7.62 — 2026-09-14
 
 ### Added
