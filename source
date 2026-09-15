@@ -1,1 +1,2 @@
--- see local /tmp/iyp_source.lua placeholder should not be used
+-- DO NOT MERGE THIS BRANCH.
+-- Accidental stub. Use main/source. Intended 7.63 lastcommand empty-history lives in sprint/7.63-lastcommand-safe docs + local patch.
