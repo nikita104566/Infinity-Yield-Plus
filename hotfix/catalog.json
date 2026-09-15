@@ -1,0 +1,114 @@
+{
+  "repo": "nikita104566/Infinity-Yield-Plus",
+  "core": {
+    "file": "source",
+    "versionFile": "version",
+    "pinnedCommit": "e30e0ec",
+    "note": "Main `source` is the 7.50 core plus earlier baked history work. Player-facing 7.56–7.62 commands live in hotfix files, not in source."
+  },
+  "loader": "patches.luau",
+  "rawBase": "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/",
+  "patches": [
+    {
+      "id": 753,
+      "file": "hotfix753.luau",
+      "version": "7.54",
+      "default": false,
+      "status": "stub",
+      "summary": "Compatibility stub. History persist / safe lastcommand were baked into source.",
+      "commands": [],
+      "supersededBy": 754
+    },
+    {
+      "id": 754,
+      "file": "hotfix754.luau",
+      "version": "7.54",
+      "default": false,
+      "status": "optional",
+      "summary": "Safe lastcommand on empty history; persist cmdHistory in IY_FE.iy.",
+      "commands": ["lastcommand"],
+      "guards": ["__IYP_754_SAVEWRAP", "__IYP_754_EXECWRAP"]
+    },
+    {
+      "id": 755,
+      "file": "hotfix755.luau",
+      "version": "7.55",
+      "default": false,
+      "status": "optional",
+      "summary": "Debounce history saves (~0.35s); add clearhistory.",
+      "commands": ["clearhistory"],
+      "guards": ["__IYP_755_EXECWRAP"],
+      "dependsOn": [754]
+    },
+    {
+      "id": 756,
+      "file": "hotfix756.luau",
+      "version": "7.56",
+      "default": true,
+      "status": "active",
+      "summary": "Dedup consecutive history, skip meta-commands, add showhistory.",
+      "commands": ["showhistory"],
+      "guards": ["__IYP_756_EXECWRAP"]
+    },
+    {
+      "id": 757,
+      "file": "hotfix757.luau",
+      "version": "7.57",
+      "default": true,
+      "status": "active",
+      "summary": "checkupdate vs GitHub version file; copyhistory; starlast.",
+      "commands": ["checkupdate", "copyhistory", "starlast"],
+      "guards": ["__IYP_757_CMDS"]
+    },
+    {
+      "id": 758,
+      "file": "hotfix758.luau",
+      "version": "7.58",
+      "default": true,
+      "status": "active",
+      "summary": "repeatlast, ping, fps, cmdcount; announcement on checkupdate.",
+      "commands": ["repeatlast", "ping", "fps", "cmdcount"],
+      "guards": ["__IYP_758_CMDS"]
+    },
+    {
+      "id": 759,
+      "file": "hotfix759.luau",
+      "version": "7.59",
+      "default": true,
+      "status": "active",
+      "summary": "placeinfo, copyplace, players, session, hotfixes.",
+      "commands": ["placeinfo", "copyplace", "players", "session", "hotfixes"],
+      "guards": ["__IYP_759_CMDS"]
+    },
+    {
+      "id": 760,
+      "file": "hotfix760.luau",
+      "version": "7.60",
+      "default": true,
+      "status": "active",
+      "summary": "whoami, copyuserid, copyjob, serverage, memory.",
+      "commands": ["whoami", "copyuserid", "copyjob", "serverage", "memory"],
+      "guards": ["__IYP_760_CMDS"]
+    },
+    {
+      "id": 761,
+      "file": "hotfix761.luau",
+      "version": "7.61",
+      "default": true,
+      "status": "active",
+      "summary": "info dump, copyjoin, creator, clock, maxplayers.",
+      "commands": ["info", "copyjoin", "creator", "clock", "maxplayers"],
+      "guards": ["__IYP_761_CMDS"]
+    },
+    {
+      "id": 762,
+      "file": "hotfix762.luau",
+      "version": "7.62",
+      "default": true,
+      "status": "active",
+      "summary": "env, device, showprefix, timezone, display.",
+      "commands": ["env", "device", "showprefix", "timezone", "display"],
+      "guards": ["__IYP_762_CMDS"]
+    }
+  ]
+}

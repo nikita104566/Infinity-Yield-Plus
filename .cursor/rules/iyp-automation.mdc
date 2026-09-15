@@ -1,0 +1,10 @@
+---
+description: How IYP automations must work — no duplicate PRs, no new numbered hotfixes
+alwaysApply: true
+---
+
+Follow `AGENTS.md` at the repo root.
+
+Before any code change, run `python3 tools/iyp.py status`. If the axis you want already has an open PR, do not open another.
+
+Do not add `hotfix7xx.luau` files. Do not replace `source` with a stub. One player-visible axis per PR. Keep `python3 tools/iyp.py check` green.
