@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Hover tooltip star is a real button: click it to add or remove a command from favorites (EN/RU).
+
+### Notes
+- One `source` loadstring is enough. Panel badge is 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added

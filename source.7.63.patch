@@ -1,0 +1,85 @@
+diff --git a/source b/source
+index 97e1997..b215c64 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -559,8 +559,8 @@ UI_L = {
+ 		allCommands = "Commands",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+-		favHintAdd = "★  Right-click to favorite",
+-		favHintRemove = "★  Favorited · right-click to remove",
++		favHintAdd = "★  Click to favorite",
++		favHintRemove = "★  Favorited · click to remove",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+ 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
+@@ -784,8 +784,8 @@ UI_L = {
+ 		allCommands = "Команды",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+-		favHintAdd = "★  ПКМ — в избранное",
+-		favHintRemove = "★  В избранном · ПКМ — убрать",
++		favHintAdd = "★  Нажми — в избранное",
++		favHintRemove = "★  В избранном · нажми, чтобы убрать",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+ 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
+@@ -2316,9 +2316,30 @@ HelperFavBtn.TextColor3 = Color3.fromRGB(255, 214, 102)
+ HelperFavBtn.AutoButtonColor = false
+ HelperFavBtn.ZIndex = 28
+ HelperFavBtn.Visible = false
+-HelperFavBtn.Active = false
++HelperFavBtn.Active = true
+ uiCorner(HelperFavBtn, 6)
+ 
++HelperFavBtn.MouseButton1Click:Connect(function()
++	local title = Tooltip and Tooltip:GetAttribute("CmdTitle")
++	if title == nil or title == "" then return end
++	if type(toggleFavoriteCmd) == "function" then
++		toggleFavoriteCmd(title)
++		showHelper(title, Tooltip:GetAttribute("CmdDesc"))
++	end
++end)
++HelperFavBtn.MouseEnter:Connect(function()
++	HelperFavBtn.BackgroundTransparency = 0.15
++end)
++HelperFavBtn.MouseLeave:Connect(function()
++	local title = Tooltip and Tooltip:GetAttribute("CmdTitle")
++	local fav = false
++	if title and type(isFavoriteCmd) == "function" then
++		local ok, v = pcall(isFavoriteCmd, title)
++		fav = ok and v and true or false
++	end
++	HelperFavBtn.BackgroundTransparency = fav and 0 or 0.5
++end)
++
+ IntroBackground.Name = "IntroBackground"
+ IntroBackground.Parent = Holder
+ IntroBackground.Active = true
+@@ -10635,7 +10656,7 @@ function showHelper(title, desc)
+     local titleH = 28
+     local gap = 6
+     local bottomPad = 12
+-    -- Tooltip follows the cursor, so the fav row is a hint only: right-click the row to toggle
++    -- Tooltip star is a real button; right-click on the command row still works
+     local favHint = nil
+     if HelperFavBtn and type(isFavoriteCmd) == "function" then
+         local ok, fav = pcall(isFavoriteCmd, title)
+@@ -10653,7 +10674,7 @@ function showHelper(title, desc)
+         HelperAccent.Position = UDim2.new(0, 12, 0, titleH - 1)
+     end
+     if HelperFavBtn then
+-        HelperFavBtn.Active = false
++        HelperFavBtn.Active = true
+         HelperFavBtn.Visible = favHint ~= nil
+         if favHint ~= nil then
+             HelperFavBtn.Text = favHint and T("favHintRemove") or T("favHintAdd")
