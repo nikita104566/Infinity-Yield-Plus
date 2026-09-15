@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.70'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -522,6 +522,10 @@ UI_L = {
 		prefix = "Prefix",
 		keepOpen = "Keep Menu Open",
 		language = "Language",
+		langTitle = "Language",
+		langSwitched = "Interface language: English",
+		langAlready = "Already English",
+		langNeed = "Use lang, lang en, or lang ru",
 		editTheme = "Edit Theme",
 		editKeybinds = "Edit Keybinds",
 		editAliases = "Edit Aliases",
@@ -747,6 +751,10 @@ UI_L = {
 		prefix = "Префикс",
 		keepOpen = "Держать меню открытым",
 		language = "Язык",
+		langTitle = "Язык",
+		langSwitched = "Язык интерфейса: русский",
+		langAlready = "Уже русский",
+		langNeed = "Пиши lang, lang en или lang ru",
 		editTheme = "Тема",
 		editKeybinds = "Клавиши",
 		editAliases = "Алиасы",
@@ -11245,6 +11253,7 @@ CMDs[#CMDs + 1] = {NAME = 'unguidelete / noguidelete', DESC = 'Disables guidelet
 CMDs[#CMDs + 1] = {NAME = 'stealgui / stealguis [path] [name]', DESC = "Steals the game's gui, i love you bat/vxsty."}
 CMDs[#CMDs + 1] = {NAME = 'hideiyp', DESC = 'Hides the main '..BRAND_NAME..' GUI'}
 CMDs[#CMDs + 1] = {NAME = 'showiyp', DESC = 'Shows '..BRAND_NAME..' again'}
+CMDs[#CMDs + 1] = {NAME = 'lang / uilang / setlang / language [en/ru]', DESC = 'Switches the panel language between English and Russian'}
 CMDs[#CMDs + 1] = {NAME = 'keepiyp', DESC = 'Auto execute '..BRAND_NAME..' when you teleport through servers'}
 CMDs[#CMDs + 1] = {NAME = 'unkeepiyp', DESC = 'Disable keepiyp'}
 CMDs[#CMDs + 1] = {NAME = 'togglekeepiyp', DESC = 'Toggles keepiyp'}
@@ -11769,6 +11778,10 @@ do
 		guiscale = "Масштаб GUI",
 		keepiy = "Оставлять "..BRAND_NAME.." после телепорта",
 		keepiyp = "Оставлять "..BRAND_NAME.." после телепорта",
+		lang = "Переключает язык панели EN/RU",
+		uilang = "Переключает язык панели EN/RU",
+		setlang = "Переключает язык панели EN/RU",
+		language = "Переключает язык панели EN/RU",
 		unkeepiy = "Не оставлять "..BRAND_NAME.." после телепорта",
 		unkeepiyp = "Не оставлять "..BRAND_NAME.." после телепорта",
 		exit = "Закрыть "..BRAND_NAME,
@@ -18195,6 +18208,35 @@ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
     if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
         execCmd(cmdHistory[1])
     end
+end)
+
+addcmd('lang', {'uilang', 'setlang', 'language'}, function(args, speaker)
+    local want = args and args[1] and tostring(args[1]):lower() or ""
+    want = want:gsub("^%s+", ""):gsub("%s+$", "")
+    local nextLang = nil
+    if want == "" then
+        nextLang = (uiLang == "ru") and "en" or "ru"
+    elseif want == "en" or want == "eng" or want == "english" then
+        nextLang = "en"
+    elseif want == "ru" or want == "rus" or want == "russian" then
+        nextLang = "ru"
+    end
+    if not nextLang then
+        notify(T("langTitle"), T("langNeed"))
+        return
+    end
+    if nextLang == uiLang then
+        notify(T("langTitle"), T("langAlready"))
+        return
+    end
+    uiLang = nextLang
+    if type(applyUiLanguage) == "function" then
+        applyUiLanguage()
+    end
+    if type(updatesaves) == "function" then
+        updatesaves()
+    end
+    notify(T("langTitle"), T("langSwitched"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)

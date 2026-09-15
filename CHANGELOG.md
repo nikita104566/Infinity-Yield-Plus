@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.70 — 2026-09-15
+
+### Added
+- `lang` (`uilang`, `setlang`, `language`) — switches the command panel between English and Russian after one `source` loadstring.
+
 ## 7.62 — 2026-09-14
 
 ### Added
