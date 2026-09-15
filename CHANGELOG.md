@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Down in the command bar highlights a list row even when the bar is empty; Enter runs it, Tab fills the name, Up still browses history.
+
 ## 7.62 — 2026-09-14
 
 ### Added
