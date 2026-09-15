@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command panel shows a clear “no match” hint when search finds nothing (EN/RU).
+
 ## 7.62 — 2026-09-14
 
 ### Added
