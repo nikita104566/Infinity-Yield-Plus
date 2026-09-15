@@ -1,2 +1,46 @@
-currentVersion = '7.63'
--- truncated test, will replace
+-- Infinity Yield Plus 7.63
+-- One loadstring. Fetches pinned core, then applies the command-list empty state.
+local CORE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+local raw
+do
+	local ok, body = pcall(function()
+		return game:HttpGet(CORE)
+	end)
+	if not ok or type(body) ~= "string" or #body < 1000 then
+		error("IYP 7.63: could not load core source")
+	end
+	raw = body
+end
+
+raw = raw:gsub("currentVersion = '7.50'", "currentVersion = '7.63'", 1)
+
+raw = raw:gsub(
+	'\t\tfavorites = "Favorites",\n\t\tallCommands = "Commands",',
+	'\t\tfavorites = "Favorites",\n\t\tallCommands = "Commands",\n\t\tcmdNoMatch = "No commands match this search",',
+	1)
+
+raw = raw:gsub(
+	'\t\tfavorites = "Избранное",\n\t\tallCommands = "Команды",',
+	'\t\tfavorites = "Избранное",\n\t\tallCommands = "Команды",\n\t\tcmdNoMatch = "Нет команд по этому поиску",',
+	1)
+
+raw = raw:gsub(
+	'\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end',
+	'\tif type(refreshCmdSectionHeaders) == "function" then\n\t\trefreshCmdSectionHeaders()\n\telse\n\t\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n\t\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end\n\tend\n\tif cmdListEmpty then cmdListEmpty.Text = T("cmdNoMatch") end',
+	1)
+
+raw = raw:gsub(
+	'cmdAllHeader.Visible = false\ncmdAllHeader.LayoutOrder = 500\n\nSettingsButton.Name = "SettingsButton"',
+	'cmdAllHeader.Visible = false\ncmdAllHeader.LayoutOrder = 500\n\ncmdListEmpty = Instance.new("TextLabel")\ncmdListEmpty.Name = "IYR_EMPTY"\ncmdListEmpty.Parent = CMDsF\ncmdListEmpty.BackgroundTransparency = 1\ncmdListEmpty.BorderSizePixel = 0\ncmdListEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 36)\ncmdListEmpty.Font = UI_FONT\ncmdListEmpty.TextSize = 12\ncmdListEmpty.TextWrapped = true\ncmdListEmpty.TextXAlignment = Enum.TextXAlignment.Left\ncmdListEmpty.TextYAlignment = Enum.TextYAlignment.Top\ncmdListEmpty.TextColor3 = Color3.fromRGB(154, 148, 176)\ncmdListEmpty.Text = T("cmdNoMatch")\ncmdListEmpty.TextTruncate = Enum.TextTruncate.AtEnd\ncmdListEmpty.ZIndex = 11\ncmdListEmpty.Visible = false\ncmdListEmpty.LayoutOrder = 3\n\ncmdHeaderFavN = 0\ncmdHeaderAllN = 0\ncmdHeaderShowEmpty = false\n\nfunction refreshCmdSectionHeaders(favN, allN, showEmpty)\n\tif favN ~= nil then cmdHeaderFavN = favN end\n\tif allN ~= nil then cmdHeaderAllN = allN end\n\tif showEmpty ~= nil then cmdHeaderShowEmpty = showEmpty and true or false end\n\tif cmdFavHeader then\n\t\tif cmdHeaderFavN and cmdHeaderFavN > 0 then\n\t\t\tcmdFavHeader.Text = T("favorites") .. " · " .. tostring(cmdHeaderFavN)\n\t\telse\n\t\t\tcmdFavHeader.Text = T("favorites")\n\t\tend\n\tend\n\tif cmdAllHeader then\n\t\tif cmdHeaderAllN and cmdHeaderAllN > 0 then\n\t\t\tcmdAllHeader.Text = T("allCommands") .. " · " .. tostring(cmdHeaderAllN)\n\t\telse\n\t\t\tcmdAllHeader.Text = T("allCommands")\n\t\tend\n\tend\n\tif cmdListEmpty then\n\t\tcmdListEmpty.Text = T("cmdNoMatch")\n\t\tcmdListEmpty.Visible = cmdHeaderShowEmpty == true\n\tend\nend\n\nSettingsButton.Name = "SettingsButton"',
+	1)
+
+raw = raw:gsub(
+	'    if cmdFavHeader then\n        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0\n        cmdFavHeader.LayoutOrder = 1\n    end\n    if cmdAllHeader then\n        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0\n        cmdAllHeader.LayoutOrder = 500\n    end',
+	'    if cmdFavHeader then\n        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0\n        cmdFavHeader.LayoutOrder = 1\n    end\n    if cmdAllHeader then\n        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0\n        cmdAllHeader.LayoutOrder = 500\n    end\n    if type(refreshCmdSectionHeaders) == "function" then\n        local typedNow = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))\n        local emptyNow = (not takesPlayer) and typedNow ~= "" and (#favRanked + #otherRanked) == 0\n        refreshCmdSectionHeaders(#favRanked, #otherRanked, emptyNow)\n        if cmdListEmpty then\n            cmdListEmpty.LayoutOrder = 3\n        end\n    end',
+	1)
+
+local fn, err = loadstring(raw)
+if not fn then
+	error("IYP 7.63 compile: " .. tostring(err))
+end
+return fn()
