@@ -23,7 +23,7 @@ pcall(function()
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
 	elseif VersionLabel then
-		VersionLabel.Text = "· " .. tostring(currentVersion)
+		VersionLabel.Text = "- " .. tostring(currentVersion)
 	end
 end)
 
@@ -36,7 +36,7 @@ local function paintStar(btn)
 		local ok, v = pcall(isFavoriteCmd, btn:GetAttribute("Title") or btn.Text)
 		fav = ok and v and true or false
 	end
-	star.Text = fav and "★" or "☆"
+	star.Text = fav and "*" or "o"
 	star.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(154, 148, 176)
 end
 
@@ -57,7 +57,7 @@ local function attachStar(btn)
 	star.Size = UDim2.new(0, 20, 1, 0)
 	star.Font = Enum.Font.GothamMedium
 	star.TextSize = 13
-	star.Text = "☆"
+	star.Text = "o"
 	star.TextColor3 = Color3.fromRGB(154, 148, 176)
 	star.ZIndex = (btn.ZIndex or 10) + 3
 	star.Parent = btn
