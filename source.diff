@@ -1,0 +1,12 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ -557,6 +557,7 @@
+ 		allCommands = "Commands",
++		noCmdMatches = "No matching commands",
+@@ -782,6 +783,7 @@
+ 		allCommands = "Команды",
++		noCmdMatches = "Нет подходящих команд",
+ Apply the full unified diff from the PR description onto source before merge. Favorite Star label, compact search names, empty-search hint.
