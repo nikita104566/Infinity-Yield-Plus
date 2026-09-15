@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list shows a clear empty hint when search matches nothing.
+- Favorite rows show a `*` mark in the panel so pinned commands are visible without opening the helper.
+
+### Notes
+- One loadstring: `source`. No extra hotfix.
+
 ## 7.62 — 2026-09-14
 
 ### Added
