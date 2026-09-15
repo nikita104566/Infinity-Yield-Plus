@@ -1,0 +1,86 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -560,6 +560,7 @@
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
++		favEmpty = "Right-click a command to pin it here",
+ 		favHintRemove = "★  Favorited · right-click to remove",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+@@ -785,6 +786,7 @@
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
++		favEmpty = "ПКМ по команде — закрепить здесь",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+@@ -10874,11 +10876,18 @@
+     end
+ 
+     if cmdFavHeader then
+-        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
++        cmdFavHeader.Visible = not takesPlayer
++        if #favRanked > 0 then
++            cmdFavHeader.Text = T("favorites")
++            cmdFavHeader.TextColor3 = Color3.fromRGB(255, 214, 102)
++        else
++            cmdFavHeader.Text = T("favEmpty")
++            cmdFavHeader.TextColor3 = Color3.fromRGB(154, 148, 176)
++        end
+         cmdFavHeader.LayoutOrder = 1
+     end
+     if cmdAllHeader then
+-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
++        cmdAllHeader.Visible = not takesPlayer and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
+ 
+@@ -12261,11 +12270,37 @@
+ 	return false, nil
+ end
+ function FavCmds.apply(btn)
++	if not btn then return end
+ 	local title = tostring(btn:GetAttribute("Title") or btn.Text)
+ 	local fav = FavCmds.is(title)
+ 	local label = btn:FindFirstChild("Label")
++	local star = btn:FindFirstChild("FavStar")
++	if not star then
++		star = Instance.new("TextLabel")
++		star.Name = "FavStar"
++		star.BackgroundTransparency = 1
++		star.BorderSizePixel = 0
++		star.Size = UDim2.new(0, 14, 1, 0)
++		star.Position = UDim2.new(0, 0, 0, 0)
++		star.Font = UI_FONT
++		star.TextSize = 12
++		star.Text = "★"
++		star.TextColor3 = Color3.fromRGB(255, 214, 102)
++		star.TextXAlignment = Enum.TextXAlignment.Left
++		star.TextYAlignment = Enum.TextYAlignment.Center
++		star.ZIndex = 12
++		star.Parent = btn
++	end
++	star.Visible = fav and true or false
+ 	if label then
+ 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
++		if fav then
++			label.Position = UDim2.new(0, 12, 0, 0)
++			label.Size = UDim2.new(1, -12, 1, 0)
++		else
++			label.Position = UDim2.new(0, 0, 0, 0)
++			label.Size = UDim2.new(1, 0, 1, 0)
++		end
+ 	end
+ end
+ function FavCmds.find(key)
