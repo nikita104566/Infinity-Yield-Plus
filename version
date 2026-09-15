@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.65",
+	"Announcement": "7.65: prefix chip on the command bar — click it to change the prefix"
 }
