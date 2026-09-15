@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -521,6 +521,10 @@ UI_L = {
 		command = "Command",
 		prefix = "Prefix",
 		keepOpen = "Keep Menu Open",
+		stayOpenOn = "Stays open after you run a command",
+		stayOpenOff = "Hides after you run a command",
+		stayOpenAlreadyOn = "Already staying open",
+		stayOpenAlreadyOff = "Already hiding after commands",
 		language = "Language",
 		editTheme = "Edit Theme",
 		editKeybinds = "Edit Keybinds",
@@ -746,6 +750,10 @@ UI_L = {
 		command = "Команда",
 		prefix = "Префикс",
 		keepOpen = "Держать меню открытым",
+		stayOpenOn = "Остаётся открытой после команды",
+		stayOpenOff = "Снова прячется после команды",
+		stayOpenAlreadyOn = "Уже остаётся открытой",
+		stayOpenAlreadyOff = "Уже прячется после команд",
 		language = "Язык",
 		editTheme = "Тема",
 		editKeybinds = "Клавиши",
@@ -11245,6 +11253,8 @@ CMDs[#CMDs + 1] = {NAME = 'unguidelete / noguidelete', DESC = 'Disables guidelet
 CMDs[#CMDs + 1] = {NAME = 'stealgui / stealguis [path] [name]', DESC = "Steals the game's gui, i love you bat/vxsty."}
 CMDs[#CMDs + 1] = {NAME = 'hideiyp', DESC = 'Hides the main '..BRAND_NAME..' GUI'}
 CMDs[#CMDs + 1] = {NAME = 'showiyp', DESC = 'Shows '..BRAND_NAME..' again'}
+CMDs[#CMDs + 1] = {NAME = 'stayopen / keepopen / pinpanel', DESC = 'Keeps the command panel open after you run a command'}
+CMDs[#CMDs + 1] = {NAME = 'unstayopen / nokeepopen / unpinpanel', DESC = 'Lets the command panel hide after you run a command'}
 CMDs[#CMDs + 1] = {NAME = 'keepiyp', DESC = 'Auto execute '..BRAND_NAME..' when you teleport through servers'}
 CMDs[#CMDs + 1] = {NAME = 'unkeepiyp', DESC = 'Disable keepiyp'}
 CMDs[#CMDs + 1] = {NAME = 'togglekeepiyp', DESC = 'Toggles keepiyp'}
@@ -11769,6 +11779,12 @@ do
 		guiscale = "Масштаб GUI",
 		keepiy = "Оставлять "..BRAND_NAME.." после телепорта",
 		keepiyp = "Оставлять "..BRAND_NAME.." после телепорта",
+		stayopen = "Панель не сворачивается после команды",
+		keepopen = "Панель не сворачивается после команды",
+		pinpanel = "Панель не сворачивается после команды",
+		unstayopen = "Панель снова прячется после команды",
+		nokeepopen = "Панель снова прячется после команды",
+		unpinpanel = "Панель снова прячется после команды",
 		unkeepiy = "Не оставлять "..BRAND_NAME.." после телепорта",
 		unkeepiyp = "Не оставлять "..BRAND_NAME.." после телепорта",
 		exit = "Закрыть "..BRAND_NAME,
@@ -17550,6 +17566,32 @@ addcmd('showiyp',{'showiy','unhideiy','showiyr','unhideiyr','unhideiyp'},functio
     else
         minimizeHolder()
     end
+end)
+
+addcmd('stayopen',{'keepopen','pinpanel'},function(args, speaker)
+    isHidden = false
+    minimizeNum = -20
+    if StayOpen == true then
+        notify(T("keepOpen"), T("stayOpenAlreadyOn"))
+        return
+    end
+    maximizeHolder()
+    StayOpen = true
+    applyStayOpenVisual()
+    updatesaves()
+    notify(T("keepOpen"), T("stayOpenOn"))
+end)
+
+addcmd('unstayopen',{'nokeepopen','unpinpanel'},function(args, speaker)
+    if StayOpen ~= true then
+        notify(T("keepOpen"), T("stayOpenAlreadyOff"))
+        return
+    end
+    StayOpen = false
+    applyStayOpenVisual()
+    updatesaves()
+    minimizeHolder()
+    notify(T("keepOpen"), T("stayOpenOff"))
 end)
 
 addcmd('rec', {'record'}, function(args, speaker)

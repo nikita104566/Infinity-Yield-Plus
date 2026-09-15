@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `stayopen` (`keepopen`, `pinpanel`) keeps the command panel open after a command; `unstayopen` (`nokeepopen`, `unpinpanel`) lets it hide again.
+
 ## 7.62 — 2026-09-14
 
 ### Added
