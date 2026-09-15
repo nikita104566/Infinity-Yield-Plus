@@ -4,6 +4,13 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function verNum(s)
+		local a, b = tostring(s or ""):match("^(%d+)%.(%d+)")
+		return (tonumber(a) or 0) * 1000 + (tonumber(b) or 0)
+	end
+	if verNum(currentVersion) > verNum("7.62") then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
@@ -14,6 +21,7 @@ pcall(function()
 		SubLabel.Text = "7.62"
 	end
 end)
+
 
 pcall(function()
 	if type(I18N) ~= "table" then
