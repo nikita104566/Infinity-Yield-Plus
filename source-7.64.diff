@@ -1,0 +1,45 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.64'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -13427,7 +13427,7 @@
+     if SettingsOpen == true then
+         closeSettingsPanel(false)
+     end
+-    tabComplete = UserInputService.InputBegan:Connect(function(input,gameProcessed)
++    tabComplete = IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
+         if Cmdbar:IsFocused() then
+             if tabAllowed == true and input.KeyCode == Enum.KeyCode.Tab then
+                 flushIndexContents()
+@@ -13440,7 +13440,7 @@
+         else
+             tabComplete:Disconnect()
+         end
+-    end)
++    end))
+ end))
+ 
+ -- P1 COMMAND PALETTE: nested state avoids new top-level locals in the near-limit main chunk.
+@@ -14709,7 +14709,7 @@
+ 		pcall(function() kbTabConn:Disconnect() end)
+ 		kbTabConn = nil
+ 	end
+-    kbTabConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
++    kbTabConn = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessed)
+ 		if not box:IsFocused() then
+ 			if kbTabConn then kbTabConn:Disconnect() kbTabConn = nil end
+ 			return
+@@ -14726,7 +14726,7 @@
+ 				end
+ 			end
+ 		end
+-	end)
++	end))
+ end
