@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.65 — 2026-09-15
+
+### Changed
+- The command bar shows the current prefix on the left; click the chip to open Settings and change it.
+
 ## 7.62 — 2026-09-14
 
 ### Added

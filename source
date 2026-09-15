@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.65'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -520,6 +520,7 @@ UI_L = {
 	en = {
 		command = "Command",
 		prefix = "Prefix",
+		prefixChipTip = "Click to change the command prefix",
 		keepOpen = "Keep Menu Open",
 		language = "Language",
 		editTheme = "Edit Theme",
@@ -745,6 +746,7 @@ UI_L = {
 	ru = {
 		command = "Команда",
 		prefix = "Префикс",
+		prefixChipTip = "Нажми, чтобы сменить префикс команд",
 		keepOpen = "Держать меню открытым",
 		language = "Язык",
 		editTheme = "Тема",
@@ -1143,6 +1145,9 @@ end
 function applyUiLanguage()
 	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
 	if Prefix then Prefix.Text = T("prefix") end
+	if type(layoutCmdPrefixChip) == "function" then
+		layoutCmdPrefixChip()
+	end
 	local stayOpenRow = SettingsHolder and SettingsHolder:FindFirstChild("StayOpen")
 	if stayOpenRow and stayOpenRow:IsA("TextLabel") then
 		stayOpenRow.Text = T("keepOpen")
@@ -1648,6 +1653,82 @@ CmdGhost.Text = ""
 CmdGhost.ZIndex = 10
 CmdGhost.TextTruncate = Enum.TextTruncate.AtEnd
 
+PrefixChip = Instance.new("TextButton")
+PrefixChip.Name = "PrefixChip"
+PrefixChip.Parent = CmdbarWrap
+PrefixChip.BackgroundColor3 = Color3.fromRGB(42, 36, 64)
+PrefixChip.BorderSizePixel = 0
+PrefixChip.Position = UDim2.new(0, 4, 0.5, -10)
+PrefixChip.Size = UDim2.new(0, 22, 0, 20)
+PrefixChip.Font = UI_FONT_MED
+PrefixChip.TextSize = 13
+PrefixChip.Text = ";"
+PrefixChip.TextColor3 = Color3.fromRGB(221, 214, 254)
+PrefixChip.AutoButtonColor = false
+PrefixChip.ZIndex = 12
+uiCorner(PrefixChip, 6)
+uiStroke(PrefixChip, ACCENT, 1, 0.55)
+
+function layoutCmdPrefixChip()
+	if not (PrefixChip and Cmdbar) then
+		return
+	end
+	local pfx = prefix
+	if type(pfx) ~= "string" or pfx == "" then
+		pfx = "?"
+	end
+	local n = #pfx
+	if utf8 and type(utf8.len) == "function" then
+		n = utf8.len(pfx) or n
+	end
+	if type(n) ~= "number" or n < 1 then
+		n = 1
+	end
+	local w = math.clamp(10 + n * 8, 22, 56)
+	PrefixChip.Text = pfx
+	PrefixChip.Size = UDim2.new(0, w, 0, 20)
+	PrefixChip.Position = UDim2.new(0, 4, 0.5, -10)
+	local left = 4 + w + 6
+	Cmdbar.Position = UDim2.new(0, left, 0, 0)
+	Cmdbar.Size = UDim2.new(1, -(left + 10), 1, 0)
+	if CmdGhost then
+		CmdGhost.Position = UDim2.new(0, left, 0, 0)
+		CmdGhost.Size = UDim2.new(1, -(left + 10), 1, 0)
+	end
+end
+
+PrefixChip.MouseEnter:Connect(function()
+	PrefixChip.BackgroundColor3 = ACCENT_SOFT
+	if type(showHelper) == "function" then
+		showHelper(T("prefix"), T("prefixChipTip"))
+	end
+end)
+PrefixChip.MouseLeave:Connect(function()
+	PrefixChip.BackgroundColor3 = Color3.fromRGB(42, 36, 64)
+	if type(hideHelper) == "function" then
+		hideHelper()
+	end
+end)
+PrefixChip.MouseButton1Click:Connect(function()
+	if type(hideHelper) == "function" then
+		hideHelper()
+	end
+	if type(openSettingsPanel) == "function" then
+		openSettingsPanel()
+	end
+	if SettingsHolder then
+		SettingsHolder.CanvasPosition = Vector2.zero
+	end
+	if PrefixBox then
+		task.defer(function()
+			pcall(function()
+				PrefixBox:CaptureFocus()
+			end)
+		end)
+	end
+end)
+layoutCmdPrefixChip()
+
 Cmdbar.Name = "Cmdbar"
 Cmdbar.Parent = CmdbarWrap
 Cmdbar.BackgroundTransparency = 1
@@ -1662,6 +1743,7 @@ Cmdbar.Text = ""
 Cmdbar.ZIndex = 11
 Cmdbar.PlaceholderText = T("command")
 Cmdbar.ClearTextOnFocus = false
+layoutCmdPrefixChip()
 
 HintBar = Instance.new("TextLabel")
 HintBar.Name = "Hint"
@@ -8887,6 +8969,9 @@ function Time()
 end
 
 PrefixBox.Text = prefix
+if type(layoutCmdPrefixChip) == "function" then
+	layoutCmdPrefixChip()
+end
 local SettingsOpen = false
 local isHidden = false
 settingsTweenToken = 0
@@ -10324,6 +10409,9 @@ end)
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
     prefix = PrefixBox.Text
     Cmdbar.PlaceholderText = T("command")
+    if type(layoutCmdPrefixChip) == "function" then
+        layoutCmdPrefixChip()
+    end
     updatesaves()
 end)
 
