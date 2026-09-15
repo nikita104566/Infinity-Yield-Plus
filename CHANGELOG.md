@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- `;reload` disconnects leftover Tab/key listeners and the old GUI, then brings back a single panel (notify EN/RU). Leftover `hotfix762` no longer stamps over a newer badge.
+
 ## 7.62 — 2026-09-14
 
 ### Added
