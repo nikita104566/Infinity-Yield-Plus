@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list rows show the primary name, one alias, and a +N count so long slash-lists no longer clip the name.
+- Typed search highlights the matching letters; a search with no hits shows “No commands match”.
+
+### Notes
+- One loadstring: `source`. Version badge 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
