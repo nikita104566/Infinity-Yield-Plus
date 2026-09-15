@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Changed
+- Command panel always shows a Favorites line: with pins it says Favorites; with none it tells you to right-click a row. Pinned rows show a gold ★.
+
 ## 7.62 — 2026-09-14
 
 ### Added
