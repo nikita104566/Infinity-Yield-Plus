@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `studio` (`autostudio`, `eventstudio`) — opens Automation Studio from the command panel; run again to close.
+
 ## 7.62 — 2026-09-14
 
 ### Added
