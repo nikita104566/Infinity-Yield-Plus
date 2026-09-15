@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.66'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -525,6 +525,8 @@ UI_L = {
 		editTheme = "Edit Theme",
 		editKeybinds = "Edit Keybinds",
 		editAliases = "Edit Aliases",
+		aliasEmptyHint = "No aliases yet. Type addalias fly f (command, then the short name).",
+		aliasOpenFail = "Aliases list is not available",
 		editWaypoints = "Edit/Goto Waypoints",
 		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
@@ -750,6 +752,8 @@ UI_L = {
 		editTheme = "Тема",
 		editKeybinds = "Клавиши",
 		editAliases = "Алиасы",
+		aliasEmptyHint = "Пока нет алиасов. Напиши addalias fly f (команда, потом короткое имя).",
+		aliasOpenFail = "Список алиасов недоступен",
 		editWaypoints = "Точки / телепорт",
 		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
@@ -1155,6 +1159,10 @@ function applyUiLanguage()
 	end
 	if Aliases and Aliases:FindFirstChild("ButtonLabel") then
 		Aliases.ButtonLabel.Text = T("editAliases") .. " (x" .. #(aliases or {}) .. ")"
+	end
+	if AliasHint then
+		AliasHint.Text = T("aliasEmptyHint")
+		AliasHint.Visible = #(aliases or {}) == 0
 	end
 	if Positions and Positions:FindFirstChild("ButtonLabel") then
 		Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #(WayPoints or {}) .. ")"
@@ -3410,11 +3418,13 @@ AliasHint.Name = "AliasHint"
 AliasHint.Parent = AliasesFrame
 AliasHint.BackgroundTransparency = 1
 AliasHint.BorderSizePixel = 0
-AliasHint.Position = UDim2.new(0, 25, 0, 40)
-AliasHint.Size = UDim2.new(0, 200, 0, 50)
+AliasHint.Position = UDim2.new(0, 16, 0, 24)
+AliasHint.Size = UDim2.new(1, -32, 0, 80)
 AliasHint.Font = Enum.Font.SourceSansItalic
 AliasHint.TextSize = 16
-AliasHint.Text = "Add aliases by using the 'addalias' command"
+AliasHint.TextXAlignment = Enum.TextXAlignment.Left
+AliasHint.TextYAlignment = Enum.TextYAlignment.Top
+AliasHint.Text = "No aliases yet. Type addalias fly f (command, then the short name)."
 AliasHint.TextColor3 = Color3.new(1, 1, 1)
 AliasHint.TextStrokeColor3 = Color3.new(1, 1, 1)
 AliasHint.TextWrapped = true
@@ -11615,6 +11625,7 @@ CMDs[#CMDs + 1] = {NAME = 'unreach / noreach', DESC = 'Turns off reach'}
 CMDs[#CMDs + 1] = {NAME = 'grippos [X Y Z]', DESC = 'Changes your current tools grip position'}
 CMDs[#CMDs + 1] = {NAME = 'usetools [amount] [delay]', DESC = 'Activates all tools in your backpack at the same time'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
+CMDs[#CMDs + 1] = {NAME = 'aliases / listaliases / showaliases', DESC = 'Opens the aliases list. Add with addalias, delete from the list'}
 CMDs[#CMDs + 1] = {NAME = 'addalias [cmd] [alias]', DESC = 'Adds an alias to a command'}
 CMDs[#CMDs + 1] = {NAME = 'removealias [alias]', DESC = 'Removes a custom alias'}
 CMDs[#CMDs + 1] = {NAME = 'clraliases', DESC = 'Removes all custom aliases'}
@@ -11732,6 +11743,9 @@ do
 		cmds = "Список команд",
 		help = "Справка",
 		addalias = "Добавить алиас команды",
+		aliases = "Открыть список алиасов",
+		listaliases = "Открыть список алиасов",
+		showaliases = "Открыть список алиасов",
 		removealias = "Удалить алиас",
 		waypoint = "Телепорт к сохранённой точке",
 		waypoints = "Открыть точки маршрута",
@@ -14263,9 +14277,6 @@ end
 refreshwaypoints()
 
 function refreshaliases()
-    if #aliases > 0 then
-        AliasHint:Destroy()
-    end
     if Holder_3 then
         Holder_3:ClearAllChildren()
         Holder_3.CanvasSize = UDim2.new(0, 0, 0, 10)
@@ -14287,6 +14298,10 @@ function refreshaliases()
                 execCmd('removealias '..aliases[i].ALIAS)
             end)
         end
+    end
+    if AliasHint and AliasHint.Parent then
+        AliasHint.Text = T("aliasEmptyHint")
+        AliasHint.Visible = (#aliases == 0)
     end
 end
 
@@ -15046,6 +15061,23 @@ addcmd('clraliases',{},function(args, speaker)
     aliases = {}
     notify('Aliases Modified','Removed all aliases')
     updatesaves()
+    refreshaliases()
+end)
+
+addcmd('aliases',{'listaliases','showaliases'},function(args, speaker)
+    if not AliasesFrame then
+        notify(T("editAliases"), T("aliasOpenFail"))
+        return
+    end
+    openSettingsPanel()
+    settingsSubToken += 1
+    local token = settingsSubToken
+    KeybindsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    PositionsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    PluginsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    AliasesFrame:TweenPosition(UDim2.new(0, 0, 0, 0), "InOut", "Quart", 0.5, true, nil)
+    hideSettingsHolderAfterTween(token)
+    maximizeHolder()
     refreshaliases()
 end)
 
