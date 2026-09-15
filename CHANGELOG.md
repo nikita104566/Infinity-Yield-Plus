@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `keybinds` (`listbinds`, `showbinds`) — opens the keybinds list from the command panel; an empty list explains how to add one.
+
 ## 7.62 — 2026-09-14
 
 ### Added
