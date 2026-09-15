@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.67'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -509,6 +509,8 @@ KB_EDITOR_BODY_H = 300
 KB_EDITOR_TITLE_H = 28
 KB_LIST_H = 132
 KB_ROW_H = 22
+CMD_ROW_H = 22
+CMD_ROW_GAP = 1
 minimizeNum = -28
 ACCENT = Color3.fromRGB(167, 139, 250)
 ACCENT_SOFT = Color3.fromRGB(109, 90, 186)
@@ -1711,10 +1713,10 @@ CMDsF.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 CMDsF.VerticalScrollBarInset = 'Always'
 CMDsF.ZIndex = 10
 table.insert(scroll,CMDsF)
-uiPad(CMDsF, 0, 2, math.max(2, SCROLL_GUTTER - 10), 4)
+uiPad(CMDsF, 0, 1, math.max(2, SCROLL_GUTTER - 10), 2)
 
 cmdListLayout.Parent = CMDsF
-cmdListLayout.Padding = UDim.new(0, 3)
+cmdListLayout.Padding = UDim.new(0, CMD_ROW_GAP)
 cmdListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 cmdFavHeader = Instance.new("TextLabel")
@@ -1722,7 +1724,7 @@ cmdFavHeader.Name = "IYR_FAV_HDR"
 cmdFavHeader.Parent = CMDsF
 cmdFavHeader.BackgroundTransparency = 1
 cmdFavHeader.BorderSizePixel = 0
-cmdFavHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 16)
+cmdFavHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 14)
 cmdFavHeader.Font = UI_FONT_MED
 cmdFavHeader.TextSize = 11
 cmdFavHeader.TextXAlignment = Enum.TextXAlignment.Left
@@ -1739,7 +1741,7 @@ cmdAllHeader.Name = "IYR_ALL_HDR"
 cmdAllHeader.Parent = CMDsF
 cmdAllHeader.BackgroundTransparency = 1
 cmdAllHeader.BorderSizePixel = 0
-cmdAllHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 20)
+cmdAllHeader.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 14)
 cmdAllHeader.Font = UI_FONT_MED
 cmdAllHeader.TextSize = 11
 cmdAllHeader.TextXAlignment = Enum.TextXAlignment.Left
@@ -2020,7 +2022,7 @@ Example.Parent = Holder
 Example.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Example.BackgroundTransparency = 1
 Example.BorderSizePixel = 0
-Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
+Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, CMD_ROW_H)
 Example.Visible = false
 Example.Font = UI_FONT
 Example.TextSize = 13
@@ -2029,8 +2031,8 @@ Example.TextColor3 = Color3.new(1, 1, 1)
 Example.TextXAlignment = Enum.TextXAlignment.Left
 Example.AutoButtonColor = false
 Example.ZIndex = 10
-uiPad(Example, 4, 0, 10, 0)
-uiCorner(Example, 6)
+uiPad(Example, 6, 0, 8, 0)
+uiCorner(Example, 4)
 table.insert(text1,Example)
 
 selectedCmdButton = nil
@@ -2092,6 +2094,7 @@ function setCmdRowSelected(btn, isSelected)
 end
 
 function styleCmdRow(btn)
+	btn.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, CMD_ROW_H)
 	if btn:FindFirstChild("Sel") then
 		applyCmdRowText(btn, btn.Text)
 		return btn
@@ -2103,10 +2106,10 @@ function styleCmdRow(btn)
 	btn.TextTransparency = 1
 	btn.BackgroundColor3 = ROW_PURPLE
 	if not btn:FindFirstChildOfClass("UIPadding") then
-		uiPad(btn, 4, 0, 10, 0)
+		uiPad(btn, 6, 0, 8, 0)
 	end
 	if not btn:FindFirstChildOfClass("UICorner") then
-		uiCorner(btn, 6)
+		uiCorner(btn, 4)
 	end
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
@@ -2115,6 +2118,7 @@ function styleCmdRow(btn)
 	label.Font = UI_FONT
 	label.TextSize = 13
 	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.TextColor3 = Color3.fromRGB(244, 244, 248)
 	label.RichText = true
 	label.TextTruncate = Enum.TextTruncate.AtEnd
@@ -2125,8 +2129,8 @@ function styleCmdRow(btn)
 	marker.Name = "Sel"
 	marker.BackgroundColor3 = ACCENT
 	marker.BorderSizePixel = 0
-	marker.Position = UDim2.new(0, -8, 0, 6)
-	marker.Size = UDim2.new(0, 2, 1, -12)
+	marker.Position = UDim2.new(0, -4, 0, 4)
+	marker.Size = UDim2.new(0, 2, 1, -8)
 	marker.Visible = false
 	marker.ZIndex = 12
 	marker.Parent = btn
