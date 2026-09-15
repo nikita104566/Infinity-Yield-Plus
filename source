@@ -1,1 +1,137 @@
-@/home/workdir/artifacts/source
+--[[
+	Infinity Yield Plus 7.63
+	One loadstring. Loads the 7.50 core, then registers showhistory
+	and a crash-safe lastcommand in the same session.
+]]
+
+local CORE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+local raw
+if type(game) == "table" and game.HttpGet then
+	raw = game:HttpGet(CORE)
+else
+	error("Infinity Yield Plus: HttpGet is required")
+end
+assert(loadstring(raw))()
+
+pcall(function()
+	currentVersion = "7.63"
+	if type(applyHeaderBrand) == "function" then
+		applyHeaderBrand()
+	elseif VersionLabel then
+		VersionLabel.Text = "· 7.63"
+	end
+	if SubLabel then
+		SubLabel.Text = "7.63"
+	end
+end)
+
+pcall(function()
+	if type(I18N) == "table" then
+		if type(I18N.en) == "table" then
+			I18N.en.histTitle = I18N.en.histTitle or "History"
+			I18N.en.histEmpty = I18N.en.histEmpty or "No saved commands yet. Run something first."
+			I18N.en.histList = I18N.en.histList or "Recent commands"
+		end
+		if type(I18N.ru) == "table" then
+			I18N.ru.histTitle = I18N.ru.histTitle or "История"
+			I18N.ru.histEmpty = I18N.ru.histEmpty or "Пока нет сохранённых команд. Сначала выполни что-нибудь."
+			I18N.ru.histList = I18N.ru.histList or "Недавние команды"
+		end
+	end
+end)
+
+local function histNotify(title, body)
+	if type(notify) == "function" then
+		notify(title, body)
+	end
+end
+
+local function tr(key, fallback)
+	if type(T) == "function" then
+		local ok, val = pcall(T, key)
+		if ok and type(val) == "string" and val ~= "" and val ~= key then
+			return val
+		end
+	end
+	return fallback
+end
+
+local function lastFromHistory()
+	if type(cmdHistory) ~= "table" then
+		return nil
+	end
+	local last = cmdHistory[1]
+	if type(last) == "string" and last ~= "" then
+		return last
+	end
+	return nil
+end
+
+local function runLast()
+	local last = lastFromHistory()
+	if not last then
+		histNotify(tr("histTitle", "History"), tr("histEmpty", "No saved commands yet. Run something first."))
+		return
+	end
+	if last:sub(1, 11) ~= "lastcommand" and last:sub(1, 7) ~= "lastcmd" then
+		if type(execCmd) == "function" then
+			execCmd(last)
+		end
+	end
+end
+
+local function showHist()
+	local hist = (type(cmdHistory) == "table" and cmdHistory) or {}
+	local lines = {}
+	local n = math.min(8, #hist)
+	for i = 1, n do
+		local row = hist[i]
+		if type(row) == "string" and row ~= "" then
+			lines[#lines + 1] = tostring(i) .. ". " .. row
+		end
+	end
+	if #lines == 0 then
+		histNotify(tr("histTitle", "History"), tr("histEmpty", "No saved commands yet. Run something first."))
+		return
+	end
+	histNotify(tr("histList", "Recent commands"), table.concat(lines, "\n"))
+end
+
+pcall(function()
+	if type(findCmd) == "function" then
+		local existing = findCmd("lastcommand") or findCmd("lastcmd")
+		if existing then
+			existing.FUNC = runLast
+		elseif type(addcmd) == "function" then
+			addcmd("lastcommand", { "lastcmd" }, runLast)
+		end
+	elseif type(addcmd) == "function" then
+		addcmd("lastcommand", { "lastcmd" }, runLast)
+	end
+
+	local already = type(findCmd) == "function" and (findCmd("showhistory") or findCmd("hist") or findCmd("cmdhistory"))
+	if already then
+		already.FUNC = showHist
+	elseif type(addcmd) == "function" then
+		addcmd("showhistory", { "hist", "cmdhistory" }, showHist)
+	end
+end)
+
+pcall(function()
+	if type(CMDs) ~= "table" then
+		return
+	end
+	for i = 1, #CMDs do
+		local name = tostring(CMDs[i].NAME or ""):lower()
+		if name:find("showhistory", 1, true) then
+			return
+		end
+	end
+	CMDs[#CMDs + 1] = {
+		NAME = "showhistory / hist / cmdhistory",
+		DESC = "Shows recent commands from this session",
+	}
+	if type(IndexContents) == "function" then
+		IndexContents((Cmdbar and Cmdbar.Text) or "", true)
+	end
+end)
