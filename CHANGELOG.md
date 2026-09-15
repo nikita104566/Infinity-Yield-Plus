@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list shows a clear empty line when the search filter matches nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
