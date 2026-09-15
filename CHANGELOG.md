@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.64 — 2026-09-16
+
+### Improved
+- `;reload` now disconnects the command-bar and keybind Tab listeners before the next load, so Tab completes a name once instead of stacking.
+
+### Notes
+- One `source` loadstring. Leftover `hotfix762` does not stamp 7.62 over a newer `currentVersion`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
