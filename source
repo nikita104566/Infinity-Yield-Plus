@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -527,6 +527,7 @@ UI_L = {
 		editAliases = "Edit Aliases",
 		editWaypoints = "Edit/Goto Waypoints",
 		editEvents = "Automation Studio",
+		studioFail = "Could not open Automation Studio",
 		managePlugins = "Manage Plugins",
 		noDesc = "No description",
 		outdated = "Outdated",
@@ -752,6 +753,7 @@ UI_L = {
 		editAliases = "Алиасы",
 		editWaypoints = "Точки / телепорт",
 		editEvents = "Automation Studio",
+		studioFail = "Automation Studio не открылась",
 		managePlugins = "Плагины",
 		noDesc = "Нет описания",
 		outdated = "Устарело",
@@ -11245,6 +11247,7 @@ CMDs[#CMDs + 1] = {NAME = 'unguidelete / noguidelete', DESC = 'Disables guidelet
 CMDs[#CMDs + 1] = {NAME = 'stealgui / stealguis [path] [name]', DESC = "Steals the game's gui, i love you bat/vxsty."}
 CMDs[#CMDs + 1] = {NAME = 'hideiyp', DESC = 'Hides the main '..BRAND_NAME..' GUI'}
 CMDs[#CMDs + 1] = {NAME = 'showiyp', DESC = 'Shows '..BRAND_NAME..' again'}
+CMDs[#CMDs + 1] = {NAME = 'studio / autostudio / eventstudio', DESC = 'Opens Automation Studio (run again to close)'}
 CMDs[#CMDs + 1] = {NAME = 'keepiyp', DESC = 'Auto execute '..BRAND_NAME..' when you teleport through servers'}
 CMDs[#CMDs + 1] = {NAME = 'unkeepiyp', DESC = 'Disable keepiyp'}
 CMDs[#CMDs + 1] = {NAME = 'togglekeepiyp', DESC = 'Toggles keepiyp'}
@@ -11828,6 +11831,9 @@ do
 		annoy = "Раздражать игрока",
 		unannoy = "Выключить annoy",
 		stare = "Смотреть на игрока",
+		studio = "Открывает Automation Studio (ещё раз - закрыть)",
+		autostudio = "Открывает Automation Studio (ещё раз - закрыть)",
+		eventstudio = "Открывает Automation Studio (ещё раз - закрыть)",
 		unstare = "Выключить stare",
 		watch = "Следить камерой за игроком",
 		unwatch = "Выключить watch",
@@ -18195,6 +18201,36 @@ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
     if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
         execCmd(cmdHistory[1])
     end
+end)
+
+addcmd('studio', {'autostudio', 'eventstudio'}, function(args, speaker)
+    local ee = eventEditor
+    if type(ee) ~= "table" then
+        notify(T("autoStudio"), T("studioFail"))
+        return
+    end
+    if type(ee.IsOpen) == "function" and ee.IsOpen() then
+        if type(ee.Close) == "function" then
+            ee.Close()
+        elseif ee.Frame then
+            ee.Frame.Visible = false
+        else
+            notify(T("autoStudio"), T("studioFail"))
+        end
+        return
+    end
+    if type(ee.Open) == "function" then
+        ee.Open()
+        return
+    end
+    if ee.Frame then
+        local w = ee.EE_W or 1020
+        local h = ee.EE_H or 660
+        ee.Frame.Visible = true
+        ee.Frame:TweenPosition(UDim2.new(0.5, -w / 2, 0.5, -h / 2), "InOut", "Quart", 0.5, true, nil)
+        return
+    end
+    notify(T("autoStudio"), T("studioFail"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
