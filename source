@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -716,6 +716,8 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Add",
+		histEmptyTitle = "History",
+		histEmptyBody = "No saved command yet. Run one first.",
 		eeYes = "yes",
 		eeNo = "no",
 		refCase_all = "- includes everyone",
@@ -941,6 +943,8 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Доб.",
+		histEmptyTitle = "История",
+		histEmptyBody = "Пока нет сохранённой команды.",
 		eeYes = "да",
 		eeNo = "нет",
 		refCase_all = "— все игроки",
@@ -11263,7 +11267,7 @@ CMDs[#CMDs + 1] = {NAME = 'record / rec', DESC = 'Starts Roblox recorder'}
 CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
-CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Re-runs the last saved command, or tells you if history is empty'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12031,7 +12035,7 @@ do
 		joinlogs = 'Описание: Log when people join',
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
-		lastcommand = 'Описание: Executes the previous command used',
+		lastcommand = 'Повторяет последнюю сохранённую команду, или пишет что история пуста',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -18192,8 +18196,16 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local last = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(last) ~= "string" or last == "" then
+        notify(T("histEmptyTitle"), T("histEmptyBody"))
+        return
+    end
+    local head = string.lower(last)
+    if head:sub(1,11) ~= 'lastcommand' and head:sub(1,7) ~= 'lastcmd' then
+        execCmd(last)
+    else
+        notify(T("histEmptyTitle"), T("histEmptyBody"))
     end
 end)
 

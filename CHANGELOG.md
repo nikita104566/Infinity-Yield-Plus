@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Fixed
+- `lastcommand` / `lastcmd` with an empty history shows a notify instead of erroring.
+
 ## 7.62 — 2026-09-14
 
 ### Added
