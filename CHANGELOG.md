@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Automation Studio variable chips wrap onto a second row and include clickable `$place`, `$job`, and `$event`.
+
 ## 7.62 — 2026-09-14
 
 ### Added

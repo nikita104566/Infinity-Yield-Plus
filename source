@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -4142,7 +4142,7 @@ eventEditor = (function()
 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
 	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
-	local EE_FLOW_TOP, EE_ADD_RESERVE = 88, 58
+	local EE_FLOW_TOP, EE_ADD_RESERVE = 110, 58
 	local EE_FLOW_REST = EE_FLOW_TOP + EE_ADD_RESERVE
 	local EE_BG = Color3.fromRGB(8, 7, 14)
 	local EE_PANEL = Color3.fromRGB(15, 14, 24)
@@ -5370,28 +5370,21 @@ eventEditor = (function()
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 12, 0, 54),
-		Size = UDim2.new(1, -24, 0, 22),
+		Size = UDim2.new(1, -24, 0, 44),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
 		ClipsDescendants = true,
 		ZIndex = 42,
 	}, center)
-	mk("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
-		Padding = UDim.new(0, 5),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-	}, varBar)
 	uiPad(varBar, 2, 2, 2, 2)
 
 	mk("Frame", {
 		BackgroundColor3 = EE_BORDER,
 		BackgroundTransparency = 0.6,
 		BorderSizePixel = 0,
-		Position = UDim2.new(0, 12, 0, 80),
+		Position = UDim2.new(0, 12, 0, 102),
 		Size = UDim2.new(1, -24, 0, 1),
 		ZIndex = 42,
 	}, center)
@@ -6161,15 +6154,27 @@ eventEditor = (function()
 		end
 		chips[#chips + 1] = "$me"
 		chips[#chips + 1] = "$time"
+		chips[#chips + 1] = "$place"
+		chips[#chips + 1] = "$job"
+		chips[#chips + 1] = "$event"
 		local seen = {}
 		local chipTw = TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local maxW = math.max(80, (EE_W - EE_CENTER_W_OFF) - 28)
+		local x, rowY = 2, 2
+		local gap, rowH = 5, 20
 		for _, chip in ipairs(chips) do
 			if not seen[chip] then
 				seen[chip] = true
-				local width = math.max(42, #chip * 7 + 16)
+				local n = utf8.len(chip) or #chip
+				local width = math.max(42, n * 7 + 16)
+				if x > 2 and (x + width) > maxW then
+					x = 2
+					rowY += rowH
+				end
 				local b = mk("TextButton", {
 					BackgroundColor3 = EE_SELECTED,
 					BorderSizePixel = 0,
+					Position = UDim2.fromOffset(x, rowY),
 					Size = UDim2.new(0, width, 0, 18),
 					Text = chip,
 					TextColor3 = EE_ACCENT,
@@ -6179,6 +6184,7 @@ eventEditor = (function()
 					ZIndex = 42,
 				}, varBar)
 				uiCorner(b, 8)
+				x += width + gap
 				b.MouseEnter:Connect(function()
 					TweenService:Create(b, chipTw, { BackgroundColor3 = EE_SURFACE_HOVER }):Play()
 				end)
@@ -6195,6 +6201,7 @@ eventEditor = (function()
 				end)
 			end
 		end
+		varBar.CanvasSize = UDim2.new(0, 0, 0, rowY + 20)
 		refreshFlows()
 		refreshInspector()
 		refreshEventList()

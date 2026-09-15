@@ -4,6 +4,13 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function iypVer(s)
+		local maj, min = tostring(s or ""):match("^(%d+)%.(%d+)")
+		return (tonumber(maj) or 0) * 1000 + (tonumber(min) or 0)
+	end
+	if iypVer(currentVersion) > iypVer("7.62") then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
