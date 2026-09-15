@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list rows wrap long names and aliases instead of cutting them with an ellipsis.
+- Typing a filter with no matches keeps the panel open and shows «No commands match».
+
 ## 7.62 — 2026-09-14
 
 ### Added
