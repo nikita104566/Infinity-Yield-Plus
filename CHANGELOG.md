@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `palette` (`cmdpalette`, `ctrlk`) opens the Command Palette from the command panel after one `source` loadstring.
+
 ## 7.62 — 2026-09-14
 
 ### Added
