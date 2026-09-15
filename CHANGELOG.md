@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.67 — 2026-09-15
+
+### Changed
+- Command list rows are tighter, so more names fit on the panel without scrolling.
+
 ## 7.62 — 2026-09-14
 
 ### Added
