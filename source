@@ -159,6 +159,11 @@ pcall(function()
 end)
 IYR_GEN = (tonumber(IYR_GEN) or 0) + 1
 IYR_CONNS = {}
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.IYR_CONNS = IYR_CONNS
+	genv.IYR_GEN = IYR_GEN
+end)
 function IYR_TRACK(conn)
 	if conn then
 		IYR_CONNS[#IYR_CONNS + 1] = conn
@@ -167,8 +172,27 @@ function IYR_TRACK(conn)
 end
 function IYR_CLEANUP()
 	IYR_GEN = (tonumber(IYR_GEN) or 0) + 1
+	pcall(function()
+		if type(IYR_FLUSH_SAVES) == "function" then
+			IYR_FLUSH_SAVES()
+		end
+	end)
 	local list = IYR_CONNS
+	if type(list) ~= "table" then
+		list = {}
+	end
 	IYR_CONNS = {}
+	pcall(function()
+		local genv = (getgenv and getgenv()) or _G
+		local bag = genv.IYR_CONNS
+		if type(bag) == "table" and bag ~= list then
+			for i = 1, #bag do
+				list[#list + 1] = bag[i]
+			end
+		end
+		genv.IYR_CONNS = IYR_CONNS
+		genv.IYR_GEN = IYR_GEN
+	end)
 	if type(list) == "table" then
 		for i = 1, #list do
 			local c = list[i]
@@ -485,7 +509,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -561,6 +585,8 @@ UI_L = {
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
 		favHintRemove = "★  Favorited · right-click to remove",
+		reloadOk = "Reload",
+		reloadOkBody = "One panel. Old Tab / key listeners cleared.",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -786,6 +812,8 @@ UI_L = {
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
 		favHintRemove = "★  В избранном · ПКМ — убрать",
+		reloadOk = "Перезагрузка",
+		reloadOkBody = "Одна панель. Старые Tab и клавиши сняты.",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -2443,6 +2471,13 @@ do
 	end)
 	if skipNow then
 		finishIntro()
+		task.defer(function()
+			pcall(function()
+				if type(notify) == "function" then
+					notify(T("reloadOk"), T("reloadOkBody"))
+				end
+			end)
+		end)
 	else
 		introConn = IYR_TRACK(RunService.Heartbeat:Connect(function()
 			if introDone then return end
@@ -4084,6 +4119,25 @@ function writefileCooldown(name,data)
         end
         writefileState.scheduled = false
     end)
+end
+
+function IYR_FLUSH_SAVES()
+	pcall(function()
+		if type(updatesaves) == "function" then
+			updatesaves()
+		end
+	end)
+	pcall(function()
+		local st = writefileState
+		if type(st) ~= "table" or type(st.pending) ~= "table" then
+			return
+		end
+		local batch = st.pending
+		st.pending = {}
+		for n, d in pairs(batch) do
+			IYP_SAFE_WRITEFILE(n, d)
+		end
+	end)
 end
 
 function dragGUI(gui)
@@ -9355,6 +9409,7 @@ local BASIC_THEME_COLORS = {
 local function themeTrack(conn)
 	if conn then
 		themeEditorConns[#themeEditorConns + 1] = conn
+		IYR_TRACK(conn)
 	end
 	return conn
 end
@@ -13311,11 +13366,11 @@ IYR_TRACK(UserInputService.TextBoxFocused:Connect(function(obj)
     if lastTextBoxCon then lastTextBoxCon:Disconnect() end
     if obj == Cmdbar then lastTextBoxString = nil return end
     lastTextBoxString = obj.Text
-    lastTextBoxCon = obj:GetPropertyChangedSignal("Text"):Connect(function()
+    lastTextBoxCon = IYR_TRACK(obj:GetPropertyChangedSignal("Text"):Connect(function()
         if not (UserInputService:IsKeyDown(Enum.KeyCode.Return) or UserInputService:IsKeyDown(Enum.KeyCode.KeypadEnter)) then
             lastTextBoxString = obj.Text
         end
-    end)
+    end))
 end))
 
 IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
@@ -13427,7 +13482,11 @@ IYR_TRACK(Cmdbar.Focused:Connect(function()
     if SettingsOpen == true then
         closeSettingsPanel(false)
     end
-    tabComplete = UserInputService.InputBegan:Connect(function(input,gameProcessed)
+    if tabComplete then
+        pcall(function() tabComplete:Disconnect() end)
+        tabComplete = nil
+    end
+    tabComplete = IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
         if Cmdbar:IsFocused() then
             if tabAllowed == true and input.KeyCode == Enum.KeyCode.Tab then
                 flushIndexContents()
@@ -13440,7 +13499,7 @@ IYR_TRACK(Cmdbar.Focused:Connect(function()
         else
             tabComplete:Disconnect()
         end
-    end)
+    end))
 end))
 
 -- P1 COMMAND PALETTE: nested state avoids new top-level locals in the near-limit main chunk.
@@ -14709,7 +14768,7 @@ local function hookKbTabComplete(box)
 		pcall(function() kbTabConn:Disconnect() end)
 		kbTabConn = nil
 	end
-	kbTabConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	kbTabConn = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if not box:IsFocused() then
 			if kbTabConn then kbTabConn:Disconnect() kbTabConn = nil end
 			return
@@ -14726,7 +14785,7 @@ local function hookKbTabComplete(box)
 				end
 			end
 		end
-	end)
+	end))
 end
 
 Cmdbar_2:GetPropertyChangedSignal("Text"):Connect(function()
@@ -16076,7 +16135,7 @@ local function startFly()
         end)
     end
 
-    flyKeyDown = Player:GetMouse().KeyDown:Connect(function(key)
+    flyKeyDown = IYR_TRACK(Player:GetMouse().KeyDown:Connect(function(key)
         key = key:lower()
         if key == "w" then control.F = flySpeed
         elseif key == "s" then control.B = -flySpeed
@@ -16084,9 +16143,9 @@ local function startFly()
         elseif key == "d" then control.R = flySpeed
         elseif key == "e" then control.Q = flySpeed * 2
         elseif key == "q" then control.E = -flySpeed * 2 end
-    end)
+    end))
 
-    flyKeyUp = Player:GetMouse().KeyUp:Connect(function(key)
+    flyKeyUp = IYR_TRACK(Player:GetMouse().KeyUp:Connect(function(key)
         key = key:lower()
         if key == "w" then control.F = 0
         elseif key == "s" then control.B = 0
@@ -16094,7 +16153,7 @@ local function startFly()
         elseif key == "d" then control.R = 0
         elseif key == "e" then control.Q = 0
         elseif key == "q" then control.E = 0 end
-    end)
+    end))
 
     fly()
 end
@@ -16276,7 +16335,7 @@ function sFLY(vfly)
 			if humanoid then humanoid.PlatformStand = false end
         end)
     end
-	flyKeyDown = UserInputService.InputBegan:Connect(function(input, processed)
+	flyKeyDown = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, processed)
 		if input.KeyCode == Enum.KeyCode.W then
             CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
 		elseif input.KeyCode == Enum.KeyCode.S then
@@ -16291,9 +16350,9 @@ function sFLY(vfly)
             CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
         end
         pcall(function() camera.CameraType = Enum.CameraType.Track end)
-    end)
+    end))
 
-	flyKeyUp = UserInputService.InputEnded:Connect(function(input, processed)
+	flyKeyUp = IYR_TRACK(UserInputService.InputEnded:Connect(function(input, processed)
 		if input.KeyCode == Enum.KeyCode.W then
             CONTROL.F = 0
         elseif input.KeyCode == Enum.KeyCode.S then
@@ -16307,7 +16366,7 @@ function sFLY(vfly)
         elseif input.KeyCode == Enum.KeyCode.Q then
             CONTROL.E = 0
         end
-    end)
+    end))
     FLY()
 end
 
@@ -16373,7 +16432,7 @@ local mobilefly = function(speaker, vfly)
     bg.P = 1000
     bg.D = 50
 
-    mfly1 = speaker.CharacterAdded:Connect(function()
+    mfly1 = IYR_TRACK(speaker.CharacterAdded:Connect(function()
         local bv = Instance.new("BodyVelocity")
         bv.Name = velocityHandlerName
         bv.Parent = root
@@ -16386,9 +16445,9 @@ local mobilefly = function(speaker, vfly)
         bg.MaxTorque = v3inf
         bg.P = 1000
         bg.D = 50
-    end)
+    end))
 
-    mfly2 = RunService.RenderStepped:Connect(function()
+    mfly2 = IYR_TRACK(RunService.RenderStepped:Connect(function()
         root = getRoot(speaker.Character)
         camera = workspace.CurrentCamera
         if speaker.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
@@ -16416,7 +16475,7 @@ local mobilefly = function(speaker, vfly)
                 VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((vfly and vehicleflyspeed or iyflyspeed) * 50))
             end
         end
-    end)
+    end))
 end
 
 addcmd('fly',{},function(args, speaker)
@@ -16819,13 +16878,13 @@ addcmd('marble', {'ball'}, function(args, speaker)
         end
     end)
 
-    UserInputService.JumpRequest:Connect(function()
+    IYR_TRACK(UserInputService.JumpRequest:Connect(function()
         local result =
             workspace:Raycast(ball.Position, Vector3.new(0, -((ball.Size.Y / 2) + JUMP_GAP), 0), params)
         if result then
             ball.Velocity = ball.Velocity + Vector3.new(0, JUMP_POWER, 0)
         end
-    end)
+    end))
 
     Camera.CameraSubject = torso
 
@@ -17454,13 +17513,13 @@ end
 
 local deleteGuiInput
 addcmd('guidelete',{},function(args, speaker)
-    deleteGuiInput = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    deleteGuiInput = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
         if not gameProcessedEvent then
             if input.KeyCode == Enum.KeyCode.Backspace then
                 deleteGuisAtPos()
             end
         end
-    end)
+    end))
     notify('GUI Delete Enabled','Hover over a GUI and press backspace to delete it')
 end)
 
@@ -20592,14 +20651,14 @@ infJumpDebounce = false
 addcmd("infjump", {"infinitejump"}, function(args, speaker)
     if infJump then infJump:Disconnect() end
     infJumpDebounce = false
-    infJump = UserInputService.JumpRequest:Connect(function()
+    infJump = IYR_TRACK(UserInputService.JumpRequest:Connect(function()
         if not infJumpDebounce then
             infJumpDebounce = true
             speaker.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
             task.wait()
             infJumpDebounce = false
         end
-    end)
+    end))
 end)
 
 addcmd("uninfjump", {"uninfinitejump", "noinfjump", "noinfinitejump"}, function(args, speaker)
@@ -20610,9 +20669,9 @@ end)
 local flyjump
 addcmd("flyjump", {}, function(args, speaker)
     if flyjump then flyjump:Disconnect() end
-    flyjump = UserInputService.JumpRequest:Connect(function()
+    flyjump = IYR_TRACK(UserInputService.JumpRequest:Connect(function()
         speaker.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end)
+    end))
 end)
 
 addcmd("unflyjump", {"noflyjump"}, function(args, speaker)
@@ -24158,14 +24217,14 @@ addcmd('autoclick',{},function(args, speaker)
         if args[1] and isNumber(args[1]) then clickDelay = args[1] end
         if args[2] and isNumber(args[2]) then releaseDelay = args[2] end
         autoclicking = true
-        cancelAutoClick = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        cancelAutoClick = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
             if not gameProcessedEvent then
                 if (input.KeyCode == Enum.KeyCode.Backspace and UserInputService:IsKeyDown(Enum.KeyCode.Equals)) or (input.KeyCode == Enum.KeyCode.Equals and UserInputService:IsKeyDown(Enum.KeyCode.Backspace)) then
                     autoclicking = false
                     cancelAutoClick:Disconnect()
                 end
             end
-        end)
+        end))
         notify('Auto Clicker',"Press [backspace] and [=] at the same time to stop")
         repeat task.wait(clickDelay)
             mouse1press()
@@ -24472,11 +24531,11 @@ addcmd("scare", {"spook"}, function(args, speaker)
 end)
 
 addcmd("alignmentkeys", {}, function(args, speaker)
-    alignmentKeys = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    alignmentKeys = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         if input.KeyCode == Enum.KeyCode.Comma then workspace.CurrentCamera:PanUnits(-1) end
         if input.KeyCode == Enum.KeyCode.Period then workspace.CurrentCamera:PanUnits(1) end
-    end)
+    end))
     alignmentKeysEmotes = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu)
     StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false)
 end)
@@ -24833,14 +24892,14 @@ addcmd('autokeypress',{'keypress'},function(args, speaker)
         if args[2] and isNumber(args[2]) then clickDelay = args[2] end
         if args[3] and isNumber(args[3]) then releaseDelay = args[3] end
         autoKeyPressing = true
-        cancelAutoKeyPress = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        cancelAutoKeyPress = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
             if not gameProcessedEvent then
                 if (input.KeyCode == Enum.KeyCode.Backspace and UserInputService:IsKeyDown(Enum.KeyCode.Equals)) or (input.KeyCode == Enum.KeyCode.Equals and UserInputService:IsKeyDown(Enum.KeyCode.Backspace)) then
                     autoKeyPressing = false
                     cancelAutoKeyPress:Disconnect()
                 end
             end
-        end)
+        end))
         notify('Auto Key Press',"Press [backspace] and [=] at the same time to stop")
         repeat task.wait(clickDelay)
             keypress(code)
@@ -24875,14 +24934,37 @@ end)
 
 addcmd('reload', {'iypreload', 'iyreload', 'reiy', 'refreshiy'}, function(args, speaker)
     pcall(function()
-        local genv = (getgenv and getgenv()) or _G
-        genv.IYR_SKIP_INTRO = true
-        if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
+        if type(IYR_FLUSH_SAVES) == "function" then
+            IYR_FLUSH_SAVES()
+        end
     end)
     pcall(function()
-        if typeof(IYR_MAIN) == "Instance" then IYR_MAIN:Destroy() end
         local genv = (getgenv and getgenv()) or _G
-        if typeof(genv.IYR_MAIN) == "Instance" then genv.IYR_MAIN:Destroy() end
+        genv.IYR_SKIP_INTRO = true
+        if type(genv.IYR_CLEANUP) == "function" then
+            genv.IYR_CLEANUP()
+        elseif type(IYR_CLEANUP) == "function" then
+            IYR_CLEANUP()
+        end
+    end)
+    pcall(function()
+        local genv = (getgenv and getgenv()) or _G
+        local coreGui = COREGUI or game:GetService("CoreGui")
+        for _, ref in ipairs({
+            IYR_MAIN,
+            genv.IYR_MAIN,
+            PARENT,
+            coreGui and coreGui:FindFirstChild("IYR_MAIN"),
+        }) do
+            if typeof(ref) == "Instance" then
+                pcall(function() ref:Destroy() end)
+            end
+        end
+        local hidden = get_hidden_gui or gethui
+        if hidden then
+            local old = hidden():FindFirstChild("IYR_MAIN")
+            if old then old:Destroy() end
+        end
     end)
     local src
     pcall(function()
