@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Automation Studio command field says “Select an event first” until you pick one on the left; + Add and Test Event say the same instead of doing nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added

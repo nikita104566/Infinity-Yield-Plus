@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -593,6 +593,7 @@ UI_L = {
 		eePickEvent = "Select an event to view its workflows.",
 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
 		eeEmptyCommand = "Type a command first",
+		eeNeedEvent = "Select an event first",
 		eeNoEventsMatch = "No events match this filter.",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
@@ -818,6 +819,7 @@ UI_L = {
 		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
 		eeEmptyCommand = "Сначала введи команду",
+		eeNeedEvent = "Сначала выбери событие",
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
@@ -6037,6 +6039,31 @@ eventEditor = (function()
 		local headerStroke = countLabel:FindFirstChildOfClass("UIStroke")
 		if headerStroke then headerStroke.Color = EE_BORDER headerStroke.Transparency = 0.45 end
 		title.Text = T("autoStudio")
+		local hasEvent = selectedEventName ~= nil and events[selectedEventName] ~= nil
+		addBox.PlaceholderText = hasEvent and T("eeAddPlaceholder") or T("eeNeedEvent")
+		addBtn.TextTransparency = hasEvent and 0 or 0.32
+		createGroupBtn.TextTransparency = hasEvent and 0 or 0.32
+		testEventBtn.TextTransparency = hasEvent and 0 or 0.32
+		clearBtn.TextTransparency = hasEvent and 0 or 0.32
+		addBtn:SetAttribute("EEActive", hasEvent)
+		testEventBtn:SetAttribute("EEActive", hasEvent)
+		if hasEvent then
+			addBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
+			testEventBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
+			if not addBtn:GetAttribute("EEHovered") then
+				addBtn.BackgroundColor3 = EE_PRIMARY
+			end
+			if not testEventBtn:GetAttribute("EEHovered") then
+				testEventBtn.BackgroundColor3 = EE_PRIMARY
+			end
+		else
+			if not addBtn:GetAttribute("EEHovered") then
+				addBtn.BackgroundColor3 = EE_SURFACE
+			end
+			if not testEventBtn:GetAttribute("EEHovered") then
+				testEventBtn.BackgroundColor3 = EE_SURFACE
+			end
+		end
 	end
 
 	local function buildVarHelp(ev, name)
@@ -7582,7 +7609,10 @@ eventEditor = (function()
 	end)
 
 	addCommandFromBox = function(fromBox, groupName)
-		if not selectedEventName then return end
+		if not selectedEventName then
+			notify(T("autoStudio"), T("eeNeedEvent"))
+			return
+		end
 		local box = addBox
 		if typeof(fromBox) == "Instance" and fromBox:IsA("TextBox") then
 			box = fromBox
@@ -7624,7 +7654,10 @@ eventEditor = (function()
 		if enter then addCommandFromBox(addBox, "") end
 	end)
 	createGroupBtn.MouseButton1Click:Connect(function()
-		if not selectedEventName then return end
+		if not selectedEventName then
+			notify(T("autoStudio"), T("eeNeedEvent"))
+			return
+		end
 		local evG = events[selectedEventName]
 		if not evG then return end
 		promptText(T("eeNewGroup"), "", function(text)
@@ -7910,7 +7943,10 @@ eventEditor = (function()
 	closeBtn.MouseButton1Click:Connect(closeStudio)
 
 	testEventBtn.MouseButton1Click:Connect(function()
-		if not selectedEventName then return end
+		if not selectedEventName then
+			notify(T("autoStudio"), T("eeNeedEvent"))
+			return
+		end
 		local ev = events[selectedEventName]
 		local args = testArgsFor(ev)
 		lastSkipReasons = {}
@@ -7930,7 +7966,10 @@ eventEditor = (function()
 	end)
 
 	clearBtn.MouseButton1Click:Connect(function()
-		if not selectedEventName then return end
+		if not selectedEventName then
+			notify(T("autoStudio"), T("eeNeedEvent"))
+			return
+		end
 		askConfirm(T("eeClear"), T("eeClearConfirm"), function()
 			local ev = events[selectedEventName]
 			if not ev then return end
