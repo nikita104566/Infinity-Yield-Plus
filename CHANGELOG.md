@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.68 — 2026-09-15
+
+### Fixed
+- `lastcommand` / `lastcmd` no longer errors when history is empty: the panel stays up and shows “No commands in history yet” / “В истории ещё нет команд”.
+
 ## 7.62 — 2026-09-14
 
 ### Added

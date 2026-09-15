@@ -1,0 +1,55 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.68'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -529,6 +529,7 @@
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Manage Plugins",
+ 		noDesc = "No description",
++		histEmpty = "No commands in history yet",
+ 		outdated = "Outdated",
+ 		outdatedBody = "Get the new version by executing it again",
+ 		player = "Player",
+@@ -754,6 +755,7 @@
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Плагины",
+ 		noDesc = "Нет описания",
++		histEmpty = "В истории ещё нет команд",
+ 		outdated = "Устарело",
+ 		outdatedBody = "Запусти скрипт ещё раз",
+ 		player = "Игрок",
+@@ -12795,7 +12797,8 @@
+                 if not speaker then speaker = Players.LocalPlayer end
+                 if store then
+                     if speaker == Players.LocalPlayer then
+-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
++                        local prev = cmdHistory[1]
++                        if prev ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
+                             table.insert(cmdHistory,1,rawCmdStr)
+                         end
+                     end
+@@ -18192,8 +18195,16 @@
+ end)
+ 
+ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
++    local last = cmdHistory and cmdHistory[1]
++    if type(last) ~= "string" or last == "" then
++        notify(T("command"), T("histEmpty"))
++        return
++    end
++    local low = last:lower()
++    if low:sub(1,11) ~= 'lastcommand' and low:sub(1,7) ~= 'lastcmd' then
++        execCmd(last)
++    else
++        notify(T("command"), T("histEmpty"))
+     end
+ end)
