@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list promotes the alias you typed and highlights the match, so long names are no longer cut off before the alias.
+
 ## 7.62 — 2026-09-14
 
 ### Added
