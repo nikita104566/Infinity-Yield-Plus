@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -716,6 +716,7 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Add",
+		keybindsEmpty = "No keys bound yet.\nPress Add, tap a key, then pick a command.",
 		eeYes = "yes",
 		eeNo = "no",
 		refCase_all = "- includes everyone",
@@ -941,6 +942,7 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Доб.",
+		keybindsEmpty = "Клавиш пока нет.\nНажми Доб., выбери клавишу, потом команду.",
 		eeYes = "да",
 		eeNo = "нет",
 		refCase_all = "— все игроки",
@@ -1190,6 +1192,10 @@ function applyUiLanguage()
 	if type(updateKbToggleLabel) == "function" then updateKbToggleLabel() end
 	if TriggerLabel then TriggerLabel.Text = T("keybindTrigger") end
 	if Add then Add.Text = T("keybindAdd") end
+	if Holder_2 then
+		local emptyBinds = Holder_2:FindFirstChild("IYP_BINDS_EMPTY")
+		if emptyBinds then emptyBinds.Text = T("keybindsEmpty") end
+	end
 	if BindTo then
 		local idleEn = UI_L.en and UI_L.en.keybindClickToBind
 		local idleRu = UI_L.ru and UI_L.ru.keybindClickToBind
@@ -11618,6 +11624,7 @@ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'addalias [cmd] [alias]', DESC = 'Adds an alias to a command'}
 CMDs[#CMDs + 1] = {NAME = 'removealias [alias]', DESC = 'Removes a custom alias'}
 CMDs[#CMDs + 1] = {NAME = 'clraliases', DESC = 'Removes all custom aliases'}
+CMDs[#CMDs + 1] = {NAME = 'keybinds / listbinds / showbinds', DESC = 'Opens your keybinds list. Add, change, or clear keys there.'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'addplugin / plugin [name]', DESC = 'Add a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'removeplugin / deleteplugin [name]', DESC = 'Remove a plugin via command'}
@@ -11903,6 +11910,9 @@ do
 		alignmentkeys = "Клавиши выравнивания (запятая/точка)",
 		unalignmentkeys = "Выключить клавиши выравнивания",
 		reloadplugin = "Перезагрузить плагин",
+		keybinds = "Открывает список клавиш. Там можно добавить, сменить или очистить.",
+		listbinds = "Открывает список клавиш. Там можно добавить, сменить или очистить.",
+		showbinds = "Открывает список клавиш. Там можно добавить, сменить или очистить.",
 		reload = "Перезагрузить админку без rejoin",
 		iyreload = "Перезагрузить админку без rejoin",
 		reiy = "Перезагрузить админку без rejoin",
@@ -14169,6 +14179,24 @@ function refreshbinds()
             newbind.Delete.MouseButton1Click:Connect(function()
                 unkeybind(binds[i].COMMAND,binds[i].KEY)
             end)
+        end
+        if #binds == 0 then
+            local emptyHint = Instance.new("TextLabel")
+            emptyHint.Name = "IYP_BINDS_EMPTY"
+            emptyHint.BackgroundTransparency = 1
+            emptyHint.BorderSizePixel = 0
+            emptyHint.Position = UDim2.new(0, 16, 0, 16)
+            emptyHint.Size = UDim2.new(1, -32, 0, 72)
+            emptyHint.Font = UI_FONT
+            emptyHint.TextSize = 13
+            emptyHint.Text = T("keybindsEmpty")
+            emptyHint.TextColor3 = Color3.fromRGB(180, 176, 196)
+            emptyHint.TextWrapped = true
+            emptyHint.TextXAlignment = Enum.TextXAlignment.Left
+            emptyHint.TextYAlignment = Enum.TextYAlignment.Top
+            emptyHint.ZIndex = 10
+            emptyHint.Parent = Holder_2
+            Holder_2.CanvasSize = UDim2.new(0, 0, 0, 88)
         end
     end
     pcall(function()
@@ -17156,6 +17184,19 @@ addcmd('waypoints',{'positions'},function(args, speaker)
     PositionsFrame:TweenPosition(UDim2.new(0, 0, 0, 0), "InOut", "Quart", 0.5, true, nil)
     hideSettingsHolderAfterTween(token)
     maximizeHolder()
+end)
+
+addcmd('keybinds', {'listbinds', 'showbinds'}, function(args, speaker)
+    openSettingsPanel()
+    settingsSubToken += 1
+    local token = settingsSubToken
+    AliasesFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    PluginsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    PositionsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    KeybindsFrame:TweenPosition(UDim2.new(0, 0, 0, 0), "InOut", "Quart", 0.5, true, nil)
+    hideSettingsHolderAfterTween(token)
+    maximizeHolder()
+    pcall(refreshbinds)
 end)
 
 waypointParts = {}
