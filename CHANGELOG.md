@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.69 — 2026-09-15
+
+### Improved
+- Automation Studio Inspector names the selected event, lists clickable `$` variables, and shows its commands (or how to add one) instead of a blank “pick a card” hint.
+
 ## 7.62 — 2026-09-14
 
 ### Added

@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.69'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -596,8 +596,12 @@ UI_L = {
 		eeNoEventsMatch = "No events match this filter.",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
-		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
-		eeInspEventHint = "No workflow selected.\nAdd a command below, or select a workflow card to edit it.",
+		eeInspHint = "Click an event on the left. This column then shows what fires it, $ variables, and its commands.",
+		eeInspEventHint = "No command selected. Click a row below, or type one in the box under the event.",
+		eeInspTry = "Try an event",
+		eeInspVars = "Variables",
+		eeInspCmds = "Commands",
+		eeInspNoCmds = "None yet. Type a command in the box under the event, then + Add.",
 		eeFlowCount = "%d/%d on",
 		eeCatAll = "All",
 		eeCatCharacter = "Character",
@@ -821,8 +825,12 @@ UI_L = {
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
-		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
-		eeInspEventHint = "Workflow не выбран.\nДобавь команду ниже или выбери карточку для редактирования.",
+		eeInspHint = "Кликни событие слева — здесь появятся, когда оно срабатывает, переменные $ и его команды.",
+		eeInspEventHint = "Команда не выбрана. Кликни строку ниже или введи команду в поле под событием.",
+		eeInspTry = "Попробуй событие",
+		eeInspVars = "Переменные",
+		eeInspCmds = "Команды",
+		eeInspNoCmds = "Пока пусто. Введи команду в поле под событием и нажми + Доб.",
 		eeFlowCount = "%d/%d вкл.",
 		eeCatAll = "Все",
 		eeCatCharacter = "Персонаж",
@@ -6448,30 +6456,91 @@ eventEditor = (function()
 			inspHolder.Position = UDim2.new(0, 0, 0, 0)
 			local leftover = inspHolder:FindFirstChildOfClass("UIScale")
 			if leftover then leftover:Destroy() end
-			if not selectedEventName then
+			local function inspMuted(text, height)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, -8, 0, 72),
+					Size = UDim2.new(1, -8, 0, height or 56),
 					Font = UI_FONT,
 					TextSize = 12,
 					TextWrapped = true,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = EE_MUTED,
-					Text = T("eeInspHint"),
+					Text = text,
 					ZIndex = 43,
 				}, inspHolder)
-				inspScroll.CanvasSize = UDim2.new(0, 0, 0, 100)
+			end
+			local function inspInsert(chip)
+				local ov = center:FindFirstChild("EECmdFocus")
+				local box = (ov and ov.Value) or addBox
+				if not (box and box.Parent) then box = addBox end
+				local spacer = box.Text ~= "" and not box.Text:match("%s$") and " " or ""
+				box.Text = box.Text .. spacer .. chip
+				box:CaptureFocus()
+			end
+			local function inspChips(list)
+				local wrap = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 22), ZIndex = 43 }, inspHolder)
+				local x, y, rowH = 0, 0, 20
+				local maxW = 220
+				for _, chip in ipairs(list) do
+					local label = tostring(chip)
+					if label ~= "" then
+						local w = math.max(42, (utf8.len(label) or #label) * 7 + 16)
+						if x > 0 and x + w > maxW then
+							x = 0
+							y += rowH + 4
+						end
+						local b = mk("TextButton", {
+							BackgroundColor3 = EE_SELECTED,
+							BorderSizePixel = 0,
+							Position = UDim2.new(0, x, 0, y),
+							Size = UDim2.new(0, w, 0, rowH),
+							Font = UI_FONT,
+							TextSize = 11,
+							Text = label,
+							TextColor3 = EE_ACCENT,
+							AutoButtonColor = false,
+							ZIndex = 44,
+						}, wrap)
+						uiCorner(b, 8)
+						b.MouseButton1Click:Connect(function()
+							inspInsert(label)
+						end)
+						x += w + 5
+					end
+				end
+				wrap.Size = UDim2.new(1, -4, 0, y + rowH)
+			end
+			if not selectedEventName then
+				inspMuted(T("eeInspHint"), 64)
+				section(T("eeInspTry"))
+				for _, name in ipairs({"OnSpawn", "OnChatted", "OnDied"}) do
+					if events[name] then
+						local evName = name
+						local b = btn(inspHolder, evName, UDim2.new(1, -4, 0, 28), UDim2.new(0, 0, 0, 0), function()
+							selectEvent(evName)
+						end)
+						b.TextXAlignment = Enum.TextXAlignment.Left
+						b.TextSize = 12
+						uiPad(b, 10, 0, 8, 0)
+					end
+				end
+				inspScroll.CanvasSize = UDim2.new(0, 0, 0, 220)
 				return
 			end
 			local evSum = events[selectedEventName]
 			ensureEventExtras(evSum)
+			inspTitle.Text = selectedEventName
 			local en, tot = 0, #(evSum.commands or {})
 			for _, c in ipairs(evSum.commands or {}) do
 				local m = getMeta(c)
 				if m.enabled ~= false and isGroupEnabled(evSum, m.group) then en += 1 end
 			end
 			if evSum.enabled == false then en = 0 end
+			local desc = eventDescText(evSum)
+			if desc ~= "" then
+				inspMuted(desc, 40)
+			end
 			local statusRow = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 36), ZIndex = 43 }, inspHolder)
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
@@ -6493,19 +6562,60 @@ eventEditor = (function()
 				refreshFlows()
 				refreshInspector()
 			end)
-			mk("TextLabel", {
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -8, 0, 72),
-				Font = UI_FONT,
-				TextSize = 12,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Top,
-				TextColor3 = EE_MUTED,
-				Text = T("eeInspEventHint"),
-				ZIndex = 43,
-			}, inspHolder)
-			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 140)
+			inspMuted(T("eeInspEventHint"), 40)
+			section(T("eeInspVars"))
+			local chips = {}
+			for i = 1, #(evSum.sets or {}) do
+				chips[#chips + 1] = "$" .. tostring(i)
+			end
+			for _, hint in ipairs(evSum.argHints or {}) do
+				chips[#chips + 1] = hint
+			end
+			chips[#chips + 1] = "$me"
+			chips[#chips + 1] = "$place"
+			chips[#chips + 1] = "$job"
+			chips[#chips + 1] = "$time"
+			chips[#chips + 1] = "$event"
+			local seenChip = {}
+			local uniq = {}
+			for _, chip in ipairs(chips) do
+				if not seenChip[chip] then
+					seenChip[chip] = true
+					uniq[#uniq + 1] = chip
+				end
+			end
+			inspChips(uniq)
+			section(T("eeInspCmds"))
+			if tot == 0 then
+				inspMuted(T("eeInspNoCmds"), 48)
+			else
+				for _, c in ipairs(evSum.commands or {}) do
+					local cmdRef = c
+					local label = tostring(c[1] or "")
+					if label == "" then label = T("eeEmpty") end
+					local row = mk("TextButton", {
+						BackgroundColor3 = EE_SURFACE,
+						BorderSizePixel = 0,
+						Size = UDim2.new(1, -4, 0, 28),
+						Font = UI_FONT,
+						TextSize = 12,
+						Text = label,
+						TextColor3 = EE_TEXT,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						TextTruncate = Enum.TextTruncate.AtEnd,
+						AutoButtonColor = false,
+						ZIndex = 43,
+					}, inspHolder)
+					uiCorner(row, 8)
+					uiPad(row, 8, 0, 8, 0)
+					row.MouseButton1Click:Connect(function()
+						selectedCmd = cmdRef
+						refreshFlows()
+						refreshInspector()
+					end)
+				end
+			end
+			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 280)
 			return
 		end
 		local ev = events[selectedEventName]
