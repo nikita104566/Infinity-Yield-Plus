@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Studio command picker sits on the rows (no empty slots) and shows when the typed name matches nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
