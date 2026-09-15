@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Changed
+- Favorite commands in the panel list show a gold star instead of the grey dot, so pinned rows are visible without opening the helper.
+
 ## 7.62 — 2026-09-14
 
 ### Added
