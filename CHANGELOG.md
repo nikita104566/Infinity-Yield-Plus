@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Improved
+- Command list rows keep the primary name and `[args]` visible instead of clipping a long alias chain; favorited rows show a gold star.
+
 ## 7.62 — 2026-09-14
 
 ### Added
