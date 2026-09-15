@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -518,7 +518,7 @@ uiLang = "en"
 
 UI_L = {
 	en = {
-		command = "Command",
+		command = "Command  ·  ↓ list",
 		prefix = "Prefix",
 		keepOpen = "Keep Menu Open",
 		language = "Language",
@@ -576,7 +576,7 @@ UI_L = {
 		refMultiHeader = "Execute Multiple Commands at Once",
 		refMultiIntro = "You can execute multiple commands at once using \"\\\"",
 		refHistoryHeader = "Browse Command History",
-		refHistoryText = "While focused on the command bar, you can use the up and down arrow keys to browse recently used commands",
+		refHistoryText = "Down highlights the command list (Enter runs, Tab fills). Up browses recent commands when the list is not highlighted.",
 		refAutoHeader = "Autocomplete in the Command Bar",
 		refAutoText = "While focused on the command bar, you can use the tab key to insert the top suggested command into the command bar.",
 		refEventsHeader = "Using Automation Studio",
@@ -743,7 +743,7 @@ UI_L = {
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
 	},
 	ru = {
-		command = "Команда",
+		command = "Команда  ·  ↓ список",
 		prefix = "Префикс",
 		keepOpen = "Держать меню открытым",
 		language = "Язык",
@@ -801,7 +801,7 @@ UI_L = {
 		refMultiHeader = "Несколько команд сразу",
 		refMultiIntro = "Несколько команд можно выполнить через «\\»",
 		refHistoryHeader = "История команд",
-		refHistoryText = "Когда фокус в поле команды, стрелки ↑↓ листают недавно использованные команды",
+		refHistoryText = "↓ подсвечивает список команд (Enter запускает, Tab подставляет). ↑ листает недавние команды, пока список не подсвечен.",
 		refAutoHeader = "Автодополнение",
 		refAutoText = "Когда фокус в поле команды, Tab подставляет верхнюю подсказку в строку",
 		refEventsHeader = "Automation Studio",
@@ -2081,7 +2081,7 @@ function setCmdRowSelected(btn, isSelected)
 	if not btn then return end
 	local marker = btn:FindFirstChild("Sel")
 	if isSelected then
-		btn.BackgroundTransparency = 0.92
+		btn.BackgroundTransparency = 0.78
 		btn.BackgroundColor3 = ROW_PURPLE
 		if marker then marker.Visible = true end
 	else
@@ -2125,8 +2125,8 @@ function styleCmdRow(btn)
 	marker.Name = "Sel"
 	marker.BackgroundColor3 = ACCENT
 	marker.BorderSizePixel = 0
-	marker.Position = UDim2.new(0, -8, 0, 6)
-	marker.Size = UDim2.new(0, 2, 1, -12)
+	marker.Position = UDim2.new(0, 2, 0, 5)
+	marker.Size = UDim2.new(0, 2, 1, -10)
 	marker.Visible = false
 	marker.ZIndex = 12
 	marker.Parent = btn
@@ -10727,6 +10727,23 @@ function moveCmdSelection(delta)
     if selectedCmdIndex > #visibleCmdButtons then selectedCmdIndex = 1 end
     selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
     applyCmdSelection()
+    if type(showHelper) == "function" then
+        showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
+    end
+    return true
+end
+
+function beginCmdListNav()
+    if #visibleCmdButtons == 0 then return false end
+    cmdSelectionPainted = true
+    if not selectedCmdIndex or selectedCmdIndex < 1 or not visibleCmdButtons[selectedCmdIndex] then
+        selectedCmdIndex = 1
+    end
+    selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
+    applyCmdSelection()
+    if type(showHelper) == "function" then
+        showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
+    end
     return true
 end
 
@@ -13319,30 +13336,34 @@ IYR_TRACK(UserInputService.TextBoxFocused:Connect(function(obj)
 end))
 
 IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
-    if gameProcessed then
-        if Cmdbar and Cmdbar:IsFocused() then
-            if input.KeyCode == Enum.KeyCode.Up then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(-1)
-                else
+    if Cmdbar and Cmdbar:IsFocused() then
+        if input.KeyCode == Enum.KeyCode.Up then
+            if cmdSelectionPainted and #visibleCmdButtons > 0 then
+                moveCmdSelection(-1)
+            elseif Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
+                moveCmdSelection(-1)
+            else
                 historyCount += 1
                 if historyCount > #cmdHistory then historyCount = #cmdHistory end
                 Cmdbar.Text = cmdHistory[historyCount] or ""
                 Cmdbar.CursorPosition = 1020
-                end
-            elseif input.KeyCode == Enum.KeyCode.Down then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(1)
-                else
+            end
+        elseif input.KeyCode == Enum.KeyCode.Down then
+            if cmdSelectionPainted and #visibleCmdButtons > 0 then
+                moveCmdSelection(1)
+            elseif Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
+                moveCmdSelection(1)
+            elseif #visibleCmdButtons > 0 then
+                beginCmdListNav()
+            else
                 historyCount = historyCount - 1
                 if historyCount < 0 then historyCount = 0 end
                 Cmdbar.Text = cmdHistory[historyCount] or ""
                 Cmdbar.CursorPosition = 1020
-                end
             end
-        elseif input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
-            lastEnteredString = lastTextBoxString
         end
+    elseif gameProcessed and (input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter) then
+        lastEnteredString = lastTextBoxString
     end
 end))
 
@@ -13378,15 +13399,24 @@ end))
 local tabComplete = nil
 tabAllowed = true
 IYR_TRACK(Cmdbar.FocusLost:Connect(function(enterpressed)
+    local painted = cmdSelectionPainted
+    local selected = selectedCmdButton
     flushIndexContents()
     if enterpressed then
         local cmdbarText = Cmdbar.Text:gsub("^"..prefix,"")
-        if selectedCmdButton and cmdbarText ~= "" then
-            if selectedCmdButton:GetAttribute("SuggestKind") == "player" then
+        if painted and selected and (cmdbarText == "" or cmdbarText:find("^%s*$")) then
+            local first = selected.Text:match("^%S+") or selected.Text
+            first = (first:match("^[^/]+") or first):gsub("%s+$", "")
+            if first ~= "" then
+                cmdbarText = first
+            end
+        end
+        if selected and cmdbarText ~= "" then
+            if selected:GetAttribute("SuggestKind") == "player" then
                 local head, rest = cmdbarText:match("^(%S+)%s*(.-)%s*$")
-                local suggest = tostring(selectedCmdButton:GetAttribute("SuggestValue") or "")
+                local suggest = tostring(selected:GetAttribute("SuggestValue") or "")
                 if suggest == "" then
-                    suggest = tostring(selectedCmdButton.Text or "")
+                    suggest = tostring(selected.Text or "")
                 end
                 if head then
                     if not rest or rest == "" then
@@ -13403,7 +13433,7 @@ IYR_TRACK(Cmdbar.FocusLost:Connect(function(enterpressed)
                     end
                 end
             elseif not cmdbarText:find("%s") then
-                local first = selectedCmdButton.Text:match("^%S+") or selectedCmdButton.Text
+                local first = selected.Text:match("^%S+") or selected.Text
                 if first:lower():sub(1, #cmdbarText) == cmdbarText:lower() then
                     cmdbarText = first
                 end
