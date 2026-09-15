@@ -4,8 +4,18 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function iypVerNum(s)
+		local maj, min = tostring(s or ""):match("^(%d+)%.(%d+)")
+		if not maj then return 0 end
+		return (tonumber(maj) or 0) * 1000 + (tonumber(min) or 0)
+	end
+	if iypVerNum(currentVersion) > iypVerNum("7.62") then
+		return
+	end
 	currentVersion = "7.62"
-	if type(applyHeaderBrand) == "function" then
+	if type(setBrandTitle) == "function" then
+		setBrandTitle(BRAND_NAME)
+	elseif type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
 	elseif VersionLabel then
 		VersionLabel.Text = "· 7.62"

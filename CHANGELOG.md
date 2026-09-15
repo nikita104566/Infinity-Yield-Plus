@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-15
+
+### Added
+- `lastcommand` / `lastcmd` shows an EN/RU notice when ↑ history is empty instead of erroring.
+
+### Notes
+- One `source` loadstring. Leftover `hotfix762` no longer stamps 7.62 over a newer badge.
+
 ## 7.62 — 2026-09-14
 
 ### Added
