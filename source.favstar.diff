@@ -1,0 +1,22 @@
+Apply inside source (StrReplace).
+
+1) currentVersion = '7.50'  ->  currentVersion = '7.63'
+
+2) In styleCmdRow, immediately after:
+	label.Parent = btn
+insert:
+	local star = Instance.new("TextLabel")
+	star.Name = "Star"
+	star.BackgroundTransparency = 1
+	star.Size = UDim2.new(0, 14, 1, 0)
+	star.Position = UDim2.new(1, -14, 0, 0)
+	star.Font = UI_FONT
+	star.TextSize = 12
+	star.Text = "★"
+	star.TextColor3 = Color3.fromRGB(255, 214, 102)
+	star.TextXAlignment = Enum.TextXAlignment.Right
+	star.Visible = false
+	star.ZIndex = 12
+	star.Parent = btn
+
+3) Replace FavCmds.apply body so it toggles Star.Visible and shrinks Label when favorited.
