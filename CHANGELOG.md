@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `_G.IYP_ONLY` / `_G.IYP_SKIP` / `_G.IYP_PATCH_BASE` on `patches.luau` so a single hotfix can be loaded without the rest of the 756–762 chain.
+- `hotfix/catalog.json` — inventory of every numbered hotfix (commands, guards, default-or-not).
+- `python3 tools/iyp.py` — `list`, `only`, `skip`, `try` (one open PR), `prs` (group duplicates by theme), `status`, `check`.
+- `AGENTS.md` and `.cursor/rules` so Cursor automation does not open the same 7.63 axis five times or add `hotfix763`.
+- [docs/FIXES.md](docs/FIXES.md) — how to run one fix and how to keep improving the project.
+
 ## 7.62 — 2026-09-14
 
 ### Added

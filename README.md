@@ -18,7 +18,18 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ```
 
 Open the panel with your prefix (default `;`).
-`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, env). You can still load individual `hotfix7xx.luau` files if you want a subset. None of them replace the main script.
+
+`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, env). None of them replace the main script.
+
+To run **one** automation fix instead of the whole chain:
+
+```lua
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
+_G.IYP_ONLY = 762  -- hotfix id; or { 756, 762 }
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
+```
+
+From a checkout: `python3 tools/iyp.py list` (what each hotfix does), `python3 tools/iyp.py only 762` (ready loadstring), `python3 tools/iyp.py try 49` (one open automation PR). Details: [docs/FIXES.md](docs/FIXES.md). Agent rules: [AGENTS.md](AGENTS.md).
 
 ## Features
 
