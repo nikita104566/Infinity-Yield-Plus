@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Command panel shows a localized empty state when search matches nothing (instead of a blank list).
+
 ## 7.62 — 2026-09-14
 
 ### Added

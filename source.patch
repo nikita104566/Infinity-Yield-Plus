@@ -1,0 +1,102 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -557,6 +557,8 @@
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
++		cmdNoMatch = "No matching commands",
++		cmdNoMatchHint = "Try another name or alias",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+@@ -782,6 +784,8 @@
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
++		cmdNoMatch = "Нет таких команд",
++		cmdNoMatchHint = "Попробуйте другое имя или алиас",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+@@ -1182,6 +1186,8 @@
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyTitle then cmdEmptyTitle.Text = T("cmdNoMatch") end
++	if cmdEmptyHint then cmdEmptyHint.Text = T("cmdNoMatchHint") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1757,46 @@
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmpty = Instance.new("Frame")
++cmdEmpty.Name = "IYR_CMD_EMPTY"
++cmdEmpty.Parent = CMDsF
++cmdEmpty.BackgroundTransparency = 1
++cmdEmpty.BorderSizePixel = 0
++cmdEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 56)
++cmdEmpty.Visible = false
++cmdEmpty.LayoutOrder = 3
++cmdEmpty.ZIndex = 11
++
++cmdEmptyTitle = Instance.new("TextLabel")
++cmdEmptyTitle.Name = "Title"
++cmdEmptyTitle.Parent = cmdEmpty
++cmdEmptyTitle.BackgroundTransparency = 1
++cmdEmptyTitle.Position = UDim2.new(0, 4, 0, 8)
++cmdEmptyTitle.Size = UDim2.new(1, -8, 0, 20)
++cmdEmptyTitle.Font = UI_FONT_MED
++cmdEmptyTitle.TextSize = 13
++cmdEmptyTitle.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyTitle.TextYAlignment = Enum.TextYAlignment.Center
++cmdEmptyTitle.TextColor3 = Color3.fromRGB(210, 206, 224)
++cmdEmptyTitle.Text = T("cmdNoMatch")
++cmdEmptyTitle.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyTitle.ZIndex = 12
++
++cmdEmptyHint = Instance.new("TextLabel")
++cmdEmptyHint.Name = "Hint"
++cmdEmptyHint.Parent = cmdEmpty
++cmdEmptyHint.BackgroundTransparency = 1
++cmdEmptyHint.Position = UDim2.new(0, 4, 0, 30)
++cmdEmptyHint.Size = UDim2.new(1, -8, 0, 18)
++cmdEmptyHint.Font = UI_FONT
++cmdEmptyHint.TextSize = 11
++cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyHint.TextColor3 = Color3.fromRGB(154, 148, 176)
++cmdEmptyHint.Text = T("cmdNoMatchHint")
++cmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyHint.ZIndex = 12
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10945,6 +10991,16 @@
+     local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+     cmdSelectionPainted = typedFilter ~= ""
+     applyCmdSelection()
++    if cmdEmpty then
++        local noRows = (#favRanked + #otherRanked) == 0
++        if takesPlayer then
++            noRows = #visibleCmdButtons == 0
++        end
++        cmdEmpty.Visible = typedFilter ~= "" and noRows
++        cmdEmpty.LayoutOrder = 3
++        if cmdEmptyTitle then cmdEmptyTitle.Text = T("cmdNoMatch") end
++        if cmdEmptyHint then cmdEmptyHint.Text = T("cmdNoMatchHint") end
++    end
+ 
+     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
+     if introPlaying or introLockMinimize then
