@@ -1,1 +1,127 @@
-@/tmp/iyp_source
+-- Infinity Yield Plus 7.63
+-- One loadstring. Core is the last complete source snapshot; this file
+-- adds the empty command-search state and the 7.63 badge.
+
+currentVersion = "7.63"
+
+local CORE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+
+local raw
+do
+	local ok, src = pcall(function()
+		return game:HttpGet(CORE)
+	end)
+	assert(ok and type(src) == "string" and #src > 1000, "IYP: failed to fetch core source")
+	raw = src
+end
+
+local fn, loadErr = loadstring(raw)
+assert(fn, loadErr or "IYP: bad core source")
+fn()
+
+pcall(function()
+	currentVersion = "7.63"
+	if type(applyHeaderBrand) == "function" then
+		applyHeaderBrand()
+	elseif VersionLabel then
+		VersionLabel.Text = "· 7.63"
+	end
+	if SubLabel then
+		SubLabel.Text = "7.63"
+	end
+end)
+
+pcall(function()
+	local en = UI_L and UI_L.en
+	local ru = UI_L and UI_L.ru
+	if type(en) == "table" then
+		en.cmdNoMatch = en.cmdNoMatch or "No matching commands"
+		en.cmdNoMatchHint = en.cmdNoMatchHint or "Try another name or alias"
+	end
+	if type(ru) == "table" then
+		ru.cmdNoMatch = ru.cmdNoMatch or "Нет подходящих команд"
+		ru.cmdNoMatchHint = ru.cmdNoMatchHint or "Попробуйте другое имя или алиас"
+	end
+end)
+
+pcall(function()
+	if not CMDsF then
+		return
+	end
+	if CMDsF:FindFirstChild("IYR_CMD_EMPTY") then
+		cmdEmpty = CMDsF:FindFirstChild("IYR_CMD_EMPTY")
+		cmdEmptyTitle = cmdEmpty:FindFirstChild("Title")
+		cmdEmptyHint = cmdEmpty:FindFirstChild("Hint")
+	else
+		cmdEmpty = Instance.new("Frame")
+		cmdEmpty.Name = "IYR_CMD_EMPTY"
+		cmdEmpty.Parent = CMDsF
+		cmdEmpty.BackgroundTransparency = 1
+		cmdEmpty.BorderSizePixel = 0
+		local gutter = (type(SCROLL_GUTTER) == "number" and SCROLL_GUTTER) or 12
+		cmdEmpty.Size = UDim2.new(1, -(gutter + 2), 0, 44)
+		cmdEmpty.Visible = false
+		cmdEmpty.LayoutOrder = 3
+		cmdEmpty.ZIndex = 11
+
+		cmdEmptyTitle = Instance.new("TextLabel")
+		cmdEmptyTitle.Name = "Title"
+		cmdEmptyTitle.Parent = cmdEmpty
+		cmdEmptyTitle.BackgroundTransparency = 1
+		cmdEmptyTitle.Position = UDim2.new(0, 8, 0, 4)
+		cmdEmptyTitle.Size = UDim2.new(1, -16, 0, 18)
+		cmdEmptyTitle.Font = UI_FONT_MED or Enum.Font.GothamMedium
+		cmdEmptyTitle.TextSize = 13
+		cmdEmptyTitle.TextXAlignment = Enum.TextXAlignment.Left
+		cmdEmptyTitle.TextColor3 = Color3.fromRGB(196, 190, 214)
+		cmdEmptyTitle.TextTruncate = Enum.TextTruncate.AtEnd
+		cmdEmptyTitle.ZIndex = 12
+
+		cmdEmptyHint = Instance.new("TextLabel")
+		cmdEmptyHint.Name = "Hint"
+		cmdEmptyHint.Parent = cmdEmpty
+		cmdEmptyHint.BackgroundTransparency = 1
+		cmdEmptyHint.Position = UDim2.new(0, 8, 0, 22)
+		cmdEmptyHint.Size = UDim2.new(1, -16, 0, 16)
+		cmdEmptyHint.Font = UI_FONT or Enum.Font.Gotham
+		cmdEmptyHint.TextSize = 11
+		cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
+		cmdEmptyHint.TextColor3 = Color3.fromRGB(122, 116, 148)
+		cmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd
+		cmdEmptyHint.ZIndex = 12
+	end
+
+	local function fillEmptyText()
+		local title = (type(T) == "function" and T("cmdNoMatch")) or "No matching commands"
+		local hint = (type(T) == "function" and T("cmdNoMatchHint")) or "Try another name or alias"
+		if cmdEmptyTitle then cmdEmptyTitle.Text = title end
+		if cmdEmptyHint then cmdEmptyHint.Text = hint end
+	end
+	fillEmptyText()
+
+	if type(applyUiLanguage) == "function" and not _G.__IYP_763_LANG then
+		_G.__IYP_763_LANG = true
+		local prev = applyUiLanguage
+		applyUiLanguage = function(...)
+			prev(...)
+			fillEmptyText()
+		end
+	end
+
+	if type(IndexContents) == "function" and not _G.__IYP_763_EMPTY then
+		_G.__IYP_763_EMPTY = true
+		local prevIdx = IndexContents
+		IndexContents = function(str, bool, cmdbar, Ianim)
+			prevIdx(str, bool, cmdbar, Ianim)
+			local typed = tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", "")
+			local n = 0
+			if type(visibleCmdButtons) == "table" then
+				n = #visibleCmdButtons
+			end
+			if cmdEmpty then
+				cmdEmpty.Visible = typed ~= "" and n == 0
+				cmdEmpty.LayoutOrder = 3
+			end
+		end
+	end
+end)
