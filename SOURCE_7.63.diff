@@ -1,0 +1,45 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -7386,19 +7386,19 @@
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+ 					Position = UDim2.new(0, 14, 0, 8),
+-					Size = UDim2.new(1, -108, 0, 18),
++					Size = UDim2.new(1, -52, 0, 18),
+ 					Font = UI_FONT_MED,
+ 					TextSize = 13,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
+ 					TextColor3 = nameColor,
+ 					Text = name,
+-					TextTruncate = Enum.TextTruncate.AtEnd,
++					TextTruncate = Enum.TextTruncate.None,
+ 					ZIndex = 44,
+ 				}, row)
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+ 					Position = UDim2.new(0, 14, 0, 30),
+-					Size = UDim2.new(1, -108, 0, 14),
++					Size = UDim2.new(1, -98, 0, 14),
+ 					Font = UI_FONT,
+ 					TextSize = 10,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
+@@ -7467,8 +7467,8 @@
+ 					local badge = mk("TextLabel", {
+ 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
+ 						BorderSizePixel = 0,
+-						Position = UDim2.new(1, -92, 0.5, -9),
+-						Size = UDim2.new(0, 42, 0, 18),
++						Position = UDim2.new(1, -92, 0, 27),
++						Size = UDim2.new(0, 42, 0, 16),
+ 						Font = UI_FONT_MED,
+ 						TextSize = 10,
+ 						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
