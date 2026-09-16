@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Command panel section headers now show live counts (Favorites and Commands) and the Commands header stays visible even with no favorites.
+
 ## 7.62 — 2026-09-14
 
 ### Added
