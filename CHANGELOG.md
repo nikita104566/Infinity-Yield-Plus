@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Added
+- `openstudio` (`autostudio`, `eventbinds`) opens Automation Studio from the command panel; run again to close.
+
 ## 7.62 — 2026-09-14
 
 ### Added
