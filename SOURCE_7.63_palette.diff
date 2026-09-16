@@ -1,0 +1,145 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -561,6 +561,13 @@
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
++		paletteTitle = "Command Palette",
++		paletteSearch = "Search commands or type arguments...",
++		paletteFavRecent = "FAVORITES & RECENT",
++		paletteResults = "RESULTS · %d",
++		paletteEmpty = "No matching commands",
++		paletteFooter = "Up/Down move   Enter run   Esc close",
++		paletteMissing = "Palette is not available",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+ 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
+@@ -786,6 +793,13 @@
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
++		paletteTitle = "Палитра команд",
++		paletteSearch = "Поиск команд или аргументы...",
++		paletteFavRecent = "ИЗБРАННОЕ И НЕДАВНИЕ",
++		paletteResults = "РЕЗУЛЬТАТЫ · %d",
++		paletteEmpty = "Нет подходящих команд",
++		paletteFooter = "Вверх/вниз выбор   Enter запуск   Esc закрыть",
++		paletteMissing = "Палитра недоступна",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+ 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
+@@ -1177,6 +1191,9 @@
+ 	if type(updateHintAndGhost) == "function" then
+ 		updateHintAndGhost()
+ 	end
++	if scoreCache and scoreCache.palette and type(scoreCache.palette.ApplyLang) == "function" then
++		pcall(scoreCache.palette.ApplyLang)
++	end
+ 	if type(refreshKbCmdPicker) == "function" then
+ 		refreshKbCmdPicker()
+ 	end
+@@ -11264,6 +11281,7 @@
+ CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
+ CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
+ CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
++CMDs[#CMDs + 1] = {NAME = 'palette / cmdpalette / quickcmd', DESC = 'Opens the command palette to search and run a command'}
+ CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
+ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
+ CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
+@@ -12032,6 +12050,9 @@
+ 		killiy = 'Выгружает Infinity Yield Plus',
+ 		killiyp = 'Выгружает Infinity Yield Plus',
+ 		lastcommand = 'Описание: Executes the previous command used',
++		palette = 'Открывает палитру команд для поиска и запуска',
++		cmdpalette = 'Открывает палитру команд для поиска и запуска',
++		quickcmd = 'Открывает палитру команд для поиска и запуска',
+ 		lay = 'Меняет твой/твою character lay down',
+ 		light = 'Даёт your игрока dynamic light',
+ 		locate = 'Показать a single игрока and their status',
+@@ -13497,7 +13518,7 @@
+         title.TextSize = 15
+         title.TextXAlignment = Enum.TextXAlignment.Left
+         title.TextColor3 = Color3.fromRGB(248, 248, 252)
+-        title.Text = "Command Palette"
++        title.Text = T("paletteTitle")
+         title.ZIndex = 92
+         title.Parent = panel
+ 
+@@ -13526,7 +13547,7 @@
+         search.TextSize = 14
+        search.TextColor3 = Color3.fromRGB(248, 248, 252)
+         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
+-        search.PlaceholderText = "Search commands or type arguments..."
++        search.PlaceholderText = T("paletteSearch")
+         search.Text = ""
+         search.TextXAlignment = Enum.TextXAlignment.Left
+         search.ZIndex = 92
+@@ -13585,7 +13606,7 @@
+         footer.TextSize = 11
+         footer.TextXAlignment = Enum.TextXAlignment.Left
+         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
+-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
++        footer.Text = T("paletteFooter")
+         footer.ZIndex = 92
+         footer.Parent = panel
+ 
+@@ -13756,7 +13777,7 @@
+                 local limit = math.min(8, #candidates)
+                 for i = 1, limit do state.items[i] = candidates[i] end
+                 state.selected = limit > 0 and 1 or 0
+-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
++                section.Text = queryHead == "" and T("paletteFavRecent") or string.format(T("paletteResults"), #candidates)
+                 if limit == 0 then
+                     local empty = Instance.new("TextLabel")
+                     empty.Name = "Empty"
+@@ -13765,7 +13786,7 @@
+                     empty.Font = UI_FONT
+                     empty.TextSize = 13
+                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
+-                    empty.Text = "No matching commands"
++                    empty.Text = T("paletteEmpty")
+                     empty.ZIndex = 93
+                     empty.Parent = holder
+                 else
+@@ -13798,6 +13819,16 @@
+         function api.IsOpen()
+             return root.Visible
+         end
++        function api.ApplyLang()
++            title.Text = T("paletteTitle")
++            search.PlaceholderText = T("paletteSearch")
++            footer.Text = T("paletteFooter")
++            if root.Visible then
++                refresh()
++            else
++                section.Text = T("paletteFavRecent")
++            end
++        end
+         api.Root = root
+         api.Search = search
+         api.State = state
+@@ -18197,6 +18228,15 @@
+     end
+ end)
+ 
++addcmd('palette',{'cmdpalette','quickcmd'},function(args, speaker)
++    local pal = scoreCache and scoreCache.palette
++    if pal and type(pal.Open) == "function" then
++        pal.Open()
++    else
++        notify(T("paletteMissing"))
++    end
++end)
++
+ addcmd('windowfocus', {}, function(args, speaker)
+     wfenabled = true
+ end)

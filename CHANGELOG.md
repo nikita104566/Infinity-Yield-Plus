@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Added
+- `palette` (`cmdpalette`, `quickcmd`) opens the command palette from the panel; type to search, Up/Down to move, Enter to run. Empty search shows favorites and recent. EN/RU labels.
+
 ## 7.62 — 2026-09-14
 
 ### Added
