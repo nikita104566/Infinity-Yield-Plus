@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio left list shows full event names (OnCharacterRemoving no longer becomes OnCharact…); the command-count badge sits on the category row so the name can use the row width.
+
+### Notes
+- Change is in main `source`. One loadstring is enough.
+
 ## 7.62 — 2026-09-14
 
 ### Added
