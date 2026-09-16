@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Studio left event list shows full names like OnCharacterRemoving instead of cutting them at OnCharact…
+
+### Notes
+- One loadstring: `source`. No new hotfix.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
