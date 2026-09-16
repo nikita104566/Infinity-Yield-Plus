@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Command history (↑/↓ and `lastcommand`) is stored in `IY_FE.iy` and restored after reload/rejoin.
+- `lastcommand` / `lastcmd` no longer errors when history is empty — it shows an EN/RU notice instead.
+
 ## 7.62 — 2026-09-14
 
 ### Added
