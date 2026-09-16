@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio History shows a clear empty message instead of a blank panel before any event has run.
+
 ## 7.62 — 2026-09-14
 
 ### Added

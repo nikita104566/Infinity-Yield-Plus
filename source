@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -616,6 +616,7 @@ UI_L = {
 		eeResume = "Resume",
 		eeHistory = "History",
 		eeRunHistory = "Run History",
+		eeHistoryEmpty = "No runs yet.\nTest an event to see it here.",
 		eeImportTitle = "Import Automation JSON",
 		eeCancel = "Cancel",
 		eeApply = "Apply",
@@ -841,6 +842,7 @@ UI_L = {
 		eeResume = "Продолжить",
 		eeHistory = "Журнал",
 		eeRunHistory = "История запусков",
+		eeHistoryEmpty = "Пока нет запусков.\nНажми Тест, чтобы увидеть запись.",
 		eeImportTitle = "Импорт JSON автоматизаций",
 		eeCancel = "Отмена",
 		eeApply = "Применить",
@@ -6129,6 +6131,9 @@ eventEditor = (function()
 				string.format("[%s] %s%s\n%s%s", tostring(h.event), status, repeated, detail ~= "" and (detail .. (command ~= "" and " · " or "")) or "", command),
 				44
 			)
+		end
+		if y == 0 then
+			addRow(Color3.fromRGB(22, 20, 34), EE_MUTED, T("eeHistoryEmpty"), 56)
 		end
 		histList.CanvasSize = UDim2.new(0, 0, 0, y)
 	end
