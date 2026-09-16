@@ -1,0 +1,164 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -557,6 +557,9 @@
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
++		favEmpty = "Right-click a command to pin it here",
++		favCount = "Favorites (%d)",
++		cmdNoMatch = "No matching commands",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+@@ -782,6 +785,9 @@
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
++		favEmpty = "ПКМ по команде — закрепить сюда",
++		favCount = "Избранное (%d)",
++		cmdNoMatch = "Нет подходящих команд",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+@@ -1182,6 +1188,8 @@
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdFavHint then cmdFavHint.Text = T("favEmpty") end
++	if cmdEmptyLabel then cmdEmptyLabel.Text = T("cmdNoMatch") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1759,40 @@
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdFavHint = Instance.new("TextLabel")
++cmdFavHint.Name = "IYR_FAV_HINT"
++cmdFavHint.Parent = CMDsF
++cmdFavHint.BackgroundTransparency = 1
++cmdFavHint.BorderSizePixel = 0
++cmdFavHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 16)
++cmdFavHint.Font = UI_FONT
++cmdFavHint.TextSize = 11
++cmdFavHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdFavHint.TextYAlignment = Enum.TextYAlignment.Center
++cmdFavHint.TextColor3 = Color3.fromRGB(154, 148, 176)
++cmdFavHint.Text = T("favEmpty")
++cmdFavHint.TextTruncate = Enum.TextTruncate.AtEnd
++cmdFavHint.ZIndex = 11
++cmdFavHint.Visible = false
++cmdFavHint.LayoutOrder = 2
++
++cmdEmptyLabel = Instance.new("TextLabel")
++cmdEmptyLabel.Name = "IYR_CMD_EMPTY"
++cmdEmptyLabel.Parent = CMDsF
++cmdEmptyLabel.BackgroundTransparency = 1
++cmdEmptyLabel.BorderSizePixel = 0
++cmdEmptyLabel.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
++cmdEmptyLabel.Font = UI_FONT
++cmdEmptyLabel.TextSize = 13
++cmdEmptyLabel.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyLabel.TextYAlignment = Enum.TextYAlignment.Center
++cmdEmptyLabel.TextColor3 = Color3.fromRGB(151, 146, 169)
++cmdEmptyLabel.Text = T("cmdNoMatch")
++cmdEmptyLabel.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyLabel.ZIndex = 11
++cmdEmptyLabel.Visible = false
++cmdEmptyLabel.LayoutOrder = 3
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -2055,8 +2097,13 @@
+ 	primary = (primary or names):gsub("%s+$", "")
+ 	aliases = aliases or ""
+ 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+-	if aliases ~= "" then
+-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
++	local extra = 0
++	for part in aliases:gmatch("[^/]+") do
++		local piece = part:gsub("^%s+", ""):gsub("%s+$", "")
++		if piece ~= "" then extra = extra + 1 end
++	end
++	if extra > 0 then
++		html = html .. "<font color=\"#7A778C\"> +" .. tostring(extra) .. "</font>"
+ 	end
+ 	if args ~= "" then
+ 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
+@@ -10873,12 +10920,24 @@
+         end)
+     end
+ 
++	local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+     if cmdFavHeader then
+-        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
++		local showFavHead = not takesPlayer and (#favRanked > 0 or typedFilter == "")
++		cmdFavHeader.Visible = showFavHead
++		if #favRanked > 0 then
++			cmdFavHeader.Text = string.format(T("favCount"), #favRanked)
++		else
++			cmdFavHeader.Text = T("favorites")
++		end
+         cmdFavHeader.LayoutOrder = 1
+     end
++	if cmdFavHint then
++		cmdFavHint.Visible = not takesPlayer and #favRanked == 0 and typedFilter == ""
++		cmdFavHint.Text = T("favEmpty")
++		cmdFavHint.LayoutOrder = 2
++	end
+     if cmdAllHeader then
+-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
++		cmdAllHeader.Visible = not takesPlayer and (#favRanked > 0 or typedFilter == "") and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
+ 
+@@ -10895,7 +10954,7 @@
+         end
+     end
+ 
+-    local layout = 2
++    local layout = 10
+     for _, item in ipairs(favRanked) do
+         placeCmdRow(item, layout)
+         layout += 1
+@@ -10942,7 +11001,6 @@
+     end
+     selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
+     -- Paint selection only when typing a filter, or after keyboard navigation
+-    local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+     cmdSelectionPainted = typedFilter ~= ""
+     applyCmdSelection()
+ 
+@@ -10950,13 +11008,19 @@
+     if introPlaying or introLockMinimize then
+         -- Keep the panel open until intro autohide finishes
+     elseif not Ianim then
++		if cmdEmptyLabel then
++			cmdEmptyLabel.Visible = indexnum == 0 and not takesPlayer
++			cmdEmptyLabel.Text = T("cmdNoMatch")
++			cmdEmptyLabel.LayoutOrder = 3
++		end
+         if indexnum == 0 then
+-            if not cmdbar then
++			if cmdbar then
++				maximizeHolder()
++			elseif not cmdbar then
+                 minimizeHolder()
+-            elseif cmdbar then
+-                cmdbarHolder()
+             end
+         else
++			if cmdEmptyLabel then cmdEmptyLabel.Visible = false end
+             maximizeHolder()
+         end
+     else
