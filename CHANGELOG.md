@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- `lastcommand` / `lastcmd` on an empty history shows a notify instead of indexing nil.
+
+### Notes
+- One `source` loadstring. Version badge 7.63.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added

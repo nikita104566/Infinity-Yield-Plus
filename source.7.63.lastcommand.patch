@@ -1,0 +1,33 @@
+--- source (7.50 core on main)
++++ source (7.63 lastcommand empty-safe)
+
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+
+@@ UI_L.en after allCommands
+		allCommands = "Commands",
++		lastCmdEmpty = "History",
++		lastCmdEmptyText = "No previous command yet",
+
+@@ UI_L.ru after allCommands
+		allCommands = "Команды",
++		lastCmdEmpty = "История",
++		lastCmdEmptyText = "Пока нет предыдущей команды",
+
+@@ addcmd lastcommand
+-addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
+-    end
+-end)
++addcmd('lastcommand',{'lastcmd'},function(args, speaker)
++    local prev = (type(cmdHistory) == 'table' and cmdHistory[1]) or nil
++    if type(prev) ~= 'string' or prev == '' then
++        notify(T('lastCmdEmpty'), T('lastCmdEmptyText'))
++        return
++    end
++    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
++        execCmd(prev)
++    end
++end)
