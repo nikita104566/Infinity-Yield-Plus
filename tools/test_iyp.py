@@ -27,10 +27,13 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(ids, sorted(set(ids)))
         self.assertGreaterEqual(len(ids), 10)
 
-    def test_default_chain_is_756_to_762(self):
+    def test_default_chain_is_empty(self):
         catalog = iyp.load_catalog()
         defaults = [p["id"] for p in catalog["patches"] if p.get("default")]
-        self.assertEqual(defaults, [756, 757, 758, 759, 760, 761, 762])
+        self.assertEqual(defaults, [])
+        for patch in catalog["patches"]:
+            self.assertEqual(patch.get("status"), "baked")
+            self.assertFalse(patch.get("default"))
 
     def test_check_passes_on_this_tree(self):
         with mock.patch("builtins.print"):
@@ -39,7 +42,7 @@ class CatalogTests(unittest.TestCase):
     def test_patches_luau_parses(self):
         entries, defaults = iyp.parse_patches_luau()
         self.assertEqual([i for i, _ in entries], list(range(753, 763)))
-        self.assertEqual(defaults, [756, 757, 758, 759, 760, 761, 762])
+        self.assertEqual(defaults, [])
 
 
 class SnippetTests(unittest.TestCase):
@@ -63,13 +66,15 @@ class SnippetTests(unittest.TestCase):
         with mock.patch("builtins.print"):
             self.assertEqual(iyp.cmd_only(ns), 0)
 
-    def test_skip_keeps_defaults_minus_one(self):
+    def test_skip_on_baked_core_prints_source_only(self):
         ns = iyp.build_parser().parse_args(["skip", "761"])
         with mock.patch("builtins.print") as printer:
             self.assertEqual(iyp.cmd_skip(ns), 0)
         text = "\n".join(str(c.args[0]) for c in printer.call_args_list)
-        self.assertIn("756, 757, 758, 759, 760, 762", text)
-        self.assertNotIn("761,", text.replace("761}", ""))
+        self.assertIn("Infinity-Yield-Plus/main/source", text)
+        self.assertIn("baked into source", text)
+        self.assertNotIn("IYP_ONLY", text)
+        self.assertNotIn("hotfix761.luau", text)
 
 
 class ThemeTests(unittest.TestCase):
@@ -169,6 +174,94 @@ class LoaderLuaTests(unittest.TestCase):
             self.assertIn("file", patch)
             self.assertIn("summary", patch)
             self.assertIn("commands", patch)
+
+
+class SourceBakeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.source = (ROOT / "source").read_text(encoding="utf-8", errors="replace")
+
+    def test_current_version_is_763(self):
+        self.assertIn("currentVersion = '7.63'", self.source)
+
+    def test_lastcommand_is_nil_safe(self):
+        self.assertIn("addcmd('lastcommand'", self.source)
+        self.assertIn('type(cmdHistory) == "table" and cmdHistory[1]', self.source)
+        self.assertIn('T("lastCmdEmpty")', self.source)
+        self.assertNotRegex(self.source, r"cmdHistory\[1\]:sub")
+
+    def test_cmd_history_persists(self):
+        self.assertIn("json.cmdHistory", self.source)
+        self.assertIn("cmdHistory = (function()", self.source)
+        self.assertIn("scoreCache.histSaveToken", self.source)
+
+    def test_baked_commands_are_registered(self):
+        for name in (
+            "clearhistory",
+            "showhistory",
+            "checkupdate",
+            "copyhistory",
+            "starlast",
+            "repeatlast",
+            "latency",
+            "fps",
+            "cmdcount",
+            "placeinfo",
+            "copyplace",
+            "players",
+            "session",
+            "hotfixes",
+            "whoami",
+            "copyuid",
+            "copyjob",
+            "serverage",
+            "memory",
+            "dump",
+            "copyjoin",
+            "gameowner",
+            "clock",
+            "maxplayers",
+            "env",
+            "device",
+            "showprefix",
+            "timezone",
+            "display",
+            "studio",
+        ):
+            self.assertIn(f"addcmd('{name}'", self.source)
+
+    def test_starlast_uses_favcmds_toggle(self):
+        self.assertIn("FavCmds.toggle", self.source)
+
+    def test_source_does_not_assign_i18n(self):
+        self.assertNotIn("I18N", self.source)
+
+    def test_empty_search_hint(self):
+        self.assertIn("cmdNoMatch", self.source)
+        self.assertIn("cmdEmptyLabel", self.source)
+        self.assertIn('typedFilter ~= "" and indexnum == 0', self.source)
+
+    def test_studio_left_list(self):
+        self.assertIn("EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 256, 248, 12, 52", self.source)
+        self.assertIn("TextTruncate = Enum.TextTruncate.None", self.source)
+
+    def test_studio_command_opens_editor(self):
+        self.assertIn("addcmd('studio', {'autostudio', 'eventstudio'}", self.source)
+        self.assertIn("eventEditor.Open()", self.source)
+
+
+class HotfixStubTests(unittest.TestCase):
+    def test_hotfixes_are_stubs(self):
+        for n in range(753, 763):
+            text = (ROOT / f"hotfix{n}.luau").read_text(encoding="utf-8")
+            self.assertIn("compatibility stub", text)
+            self.assertIn("iypStubAtLeast(7, 62)", text)
+            self.assertNotRegex(text, r'currentVersion\s*=')
+            self.assertNotIn("I18N", text)
+
+    def test_version_file_is_763(self):
+        data = json.loads((ROOT / "version").read_text(encoding="utf-8"))
+        self.assertEqual(data["Version"], "7.63")
 
 
 class IsolatedCatalogCheck(unittest.TestCase):

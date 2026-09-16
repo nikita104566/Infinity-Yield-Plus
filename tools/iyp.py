@@ -84,7 +84,7 @@ def snippet_for_ids(ids: list[int], *, ref: str = "main", catalog: dict | None =
 def parse_patches_luau() -> tuple[list[tuple[int, str]], list[int]]:
     text = PATCHES_PATH.read_text(encoding="utf-8")
     entries = [(int(i), f) for i, f in re.findall(r"\{\s*id\s*=\s*(\d+)\s*,\s*file\s*=\s*\"([^\"]+)\"\s*\}", text)]
-    default_match = re.search(r"DEFAULT_IDS\s*=\s*\{([^}]+)\}", text)
+    default_match = re.search(r"DEFAULT_IDS\s*=\s*\{([^}]*)\}", text)
     if not default_match:
         raise SystemExit("patches.luau: DEFAULT_IDS not found")
     defaults = [int(x) for x in re.findall(r"\d+", default_match.group(1))]
@@ -119,6 +119,10 @@ def cmd_skip(args: argparse.Namespace) -> int:
     catalog = load_catalog()
     skip = {parse_id(x) for x in args.ids}
     defaults = [p["id"] for p in catalog["patches"] if p.get("default")]
+    if not defaults:
+        print(loadstring(raw_url(args.ref, "source")))
+        print("-- default patch chain is empty; 7.56–7.62 are baked into source")
+        return 0
     keep = [i for i in defaults if i not in skip]
     if not keep:
         raise SystemExit("skip list removed every default patch")

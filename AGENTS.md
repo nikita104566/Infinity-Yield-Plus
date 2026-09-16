@@ -5,11 +5,11 @@ Read it before changing `source`, `hotfix*.luau`, or `patches.luau`.
 
 ## What this repo actually is
 
-- `source` on `main` is the 7.50 core (plus earlier baked history work). It is ~1 MB.
-- Player-facing 7.56–7.62 commands live in `hotfix756.luau` … `hotfix762.luau`.
-- `patches.luau` loads the default chain (756–762). It does **not** replace `source`.
-- `hotfix/catalog.json` is the inventory. `python3 tools/iyp.py check` must stay green.
-- The version badge on `main` is 7.62. Do not invent 7.63/7.64/7.65/7.66 in docs unless that version is actually in `source` on the branch.
+- `source` on this branch is the **7.63** core (~1 MB). History, diagnostics, and `;studio` live here.
+- `hotfix753.luau` … `hotfix762.luau` are **legacy stubs**. If `currentVersion` is already ≥ 7.62 they do nothing and must not downgrade the badge.
+- `patches.luau` default queue is **empty**. `_G.IYP_ONLY` can still load a stub if a human asks.
+- `hotfix/catalog.json` is the inventory (`status: "baked"`). `python3 tools/iyp.py check` must stay green.
+- The version badge is 7.63. Do not invent 7.64+ in docs unless that version is actually in `source` on the branch.
 
 ## First command, every tick
 
@@ -19,15 +19,7 @@ python3 tools/iyp.py status
 
 That prints what is on `main` and groups **open** automation PRs by theme. If your idea already has an open PR, **stop**. Do not open a duplicate. Improve that existing branch or pick a different axis.
 
-## How a human runs one fix
-
-Local hotfix (already on `main`):
-
-```bash
-python3 tools/iyp.py only 762
-```
-
-One open automation PR (loads that branch’s `source`):
+## How a human runs the script
 
 ```bash
 python3 tools/iyp.py try 49
@@ -35,28 +27,37 @@ python3 tools/iyp.py try 49
 
 If `try` warns that `source` is tiny, the branch is a failed upload. Do not merge it. Do not load it.
 
+Legacy sidecar (almost never needed after 7.63):
+
+```bash
+python3 tools/iyp.py only 762
+```
+
 ## What you may change in one PR
 
-Exactly **one** player-visible axis. Examples of axes (pick one that is not already open):
+Exactly **one** player-visible axis unless the human asked to bake or ship a version bump.
 
-- Command panel empty-search hint
+Examples of axes (pick one that is not already open):
+
 - Favorite mark in the command list
-- `lastcommand` empty-history notify
-- Automation Studio left-list event names
-- `;studio` command
-- History persist in `IY_FE.iy`
+- Alias highlight
+- Ctrl+K command palette
+- `;reload` listeners
 
-Do not mix two axes. Do not “also bump version + rewrite README loadstring + add hotfix763”.
+Do not mix two axes. Do not add `hotfix763`.
 
 ## Hard stops
 
-1. **Do not create `hotfix763.luau` (or any new numbered hotfix)** unless the human explicitly asked for a new sidecar file. New work belongs in `source`, or in an existing catalogued hotfix if you are fixing that file.
+1. **Do not create `hotfix763.luau` (or any new numbered hotfix)** unless the human explicitly asked for a new sidecar file. New work belongs in `source`.
 2. **Do not replace `source` with a stub loader.** If the blob is too large to upload in one tool call, commit a `*.patch` (or say so in the PR and leave `source` untouched). A 1 KB `source` that HttpGets `main` is a broken branch.
-3. **Do not overwrite a newer `currentVersion` with 7.62** from leftover hotfixes. If you touch a hotfix badge stamp, keep the `major*1000+minor` / “already newer” guard.
+3. **Do not overwrite a newer `currentVersion` with 7.62** from leftover hotfixes. Stubs must no-op when the core is already ≥ 7.62.
 4. **Do not add eventEditor IIFE top-level locals.** The Studio IIFE is at the Luau local cap.
 5. **Do not insert `\u00` escapes into `source`.**
 6. **Do not claim in-game testing** if Potassium / a Roblox executor was not available. Write “static pass only”.
 7. **Do not duplicate an open theme.** `python3 tools/iyp.py prs` is the source of truth.
+8. **Do not clobber existing commands.** `info`/`serverinfo`, `creator`/`creatorid`, `ping`/`notifyping`, `copyuserid`/`copyid` already exist — use new names (`dump`, `gameowner`, `latency`, `copyuid`).
+9. **Use `UI_L` / `T()`, not `I18N`.** There is no `I18N` table in `source`.
+10. **`starlast` must go through `FavCmds.toggle`** (or `toggleFavoriteCmd`). There is no `addFavorite` API.
 
 ## PR description (required shape)
 
@@ -67,7 +68,7 @@ Do not mix two axes. Do not “also bump version + rewrite README loadstring + a
 5. How it was checked (static / compile / in-game).
 6. “Not this tick” — the axes you left alone.
 
-Title: `7.62: <visible change>` until `source` on `main` actually becomes a newer version.
+Title: `7.63: <visible change>` until `source` on `main` actually becomes a newer version.
 
 ## After you touch hotfixes or the loader
 

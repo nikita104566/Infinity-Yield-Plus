@@ -7,33 +7,25 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.62-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
 
-`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, env). None of them replace the main script.
+One line is enough. History, diagnostics, and Automation Studio live in `source` (7.63). The old second loadstring (`patches.luau`) is optional compatibility: its default queue is empty, and `hotfix753.luau`–`hotfix762.luau` are no-op stubs when the core is already 7.62 or newer.
 
-To run **one** automation fix instead of the whole chain:
-
-```lua
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-_G.IYP_ONLY = 762  -- hotfix id; or { 756, 762 }
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
-```
-
-From a checkout: `python3 tools/iyp.py list` (what each hotfix does), `python3 tools/iyp.py only 762` (ready loadstring), `python3 tools/iyp.py try 49` (one open automation PR). Details: [docs/FIXES.md](docs/FIXES.md). Agent rules: [AGENTS.md](AGENTS.md).
+From a checkout: `python3 tools/iyp.py list` (legacy sidecar inventory), `python3 tools/iyp.py try 49` (one open automation PR). Details: [docs/FIXES.md](docs/FIXES.md). Agent rules: [AGENTS.md](AGENTS.md).
 
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
+- Empty search keeps the panel open and shows an EN/RU “no match” hint
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands are not stored in history
@@ -42,15 +34,16 @@ From a checkout: `python3 tools/iyp.py list` (what each hotfix does), `python3 t
 - `copyhistory` / `copycmd` copies the last command (`copyhistory all` for the full list)
 - `starlast` / `favlast` pins the last command to favorites
 - `repeatlast` / `again` re-runs the last real command
-- `ping` / `fps` / `cmdcount` — quick diagnostics
-- `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and loaded patches
-- `whoami` / `copyuserid` / `copyjob` / `serverage` / `memory` — local player, job, uptime, RAM
-- `info` / `dump` — one notify with version, you, place, job, slots, age, ping, memory
+- `latency` / `fps` / `cmdcount` — quick diagnostics (`ping` still maps to `notifyping`)
+- `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and baked-patch status
+- `whoami` / `copyuid` / `copyjob` / `serverage` / `memory` — local player, job, uptime, RAM
+- `dump` / `fullinfo` — one notify with version, you, place, job, slots, age, ping, memory
 - `copyjoin` — copies `PlaceId | JobId`
-- `creator` / `clock` / `maxplayers` — owner, local time, player cap
+- `gameowner` / `clock` / `maxplayers` — owner, local time, player cap
 - `env` / `device` / `showprefix` / `timezone` / `display` — executor, input, prefix, zone, viewport
 - `checkupdate` / `upd` compares the local version with GitHub and shows announcements
-- Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
+- `studio` / `autostudio` / `eventstudio` opens or closes Automation Studio
+- Automation Studio — full event names in the left list, run workflows on spawn, chat, tools, prompts, and other events
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
 - Chain commands with `\\\\`

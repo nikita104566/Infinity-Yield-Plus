@@ -1,17 +1,15 @@
 # Как запускать фиксы по одному
 
-Автоматизация в этом репозитории часто открывает десятки похожих PR и не всегда пишет, что именно изменилось. Здесь — как смотреть, что уже есть на `main`, и как пробовать **один** фикс, а не всю кучу сразу.
+Автоматизация в этом репозитории часто открывает десятки похожих PR. Здесь — что уже впечено в `source`, и как пробовать **один** оставшийся фикс, а не всю кучу сразу.
 
-## Что сейчас на main
+## Что сейчас в ядре (7.63)
 
 | Слой | Файл | Что это |
 | --- | --- | --- |
-| Ядро | `source` | Скрипт 7.50 + старые baked-правки истории. Один огромный файл. |
-| Фиксы автоматизации | `hotfix756.luau` … `hotfix762.luau` | Команды 7.56–7.62. Подключаются **после** `source`. |
-| Загрузчик | `patches.luau` | По умолчанию тянет 756→762 по порядку. |
-| Каталог | `hotfix/catalog.json` | Список id, команд и статуса. Это источник правды. |
-
-753 и 754/755 **не** входят в дефолтную цепочку: 753 — заглушка, 754/755 почти перекрыты 756. Их всё ещё можно запустить отдельно.
+| Ядро | `source` | Скрипт **7.63**. История, lastcommand, диагностика 7.56–7.62, `;studio`, полные имена событий, hint пустого поиска. Один loadstring. |
+| Legacy sidecar | `hotfix753.luau` … `hotfix762.luau` | Стубы. Если `currentVersion` ≥ 7.62 — ничего не делают и не даунгрейдят бейдж. |
+| Загрузчик | `patches.luau` | Дефолтная очередь **пустая**. `_G.IYP_ONLY` всё ещё может загрузить файл, если человек явно просит. |
+| Каталог | `hotfix/catalog.json` | Список id, `status: "baked"`. Это источник правды для CLI. |
 
 Полный список с описаниями:
 
@@ -20,36 +18,29 @@ python3 tools/iyp.py list
 python3 tools/iyp.py status
 ```
 
-`status` ещё группирует открытые PR автоматизации по темам (одно и то же «7.63: имена событий в Studio» может быть в пяти ветках).
+`status` ещё группирует открытые PR автоматизации по темам.
 
-## Запустить один hotfix с main
+## Запуск
 
-В Roblox-исполнителе, **после** обычного `source`:
+Обычный путь — **один** loadstring:
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/hotfix762.luau'))()
 ```
 
-Или сгенерировать сниппет:
+Вторая строка (`patches.luau`) опциональна и по умолчанию ничего не грузит.
+
+Явно подтянуть legacy-stub (почти никогда не нужно):
 
 ```bash
 python3 tools/iyp.py only 762
-python3 tools/iyp.py only 756 759
-python3 tools/iyp.py skip 761
 ```
-
-Селектор в самом загрузчике (удобно, если файлов несколько):
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-_G.IYP_ONLY = 762                 -- один id
--- _G.IYP_ONLY = { 756, 762 }     -- несколько, в этом порядке
--- _G.IYP_SKIP = { 761 }          -- дефолтная цепочка без этих id
+_G.IYP_ONLY = 762
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 ```
-
-В консоли исполнителя должно появиться: `[IYP patches] loaded 762 (IYP_ONLY)`.
 
 ## Запустить фикс из открытого PR автоматизации
 
@@ -70,10 +61,11 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 
 ## Как дальше улучшать проект, а не копить хаос
 
-1. Смотри `python3 tools/iyp.py status` — не делай пятый PR про те же имена событий.
+1. Смотри `python3 tools/iyp.py status` — не делай пятый PR про те же имена событий (эта ось уже в 7.63).
 2. Один видимый эффект на PR. Правила для агентов: [`AGENTS.md`](../AGENTS.md).
-3. Новые команды — в `source` (или правка существующего hotfix), **не** `hotfix763.luau`.
+3. Новые команды — в `source`, **не** `hotfix763.luau`.
 4. Не подменяй `source` заглушкой «скачай main». Если blob не влезает в тул — клади `*.patch`.
-5. После правок каталога/загрузчика: `python3 tools/iyp.py check && python3 tools/test_iyp.py`.
+5. Не затирай существующие `info` / `creator` / `ping` / `copyuserid`.
+6. После правок каталога/загрузчика: `python3 tools/iyp.py check && python3 tools/test_iyp.py`.
 
 Автоматизацию Cursor (`Infinity yiled plus`) лучше держать выключенной, пока открытые дубликаты не разобраны: иначе она снова откроет тот же набор осей.

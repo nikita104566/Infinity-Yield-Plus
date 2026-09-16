@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -557,6 +557,56 @@ UI_L = {
 		keybindToggleOn = "Create Toggle",
 		favorites = "Favorites",
 		allCommands = "Commands",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
+		histCleared = "History",
+		histClearedText = "Command history cleared",
+		histTitle = "History",
+		histEmpty = "History is empty",
+		updTitle = "Updates",
+		updLatest = "You are on the latest version",
+		updNewer = "A newer version is available",
+		updFail = "Could not check for updates",
+		copyTitle = "History",
+		copyOk = "Copied to clipboard",
+		copyFail = "Clipboard is not available",
+		copyEmpty = "Nothing to copy",
+		starTitle = "Favorites",
+		starOk = "Last command added to favorites",
+		starEmpty = "No command to favorite",
+		starAlready = "Already in favorites",
+		repTitle = "Repeat",
+		repEmpty = "Nothing to repeat",
+		repOk = "Re-running last command",
+		pingTitle = "Network",
+		fpsTitle = "Performance",
+		cntTitle = "Commands",
+		placeTitle = "Place",
+		placeCopied = "Copied place id",
+		plrTitle = "Players",
+		sesTitle = "Session",
+		hfTitle = "Patches",
+		hfBaked = "Baked into source",
+		whoTitle = "You",
+		uidCopied = "Copied user id",
+		jobCopied = "Copied job id",
+		ageTitle = "Server age",
+		memTitle = "Memory",
+		infoTitle = "Info",
+		joinCopied = "Copied join line",
+		noClipboard = "No clipboard",
+		creatorTitle = "Creator",
+		clockTitle = "Clock",
+		slotsTitle = "Slots",
+		envTitle = "Env",
+		deviceTitle = "Device",
+		prefixTitle = "Prefix",
+		tzTitle = "Timezone",
+		displayTitle = "Display",
+		cmdNoMatch = "No commands match this search",
+		studioFailTitle = "Studio",
+		studioFail = "Automation Studio could not open",
+		studioClosed = "Automation Studio closed",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
@@ -782,6 +832,56 @@ UI_L = {
 		keybindToggleOn = "Создать тоггл",
 		favorites = "Избранное",
 		allCommands = "Команды",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
+		histCleared = "История",
+		histClearedText = "История команд очищена",
+		cmdNoMatch = "Нет команд по этому поиску",
+		studioFailTitle = "Studio",
+		studioFail = "Не удалось открыть Automation Studio",
+		studioClosed = "Automation Studio закрыт",
+		histTitle = "История",
+		histEmpty = "История пуста",
+		updTitle = "Обновления",
+		updLatest = "У вас последняя версия",
+		updNewer = "Доступна новая версия",
+		updFail = "Не удалось проверить обновления",
+		copyTitle = "История",
+		copyOk = "Скопировано в буфер",
+		copyFail = "Буфер обмена недоступен",
+		copyEmpty = "Нечего копировать",
+		starTitle = "Избранное",
+		starOk = "Последняя команда добавлена в избранное",
+		starEmpty = "Нет команды для избранного",
+		starAlready = "Уже в избранном",
+		repTitle = "Повтор",
+		repEmpty = "Нечего повторять",
+		repOk = "Повтор последней команды",
+		pingTitle = "Сеть",
+		fpsTitle = "Производительность",
+		cntTitle = "Команды",
+		placeTitle = "Плейс",
+		placeCopied = "ID плейса скопирован",
+		plrTitle = "Игроки",
+		sesTitle = "Сессия",
+		hfTitle = "Патчи",
+		hfBaked = "Уже в source",
+		whoTitle = "Ты",
+		uidCopied = "UserId скопирован",
+		jobCopied = "JobId скопирован",
+		ageTitle = "Возраст сервера",
+		memTitle = "Память",
+		infoTitle = "Инфо",
+		joinCopied = "Строка входа скопирована",
+		noClipboard = "Нет буфера",
+		creatorTitle = "Создатель",
+		clockTitle = "Часы",
+		slotsTitle = "Слоты",
+		envTitle = "Среда",
+		deviceTitle = "Устройство",
+		prefixTitle = "Префикс",
+		tzTitle = "Пояс",
+		displayTitle = "Экран",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
@@ -1182,6 +1282,7 @@ function applyUiLanguage()
 	end
 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+	if cmdEmptyLabel then cmdEmptyLabel.Text = T("cmdNoMatch") end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
@@ -1750,6 +1851,23 @@ cmdAllHeader.TextTruncate = Enum.TextTruncate.AtEnd
 cmdAllHeader.ZIndex = 11
 cmdAllHeader.Visible = false
 cmdAllHeader.LayoutOrder = 500
+
+cmdEmptyLabel = Instance.new("TextLabel")
+cmdEmptyLabel.Name = "IYR_CMD_EMPTY"
+cmdEmptyLabel.Parent = CMDsF
+cmdEmptyLabel.BackgroundTransparency = 1
+cmdEmptyLabel.BorderSizePixel = 0
+cmdEmptyLabel.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 36)
+cmdEmptyLabel.Font = UI_FONT
+cmdEmptyLabel.TextSize = 12
+cmdEmptyLabel.TextXAlignment = Enum.TextXAlignment.Left
+cmdEmptyLabel.TextYAlignment = Enum.TextYAlignment.Top
+cmdEmptyLabel.TextColor3 = Color3.fromRGB(154, 148, 176)
+cmdEmptyLabel.Text = T("cmdNoMatch")
+cmdEmptyLabel.TextWrapped = true
+cmdEmptyLabel.ZIndex = 11
+cmdEmptyLabel.Visible = false
+cmdEmptyLabel.LayoutOrder = 0
 
 SettingsButton.Name = "SettingsButton"
 SettingsButton.Parent = Holder
@@ -4138,7 +4256,7 @@ eventEditor = (function()
 		end
 	end)
 	local EE_W, EE_H, EE_TITLE = 1020, 660, 50
-	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
+	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 256, 248, 12, 52
 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
 	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
@@ -7383,27 +7501,31 @@ eventEditor = (function()
 				rowScale.Scale = 1
 				rowScale.Parent = row
 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
+				local catLine = categoryText(cat)
+				if tot > 0 then
+					catLine = catLine .. "  " .. (en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)))
+				end
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 8),
-					Size = UDim2.new(1, -108, 0, 18),
+					Size = UDim2.new(1, -58, 0, 18),
 					Font = UI_FONT_MED,
 					TextSize = 13,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = nameColor,
 					Text = name,
-					TextTruncate = Enum.TextTruncate.AtEnd,
+					TextTruncate = Enum.TextTruncate.None,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 30),
-					Size = UDim2.new(1, -108, 0, 14),
+					Size = UDim2.new(1, -58, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = EE_MUTED,
-					Text = categoryText(cat),
+					Text = catLine,
 					ZIndex = 44,
 				}, row)
 				local hit = mk("TextButton", {
@@ -7463,20 +7585,6 @@ eventEditor = (function()
 						refreshInspector()
 					end
 				end)
-				if tot > 0 then
-					local badge = mk("TextLabel", {
-						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
-						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
-						Size = UDim2.new(0, 42, 0, 18),
-						Font = UI_FONT_MED,
-						TextSize = 10,
-						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
-						Text = en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)),
-						ZIndex = 44,
-					}, row)
-					uiCorner(badge, 8)
-				end
 				y += 59
 			end
 		end
@@ -8767,6 +8875,16 @@ function saves()
                         end
                     end
                     if vtype(json.eventBinds, "string") then loadedEventData = json.eventBinds end
+                    if vtype(json.cmdHistory, "table") then
+                        local hist = {}
+                        for _, entry in ipairs(json.cmdHistory) do
+                            if type(entry) == "string" and entry ~= "" then
+                                hist[#hist + 1] = entry
+                                if #hist >= 30 then break end
+                            end
+                        end
+                        cmdHistory = hist
+                    end
                 end)
                 if not success then
                     jsonAttempts = jsonAttempts + 1
@@ -8845,7 +8963,19 @@ function updatesaves()
             currentText2 = {currentText2.R,currentText2.G,currentText2.B};
             currentScroll = {currentScroll.R,currentScroll.G,currentScroll.B};
             themeCustomColors = customSave;
-            eventBinds = eventEditor.SaveData()
+            eventBinds = eventEditor.SaveData();
+            cmdHistory = (function()
+                local hist = {}
+                if type(cmdHistory) == "table" then
+                    for _, entry in ipairs(cmdHistory) do
+                        if type(entry) == "string" and entry ~= "" then
+                            hist[#hist + 1] = entry
+                            if #hist >= 30 then break end
+                        end
+                    end
+                end
+                return hist
+            end)();
         }
         writefileCooldown("IY_FE.iy", HttpService:JSONEncode(update))
     end
@@ -10945,12 +11075,18 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
     cmdSelectionPainted = typedFilter ~= ""
     applyCmdSelection()
+    if cmdEmptyLabel then
+        cmdEmptyLabel.Visible = typedFilter ~= "" and indexnum == 0
+        if cmdEmptyLabel.Visible then
+            cmdEmptyLabel.Text = T("cmdNoMatch")
+        end
+    end
 
     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
     if introPlaying or introLockMinimize then
         -- Keep the panel open until intro autohide finishes
     elseif not Ianim then
-        if indexnum == 0 then
+        if indexnum == 0 and not (cmdEmptyLabel and cmdEmptyLabel.Visible) then
             if not cmdbar then
                 minimizeHolder()
             elseif cmdbar then
@@ -11264,6 +11400,36 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'clearhistory / clrhist / wipehistory', DESC = 'Clears saved command history'}
+CMDs[#CMDs + 1] = {NAME = 'showhistory / hist / cmdhistory', DESC = 'Shows recent saved commands'}
+CMDs[#CMDs + 1] = {NAME = 'checkupdate / upd / vercheck', DESC = 'Compare local version with GitHub'}
+CMDs[#CMDs + 1] = {NAME = 'copyhistory / copyhist / copycmd', DESC = 'Copy last command, or copyhistory all'}
+CMDs[#CMDs + 1] = {NAME = 'starlast / favlast / pinlast', DESC = 'Pin the last command to favorites'}
+CMDs[#CMDs + 1] = {NAME = 'repeatlast / again / rerun', DESC = 'Re-run the last real command'}
+CMDs[#CMDs + 1] = {NAME = 'latency', DESC = 'Show Data Ping'}
+CMDs[#CMDs + 1] = {NAME = 'fps', DESC = 'Show physics FPS estimate'}
+CMDs[#CMDs + 1] = {NAME = 'cmdcount / cmdn', DESC = 'How many commands are registered'}
+CMDs[#CMDs + 1] = {NAME = 'placeinfo / gameinfo / placeid', DESC = 'Show PlaceId, GameId, and JobId'}
+CMDs[#CMDs + 1] = {NAME = 'copyplace / cpplace', DESC = 'Copy PlaceId to clipboard'}
+CMDs[#CMDs + 1] = {NAME = 'players / plrs / plrlist', DESC = 'Player count and a short name sample'}
+CMDs[#CMDs + 1] = {NAME = 'session / ses / status', DESC = 'Version, place, players, ping, fps'}
+CMDs[#CMDs + 1] = {NAME = 'hotfixes / hf / patches', DESC = 'Report baked patch status'}
+CMDs[#CMDs + 1] = {NAME = 'whoami / myinfo / iypme', DESC = 'Local name and UserId'}
+CMDs[#CMDs + 1] = {NAME = 'copyuid / cpuid / myuserid', DESC = 'Copy your UserId'}
+CMDs[#CMDs + 1] = {NAME = 'copyjob / cpjob / copyjobid', DESC = 'Copy JobId'}
+CMDs[#CMDs + 1] = {NAME = 'serverage / uptime / srvage', DESC = 'Server DistributedGameTime'}
+CMDs[#CMDs + 1] = {NAME = 'memory / mem / ram', DESC = 'Client memory usage'}
+CMDs[#CMDs + 1] = {NAME = 'dump / fullinfo / iypinfo', DESC = 'One notify with version, you, place, job, slots, age, ping, memory'}
+CMDs[#CMDs + 1] = {NAME = 'copyjoin / cpjoin / joinline', DESC = 'Copy PlaceId | JobId'}
+CMDs[#CMDs + 1] = {NAME = 'gameowner / ownerid', DESC = 'Place name, CreatorType, CreatorId'}
+CMDs[#CMDs + 1] = {NAME = 'clock / datetime / now', DESC = 'Local date and time'}
+CMDs[#CMDs + 1] = {NAME = 'maxplayers / slots / cap', DESC = 'Current / max players'}
+CMDs[#CMDs + 1] = {NAME = 'env / executor / uncinfo', DESC = 'Executor name and capability flags'}
+CMDs[#CMDs + 1] = {NAME = 'device / platform / input', DESC = 'Mobile/desktop and input devices'}
+CMDs[#CMDs + 1] = {NAME = 'showprefix / getprefix / pfx', DESC = 'Current command prefix'}
+CMDs[#CMDs + 1] = {NAME = 'timezone / tz / zone', DESC = 'Local timezone offset'}
+CMDs[#CMDs + 1] = {NAME = 'display / resolution / viewport', DESC = 'Viewport size and GUI inset'}
+CMDs[#CMDs + 1] = {NAME = 'studio / autostudio / eventstudio', DESC = 'Open or close Automation Studio'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12735,7 +12901,7 @@ function splitString(str,delim)
     return broken
 end
 
-cmdHistory = {}
+cmdHistory = (type(cmdHistory) == "table" and cmdHistory) or {}
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12795,13 +12961,27 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
-                            table.insert(cmdHistory,1,rawCmdStr)
+                        local histTok = string.lower((string.match(tostring(rawCmdStr or ""), "^%s*;?%s*(%S+)") or ""))
+                        local histMeta = histTok == "lastcommand" or histTok == "lastcmd"
+                            or histTok == "clearhistory" or histTok == "clrhist" or histTok == "wipehistory"
+                            or histTok == "showhistory" or histTok == "hist" or histTok == "cmdhistory"
+                            or histTok == "copyhistory" or histTok == "copyhist" or histTok == "copycmd"
+                            or histTok == "starlast" or histTok == "favlast" or histTok == "pinlast"
+                            or histTok == "checkupdate" or histTok == "upd" or histTok == "vercheck"
+                            or histTok == "repeatlast" or histTok == "again" or histTok == "rerun"
+                        if not histMeta and cmdHistory[1] ~= rawCmdStr then
+                            table.insert(cmdHistory, 1, rawCmdStr)
                         end
                     end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
-
+                    while #cmdHistory > 30 do table.remove(cmdHistory) end
                     lastCmds[cmdName] = v
+                    scoreCache.histSaveToken = (scoreCache.histSaveToken or 0) + 1
+                    local histSaveToken = scoreCache.histSaveToken
+                    task.delay(0.35, function()
+                        if scoreCache.histSaveToken == histSaveToken and type(updatesaves) == "function" then
+                            pcall(updatesaves)
+                        end
+                    end)
                 end
                 local cmdStartTime = tick()
                 local function reportCommandError(success, commandErr)
@@ -18192,10 +18372,422 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    local head = string.lower(prev)
+    if head:sub(1, 11) ~= "lastcommand" and head:sub(1, 7) ~= "lastcmd" then
+        execCmd(prev)
+    else
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
     end
 end)
+
+function iypClip(text)
+    if everyClipboard then
+        pcall(everyClipboard, tostring(text))
+        return true
+    end
+    return false
+end
+
+function iypLastRealCmd()
+    if type(cmdHistory) ~= "table" then return nil end
+    for i = 1, #cmdHistory do
+        local line = cmdHistory[i]
+        if type(line) == "string" and line ~= "" then
+            local tok = string.lower((string.match(line, "^%s*;?%s*(%S+)") or ""))
+            if tok ~= "lastcommand" and tok ~= "lastcmd" and tok ~= "repeatlast" and tok ~= "again" and tok ~= "rerun"
+                and tok ~= "showhistory" and tok ~= "hist" and tok ~= "clearhistory" then
+                return line
+            end
+        end
+    end
+    return nil
+end
+
+function iypVerTuple(s)
+    local a, b, c = string.match(tostring(s or ""), "^(%d+)%.(%d+)%.(%d+)")
+    if not a then
+        a, b = string.match(tostring(s or ""), "^(%d+)%.(%d+)")
+        c = "0"
+    end
+    return tonumber(a) or 0, tonumber(b) or 0, tonumber(c) or 0
+end
+
+addcmd('clearhistory', {'clrhist', 'wipehistory'}, function()
+    cmdHistory = {}
+    if type(updatesaves) == "function" then pcall(updatesaves) end
+    notify(T("histCleared"), T("histClearedText"))
+end)
+
+addcmd('showhistory', {'hist', 'cmdhistory'}, function()
+    if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+        notify(T("histTitle"), T("histEmpty"))
+        return
+    end
+    local start = math.max(1, math.min(#cmdHistory, 8))
+    local lines = {}
+    for i = 1, start do
+        lines[#lines + 1] = tostring(i) .. ". " .. cmdHistory[i]
+    end
+    notify(T("histTitle"), table.concat(lines, "\n"))
+end)
+
+addcmd('checkupdate', {'upd', 'vercheck'}, function()
+    local ok, body = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/version")
+    end)
+    if not ok or type(body) ~= "string" then
+        notify(T("updTitle"), T("updFail"))
+        return
+    end
+    local remote = string.match(body, '"Version"%s*:%s*"([^"]+)"')
+    local ann = string.match(body, '"Announcement"%s*:%s*"([^"]*)"')
+    if not remote then
+        notify(T("updTitle"), T("updFail"))
+        return
+    end
+    local ra, rb, rc = iypVerTuple(remote)
+    local la, lb, lc = iypVerTuple(currentVersion)
+    local newer = ra > la or (ra == la and rb > lb) or (ra == la and rb == lb and rc > lc)
+    local msg
+    if newer then
+        msg = T("updNewer") .. " (" .. remote .. ")"
+    else
+        msg = T("updLatest") .. " (" .. tostring(currentVersion) .. ")"
+    end
+    if type(ann) == "string" and ann ~= "" then
+        msg = msg .. "\n" .. ann
+    end
+    notify(T("updTitle"), msg)
+end)
+
+addcmd('copyhistory', {'copyhist', 'copycmd'}, function(args)
+    local mode = string.lower(tostring((args and args[1]) or ""))
+    local text
+    if mode == "all" or mode == "full" then
+        if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+            notify(T("copyTitle"), T("copyEmpty"))
+            return
+        end
+        text = table.concat(cmdHistory, "\n")
+    else
+        text = iypLastRealCmd()
+        if not text then
+            notify(T("copyTitle"), T("copyEmpty"))
+            return
+        end
+    end
+    if iypClip(text) then
+        notify(T("copyTitle"), T("copyOk"))
+    else
+        notify(T("copyTitle"), T("copyFail"))
+    end
+end)
+
+addcmd('starlast', {'favlast', 'pinlast'}, function()
+    local cmd = iypLastRealCmd()
+    if not cmd or cmd == "" then
+        notify(T("starTitle"), T("starEmpty"))
+        return
+    end
+    local key = cmdPrimaryKey(cmd)
+    if type(FavCmds) == "table" and type(FavCmds.is) == "function" then
+        if FavCmds.is(key) then
+            notify(T("starTitle"), T("starAlready") .. ": " .. key)
+            return
+        end
+        FavCmds.toggle(key)
+        return
+    end
+    if type(toggleFavoriteCmd) == "function" then
+        toggleFavoriteCmd(key)
+        return
+    end
+    notify(T("starTitle"), T("starEmpty"))
+end)
+
+addcmd('repeatlast', {'again', 'rerun'}, function()
+    local cmd = iypLastRealCmd()
+    if not cmd then
+        notify(T("repTitle"), T("repEmpty"))
+        return
+    end
+    notify(T("repTitle"), T("repOk") .. ": " .. cmd)
+    execCmd(cmd)
+end)
+
+addcmd('latency', {}, function()
+    local ms
+    pcall(function()
+        local Stats = game:GetService("Stats")
+        ms = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    if type(ms) == "number" then
+        notify(T("pingTitle"), string.format("%.0f ms", ms))
+    else
+        notify(T("pingTitle"), "n/a")
+    end
+end)
+
+addcmd('fps', {}, function()
+    local fps
+    pcall(function() fps = workspace:GetRealPhysicsFPS() end)
+    if type(fps) == "number" then
+        notify(T("fpsTitle"), string.format("%.0f FPS", fps))
+    else
+        notify(T("fpsTitle"), "n/a")
+    end
+end)
+
+addcmd('cmdcount', {'cmdn'}, function()
+    local n = 0
+    if type(cmds) == "table" then n = #cmds elseif type(CMDs) == "table" then n = #CMDs end
+    notify(T("cntTitle"), tostring(n))
+end)
+
+addcmd('placeinfo', {'gameinfo', 'placeid'}, function()
+    local pid, gid, jid = "?", "?", "?"
+    pcall(function() pid = tostring(game.PlaceId) end)
+    pcall(function() gid = tostring(game.GameId) end)
+    pcall(function() jid = tostring(game.JobId) end)
+    notify(T("placeTitle"), "Place " .. pid .. "\nGame " .. gid .. "\nJob " .. jid)
+end)
+
+addcmd('copyplace', {'cpplace'}, function()
+    local id = "?"
+    pcall(function() id = tostring(game.PlaceId) end)
+    if iypClip(id) then
+        notify(T("placeTitle"), T("placeCopied") .. ": " .. id)
+    else
+        notify(T("placeTitle"), id)
+    end
+end)
+
+addcmd('players', {'plrs', 'plrlist'}, function()
+    local names = {}
+    pcall(function()
+        for _, plr in ipairs(Players:GetPlayers()) do
+            names[#names + 1] = plr.Name
+        end
+    end)
+    table.sort(names)
+    local extra = ""
+    if #names > 0 then
+        extra = "\n" .. table.concat(names, ", ", 1, math.min(8, #names))
+        if #names > 8 then extra = extra .. " ..." end
+    end
+    notify(T("plrTitle"), tostring(#names) .. extra)
+end)
+
+addcmd('session', {'ses', 'status'}, function()
+    local ping, fps = nil, nil
+    pcall(function()
+        ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    pcall(function() fps = workspace:GetRealPhysicsFPS() end)
+    local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
+    local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
+    notify(T("sesTitle"), string.format("v%s\nPlace %s | %s players\nPing %s | FPS %s",
+        tostring(currentVersion), tostring(game.PlaceId), tostring(#Players:GetPlayers()), pingS, fpsS))
+end)
+
+addcmd('hotfixes', {'hf', 'patches'}, function()
+    notify(T("hfTitle"), T("hfBaked") .. " 7.63")
+end)
+
+addcmd('whoami', {'myinfo', 'iypme'}, function()
+    local lp = Players.LocalPlayer
+    if not lp then notify(T("whoTitle"), "n/a") return end
+    local extra = ""
+    if lp.DisplayName ~= lp.Name then extra = "\n@" .. lp.DisplayName end
+    notify(T("whoTitle"), lp.Name .. extra .. "\n" .. tostring(lp.UserId))
+end)
+
+addcmd('copyuid', {'cpuid', 'myuserid'}, function()
+    local lp = Players.LocalPlayer
+    local uid = lp and tostring(lp.UserId) or "?"
+    if iypClip(uid) then
+        notify(T("whoTitle"), T("uidCopied") .. ": " .. uid)
+    else
+        notify(T("whoTitle"), uid)
+    end
+end)
+
+addcmd('copyjob', {'cpjob', 'copyjobid'}, function()
+    local id = tostring(game.JobId)
+    if iypClip(id) then
+        notify(T("placeTitle"), T("jobCopied") .. ": " .. id)
+    else
+        notify(T("placeTitle"), id)
+    end
+end)
+
+addcmd('serverage', {'uptime', 'srvage'}, function()
+    local age
+    pcall(function() age = workspace.DistributedGameTime end)
+    if type(age) ~= "number" then notify(T("ageTitle"), "n/a") return end
+    age = math.floor(age)
+    local h, m, s = math.floor(age / 3600), math.floor((age % 3600) / 60), age % 60
+    local body = h > 0 and string.format("%dh %dm %ds", h, m, s) or (m > 0 and string.format("%dm %ds", m, s) or string.format("%ds", s))
+    notify(T("ageTitle"), body)
+end)
+
+addcmd('memory', {'mem', 'ram'}, function()
+    local mb
+    pcall(function() mb = game:GetService("Stats"):GetTotalMemoryUsageMb() end)
+    notify(T("memTitle"), type(mb) == "number" and string.format("%.1f MB", mb) or "n/a")
+end)
+
+addcmd('dump', {'fullinfo', 'iypinfo'}, function()
+    local lp = Players.LocalPlayer
+    local name, uid = "?", "?"
+    if lp then name, uid = lp.Name, tostring(lp.UserId) end
+    local nPlr, maxPlr = "?", "?"
+    pcall(function() nPlr = tostring(#Players:GetPlayers()) maxPlr = tostring(Players.MaxPlayers) end)
+    local age = "n/a"
+    pcall(function()
+        local sec = math.floor(workspace.DistributedGameTime)
+        local h, m, s = math.floor(sec / 3600), math.floor((sec % 3600) / 60), sec % 60
+        age = h > 0 and string.format("%dh %dm %ds", h, m, s) or (m > 0 and string.format("%dm %ds", m, s) or string.format("%ds", s))
+    end)
+    local ping, mem = "n/a", "n/a"
+    pcall(function() ping = string.format("%.0f ms", game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
+    pcall(function() mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb()) end)
+    notify(T("infoTitle"), table.concat({
+        tostring(currentVersion), name .. " " .. uid, "place " .. tostring(game.PlaceId),
+        "job " .. tostring(game.JobId), nPlr .. "/" .. maxPlr, "age " .. age, "ping " .. ping, "mem " .. mem,
+    }, "\n"))
+end)
+
+addcmd('copyjoin', {'cpjoin', 'joinline'}, function()
+    local line = tostring(game.PlaceId) .. " | " .. tostring(game.JobId)
+    if iypClip(line) then
+        notify(T("infoTitle"), T("joinCopied") .. "\n" .. line)
+    else
+        notify(T("infoTitle"), T("noClipboard") .. "\n" .. line)
+    end
+end)
+
+addcmd('gameowner', {'ownerid'}, function()
+    local ctype, cid, gname = "?", "?", "?"
+    pcall(function() ctype = tostring(game.CreatorType) end)
+    pcall(function() cid = tostring(game.CreatorId) end)
+    pcall(function() gname = game.Name end)
+    notify(T("creatorTitle"), gname .. "\n" .. ctype .. " " .. cid)
+end)
+
+addcmd('clock', {'datetime', 'now'}, function()
+    local stamp = "n/a"
+    pcall(function() stamp = os.date("%Y-%m-%d %H:%M:%S") end)
+    notify(T("clockTitle"), stamp)
+end)
+
+addcmd('maxplayers', {'slots', 'cap'}, function()
+    local nPlr, maxPlr = "?", "?"
+    pcall(function() nPlr = tostring(#Players:GetPlayers()) maxPlr = tostring(Players.MaxPlayers) end)
+    notify(T("slotsTitle"), nPlr .. " / " .. maxPlr)
+end)
+
+addcmd('env', {'executor', 'uncinfo'}, function()
+    local exec = "unknown"
+    pcall(function()
+        if type(identifyexecutor) == "function" then
+            local a, b = identifyexecutor()
+            if type(a) == "string" and a ~= "" then exec = b and (a .. " " .. tostring(b)) or a end
+        end
+    end)
+    local http = (game and type(game.HttpGet) == "function") and "http+" or "http-"
+    local clip = everyClipboard and "clip+" or "clip-"
+    local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
+    local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
+    notify(T("envTitle"), table.concat({ tostring(currentVersion), exec, http, clip, fs, hook }, "\n"))
+end)
+
+addcmd('device', {'platform', 'input'}, function()
+    local UIS = game:GetService("UserInputService")
+    local touch, kb, gp, acc, plat
+    pcall(function()
+        touch, kb, gp, acc = UIS.TouchEnabled, UIS.KeyboardEnabled, UIS.GamepadEnabled, UIS.AccelerometerEnabled
+        plat = tostring(UIS:GetPlatform())
+    end)
+    local kind = touch and not kb and "mobile" or (kb and "desktop" or "mixed")
+    notify(T("deviceTitle"), table.concat({
+        kind, "platform " .. tostring(plat), "touch " .. tostring(touch),
+        "keyboard " .. tostring(kb), "gamepad " .. tostring(gp), "accel " .. tostring(acc),
+    }, "\n"))
+end)
+
+addcmd('showprefix', {'getprefix', 'pfx'}, function()
+    notify(T("prefixTitle"), type(prefix) == "string" and prefix or "?")
+end)
+
+addcmd('timezone', {'tz', 'zone'}, function()
+    local off, name, stamp = "?", "?", "n/a"
+    pcall(function() off, name, stamp = os.date("%z"), os.date("%Z"), os.date("%Y-%m-%d %H:%M:%S") end)
+    notify(T("tzTitle"), tostring(name) .. " " .. tostring(off) .. "\n" .. tostring(stamp))
+end)
+
+addcmd('display', {'resolution', 'viewport'}, function()
+    local w, h, inset, scale = "?", "?", "n/a", "n/a"
+    pcall(function()
+        local vs = workspace.CurrentCamera.ViewportSize
+        w, h = math.floor(vs.X), math.floor(vs.Y)
+        local g = game:GetService("GuiService"):GetGuiInset()
+        inset = string.format("%d,%d", g.X, g.Y)
+        scale = string.format("%.2f", vs.X / 1920)
+    end)
+    notify(T("displayTitle"), tostring(w) .. "x" .. tostring(h) .. "\ninset " .. inset .. "\nscale ~" .. scale)
+end)
+
+addcmd('studio', {'autostudio', 'eventstudio'}, function()
+    if not eventEditor or type(eventEditor.Open) ~= "function" then
+        notify(T("studioFailTitle"), T("studioFail"))
+        return
+    end
+    if type(eventEditor.IsOpen) == "function" and eventEditor.IsOpen() then
+        if type(eventEditor.Close) == "function" then
+            eventEditor.Close()
+            notify(T("studioFailTitle"), T("studioClosed"))
+        end
+        return
+    end
+    eventEditor.Open()
+end)
+
+registerRuDesc("clearhistory", "Очистить историю команд")
+registerRuDesc("showhistory", "Показать недавние команды")
+registerRuDesc("checkupdate", "Сверить версию с GitHub")
+registerRuDesc("copyhistory", "Скопировать последнюю команду")
+registerRuDesc("starlast", "Добавить последнюю команду в избранное")
+registerRuDesc("repeatlast", "Повторить последнюю команду")
+registerRuDesc("latency", "Показать Data Ping")
+registerRuDesc("fps", "Показать FPS")
+registerRuDesc("cmdcount", "Сколько команд зарегистрировано")
+registerRuDesc("placeinfo", "PlaceId, GameId, JobId")
+registerRuDesc("copyplace", "Скопировать PlaceId")
+registerRuDesc("players", "Список игроков на сервере")
+registerRuDesc("session", "Краткий снимок сессии")
+registerRuDesc("hotfixes", "Статус впечённых патчей")
+registerRuDesc("whoami", "Имя и UserId")
+registerRuDesc("copyuid", "Скопировать свой UserId")
+registerRuDesc("copyjob", "Скопировать JobId")
+registerRuDesc("serverage", "Возраст сервера")
+registerRuDesc("memory", "Память клиента")
+registerRuDesc("dump", "Полный снимок сессии")
+registerRuDesc("copyjoin", "Скопировать PlaceId | JobId")
+registerRuDesc("gameowner", "Создатель плейса")
+registerRuDesc("clock", "Локальные дата и время")
+registerRuDesc("maxplayers", "Слоты сервера")
+registerRuDesc("env", "Исполнитель и флаги")
+registerRuDesc("device", "Устройство и ввод")
+registerRuDesc("showprefix", "Текущий префикс")
+registerRuDesc("timezone", "Часовой пояс")
+registerRuDesc("display", "Размер экрана")
+registerRuDesc("studio", "Открыть Automation Studio")
 
 addcmd('windowfocus', {}, function(args, speaker)
     wfenabled = true

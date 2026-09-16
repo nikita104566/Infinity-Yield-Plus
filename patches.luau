@@ -1,20 +1,20 @@
 -- Infinity Yield Plus patch loader
--- Load AFTER source. Default: 756–762 in order. Idempotent per hotfix file.
+-- Load AFTER source. Default queue is empty: 7.54–7.62 are baked into source 7.63.
+-- Sidecar files are no-op stubs when currentVersion >= 7.62. Old two-line loadstrings stay safe.
 --
--- Run ONE fix (or a subset) without the rest of the chain:
+-- Explicitly load a legacy stub (usually unnecessary):
 --   _G.IYP_ONLY = 762
 --   loadstring(game:HttpGet(BASE .. "patches.luau"))()
 --
 -- Several, in this order:
 --   _G.IYP_ONLY = { 756, 759, 762 }
 --
--- Skip some of the default chain:
+-- Skip ids from an explicit IYP_ONLY list:
 --   _G.IYP_SKIP = { 761 }
 --
 -- Optional: _G.IYP_PATCH_BASE = "https://raw.githubusercontent.com/<owner>/<repo>/<ref>/"
--- Example:
+-- Example (one loadstring is enough):
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
--- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 
 local DEFAULT_BASE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/"
 local BASE = DEFAULT_BASE
@@ -39,7 +39,7 @@ local PATCHES = {
 	{ id = 762, file = "hotfix762.luau" },
 }
 
-local DEFAULT_IDS = { 756, 757, 758, 759, 760, 761, 762 }
+local DEFAULT_IDS = {}
 
 local function fileFor(id)
 	for i = 1, #PATCHES do
@@ -148,7 +148,11 @@ local function fetch(url)
 end
 
 if #queue == 0 then
-	warn("[IYP patches] nothing to load (check _G.IYP_ONLY / _G.IYP_SKIP)")
+	if only then
+		warn("[IYP patches] nothing to load (check _G.IYP_ONLY / _G.IYP_SKIP)")
+	else
+		print("[IYP patches] baked into source 7.63; default chain is empty")
+	end
 	return
 end
 
