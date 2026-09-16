@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Empty command bar: Down highlights the first row; arrows move the highlight; Enter runs that command. Up still opens history.
+
 ## 7.62 — 2026-09-14
 
 ### Added

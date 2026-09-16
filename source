@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -576,7 +576,7 @@ UI_L = {
 		refMultiHeader = "Execute Multiple Commands at Once",
 		refMultiIntro = "You can execute multiple commands at once using \"\\\"",
 		refHistoryHeader = "Browse Command History",
-		refHistoryText = "While focused on the command bar, you can use the up and down arrow keys to browse recently used commands",
+		refHistoryText = "Up browses recent commands. Down on an empty bar highlights a row; arrows move, Enter runs it.",
 		refAutoHeader = "Autocomplete in the Command Bar",
 		refAutoText = "While focused on the command bar, you can use the tab key to insert the top suggested command into the command bar.",
 		refEventsHeader = "Using Automation Studio",
@@ -801,7 +801,7 @@ UI_L = {
 		refMultiHeader = "Несколько команд сразу",
 		refMultiIntro = "Несколько команд можно выполнить через «\\»",
 		refHistoryHeader = "История команд",
-		refHistoryText = "Когда фокус в поле команды, стрелки ↑↓ листают недавно использованные команды",
+		refHistoryText = "↑ — недавние команды. ↓ на пустой строке подсвечивает ряд; стрелки двигают, Enter запускает.",
 		refAutoHeader = "Автодополнение",
 		refAutoText = "Когда фокус в поле команды, Tab подставляет верхнюю подсказку в строку",
 		refEventsHeader = "Automation Studio",
@@ -10721,7 +10721,15 @@ end
 
 function moveCmdSelection(delta)
     if #visibleCmdButtons == 0 then return false end
-    cmdSelectionPainted = true
+    if not cmdSelectionPainted then
+        cmdSelectionPainted = true
+        if not selectedCmdIndex or selectedCmdIndex < 1 or not visibleCmdButtons[selectedCmdIndex] then
+            selectedCmdIndex = (delta and delta < 0) and #visibleCmdButtons or 1
+        end
+        selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
+        applyCmdSelection()
+        return true
+    end
     selectedCmdIndex += delta
     if selectedCmdIndex < 1 then selectedCmdIndex = #visibleCmdButtons end
     if selectedCmdIndex > #visibleCmdButtons then selectedCmdIndex = 1 end
@@ -13322,7 +13330,7 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
     if gameProcessed then
         if Cmdbar and Cmdbar:IsFocused() then
             if input.KeyCode == Enum.KeyCode.Up then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
+                if historyCount == 0 and #visibleCmdButtons > 0 and (cmdSelectionPainted or Cmdbar.Text ~= "") then
                     moveCmdSelection(-1)
                 else
                 historyCount += 1
@@ -13331,13 +13339,13 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
                 Cmdbar.CursorPosition = 1020
                 end
             elseif input.KeyCode == Enum.KeyCode.Down then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(1)
-                else
+                if historyCount > 0 then
                 historyCount = historyCount - 1
                 if historyCount < 0 then historyCount = 0 end
                 Cmdbar.Text = cmdHistory[historyCount] or ""
                 Cmdbar.CursorPosition = 1020
+                elseif #visibleCmdButtons > 0 then
+                    moveCmdSelection(1)
                 end
             end
         elseif input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
@@ -13381,7 +13389,9 @@ IYR_TRACK(Cmdbar.FocusLost:Connect(function(enterpressed)
     flushIndexContents()
     if enterpressed then
         local cmdbarText = Cmdbar.Text:gsub("^"..prefix,"")
-        if selectedCmdButton and cmdbarText ~= "" then
+        if selectedCmdButton and cmdSelectionPainted and cmdbarText == "" and selectedCmdButton:GetAttribute("SuggestKind") ~= "player" then
+            cmdbarText = selectedCmdButton.Text:match("^%S+") or selectedCmdButton.Text
+        elseif selectedCmdButton and cmdbarText ~= "" then
             if selectedCmdButton:GetAttribute("SuggestKind") == "player" then
                 local head, rest = cmdbarText:match("^(%S+)%s*(.-)%s*$")
                 local suggest = tostring(selectedCmdButton:GetAttribute("SuggestValue") or "")
