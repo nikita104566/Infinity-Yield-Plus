@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Command list rows are two lines: the command name stays on the first line, the description (or aliases) sits under it so long alias lists no longer eat the name.
+
 ## 7.62 — 2026-09-14
 
 ### Added
