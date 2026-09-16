@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Added
+- `openplugins` (`manageplugins`, `plugins`) opens the plugin list from the command panel; run it again to close. Empty list shows where to put `.iy` files. No writefile → a notify, not a crash.
+
 ## 7.62 — 2026-09-14
 
 ### Added

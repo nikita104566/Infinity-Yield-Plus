@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -528,6 +528,11 @@ UI_L = {
 		editWaypoints = "Edit/Goto Waypoints",
 		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
+		pluginsHint = "Place .iy plugin files in your executor workspace folder, then click Add.",
+		pluginsNeedFs = "Plugins",
+		pluginsNeedFsText = "This executor cannot manage plugins (needs readfile / writefile)",
+		pluginsOpenFail = "Plugins",
+		pluginsOpenFailText = "Could not open the plugin list",
 		noDesc = "No description",
 		outdated = "Outdated",
 		outdatedBody = "Get the new version by executing it again",
@@ -753,6 +758,11 @@ UI_L = {
 		editWaypoints = "Точки / телепорт",
 		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
+		pluginsHint = "Положи файлы .iy в папку workspace экзекьютора и нажми Add.",
+		pluginsNeedFs = "Плагины",
+		pluginsNeedFsText = "Этот экзекьютор не умеет плагины (нужны readfile / writefile)",
+		pluginsOpenFail = "Плагины",
+		pluginsOpenFailText = "Не удалось открыть список плагинов",
 		noDesc = "Нет описания",
 		outdated = "Устарело",
 		outdatedBody = "Запусти скрипт ещё раз",
@@ -1171,6 +1181,9 @@ function applyUiLanguage()
 		pcall(eventEditor.ApplyLang)
 	end
 	if Plugins and Plugins:FindFirstChild("ButtonLabel") then Plugins.ButtonLabel.Text = T("managePlugins") end
+	if PluginsHint and PluginsHint.Parent then
+		PluginsHint.Text = T("pluginsHint")
+	end
 	if type(applyReferenceLanguage) == "function" then
 		applyReferenceLanguage()
 	end
@@ -11619,6 +11632,7 @@ CMDs[#CMDs + 1] = {NAME = 'addalias [cmd] [alias]', DESC = 'Adds an alias to a c
 CMDs[#CMDs + 1] = {NAME = 'removealias [alias]', DESC = 'Removes a custom alias'}
 CMDs[#CMDs + 1] = {NAME = 'clraliases', DESC = 'Removes all custom aliases'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
+CMDs[#CMDs + 1] = {NAME = 'openplugins / manageplugins / plugins', DESC = 'Opens the plugin list in the panel'}
 CMDs[#CMDs + 1] = {NAME = 'addplugin / plugin [name]', DESC = 'Add a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'removeplugin / deleteplugin [name]', DESC = 'Remove a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'reloadplugin [name]', DESC = 'Reloads a plugin'}
@@ -11903,6 +11917,9 @@ do
 		alignmentkeys = "Клавиши выравнивания (запятая/точка)",
 		unalignmentkeys = "Выключить клавиши выравнивания",
 		reloadplugin = "Перезагрузить плагин",
+		openplugins = "Открыть список плагинов в панели",
+		manageplugins = "Открыть список плагинов в панели",
+		plugins = "Открыть список плагинов в панели",
 		reload = "Перезагрузить админку без rejoin",
 		iyreload = "Перезагрузить админку без rejoin",
 		reiy = "Перезагрузить админку без rejoin",
@@ -24856,6 +24873,42 @@ end)
 addcmd('unautokeypress',{'noautokeypress','unkeypress','nokeypress'},function(args, speaker)
     autoKeyPressing = false
     if cancelAutoKeyPress then cancelAutoKeyPress:Disconnect() end
+end)
+
+addcmd('openplugins',{'manageplugins','plugins','pluginmanager'},function(args, speaker)
+    if type(writefileExploit) == "function" and not writefileExploit() then
+        notify(T("pluginsNeedFs"), T("pluginsNeedFsText"))
+        return
+    end
+    if not (PluginsFrame and type(openSettingsPanel) == "function") then
+        notify(T("pluginsOpenFail"), T("pluginsOpenFailText"))
+        return
+    end
+    local showing = SettingsOpen and PluginsFrame.Position.Y.Offset < 8
+    if showing then
+        if type(closeSettingsPanel) == "function" then
+            closeSettingsPanel(false)
+        end
+        pcall(function()
+            PluginsFrame.Position = UDim2.new(0, 0, 0, LIST_H)
+        end)
+        return
+    end
+    maximizeHolder()
+    openSettingsPanel()
+    settingsSubToken += 1
+    local token = settingsSubToken
+    pcall(function()
+        KeybindsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+        AliasesFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+        PositionsFrame:TweenPosition(UDim2.new(0, 0, 0, LIST_H), "InOut", "Quart", 0.5, true, nil)
+    end)
+    if PluginsHint and PluginsHint.Parent then
+        PluginsHint.Text = T("pluginsHint")
+        PluginsHint.Visible = not (type(PluginsTable) == "table" and #PluginsTable > 0)
+    end
+    PluginsFrame:TweenPosition(UDim2.new(0, 0, 0, 0), "InOut", "Quart", 0.5, true, nil)
+    hideSettingsHolderAfterTween(token)
 end)
 
 addcmd('addplugin',{'plugin'},function(args, speaker)
