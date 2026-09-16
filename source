@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -587,6 +587,9 @@ UI_L = {
 		autoStudio = "Automation Studio",
 		autoPaused = "Automations paused",
 		autoResumed = "Automations resumed",
+		studioOpened = "Opened",
+		studioClosed = "Closed",
+		studioMissing = "Automation Studio is not available",
 		eeSearch = "Search events...",
 		eeSelectEvent = "Select an event",
 		eeNoFlows = "No workflows yet\nAdd a command below to create one.",
@@ -812,6 +815,9 @@ UI_L = {
 		autoStudio = "Automation Studio",
 		autoPaused = "Автоматизации на паузе",
 		autoResumed = "Автоматизации возобновлены",
+		studioOpened = "Открыто",
+		studioClosed = "Закрыто",
+		studioMissing = "Automation Studio недоступна",
 		eeSearch = "Поиск событий...",
 		eeSelectEvent = "Выбери событие",
 		eeNoFlows = "Пока нет workflow\nДобавь команду ниже.",
@@ -11264,6 +11270,7 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
 CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
 CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
 CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
+CMDs[#CMDs + 1] = {NAME = 'openstudio / autostudio / eventbinds', DESC = 'Opens Automation Studio (run again to close)'}
 CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
@@ -12032,6 +12039,7 @@ do
 		killiy = 'Выгружает Infinity Yield Plus',
 		killiyp = 'Выгружает Infinity Yield Plus',
 		lastcommand = 'Описание: Executes the previous command used',
+		openstudio = 'Открывает Automation Studio (повтори, чтобы закрыть)',
 		lay = 'Меняет твой/твою character lay down',
 		light = 'Даёт your игрока dynamic light',
 		locate = 'Показать a single игрока and their status',
@@ -18195,6 +18203,28 @@ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
     if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
         execCmd(cmdHistory[1])
     end
+end)
+
+addcmd('openstudio',{'autostudio','eventbinds'},function(args, speaker)
+    if type(eventEditor) ~= "table" then
+        notify(T("autoStudio"), T("studioMissing"))
+        return
+    end
+    if type(eventEditor.IsOpen) == "function" then
+        local okOpen, isOpen = pcall(eventEditor.IsOpen)
+        if okOpen and isOpen and type(eventEditor.Close) == "function" then
+            pcall(eventEditor.Close)
+            return
+        end
+    end
+    if type(eventEditor.Open) == "function" then
+        local ok = pcall(eventEditor.Open)
+        if not ok then
+            notify(T("autoStudio"), T("studioMissing"))
+        end
+        return
+    end
+    notify(T("autoStudio"), T("studioMissing"))
 end)
 
 addcmd('windowfocus', {}, function(args, speaker)
