@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio left list wraps full event names (OnCharacterRemoving stays readable instead of OnCharact…).
+
+### Notes
+- One loadstring: `source`. Badge 7.63. `hotfix762` no longer overwrites a newer in-source version.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
