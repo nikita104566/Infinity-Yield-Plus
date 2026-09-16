@@ -24,7 +24,7 @@ pcall(function()
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
 	elseif VersionLabel then
-		VersionLabel.Text = "· 7.63"
+		VersionLabel.Text = ". 7.63"
 	end
 	if SubLabel then
 		SubLabel.Text = "7.63"
@@ -99,6 +99,16 @@ pcall(function()
 	end
 	fillEmptyText()
 
+	local function visibleRowCount()
+		local n = 0
+		for _, child in pairs(CMDsF:GetChildren()) do
+			if child:IsA("TextButton") and child.Visible then
+				n = n + 1
+			end
+		end
+		return n
+	end
+
 	if type(applyUiLanguage) == "function" and not _G.__IYP_763_LANG then
 		_G.__IYP_763_LANG = true
 		local prev = applyUiLanguage
@@ -114,12 +124,8 @@ pcall(function()
 		IndexContents = function(str, bool, cmdbar, Ianim)
 			prevIdx(str, bool, cmdbar, Ianim)
 			local typed = tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", "")
-			local n = 0
-			if type(visibleCmdButtons) == "table" then
-				n = #visibleCmdButtons
-			end
 			if cmdEmpty then
-				cmdEmpty.Visible = typed ~= "" and n == 0
+				cmdEmpty.Visible = typed ~= "" and visibleRowCount() == 0
 				cmdEmpty.LayoutOrder = 3
 			end
 		end
