@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio command picker stays open on a miss and shows «No matching commands» / «Нет подходящих команд» instead of vanishing into empty space.
+
 ## 7.62 — 2026-09-14
 
 ### Added

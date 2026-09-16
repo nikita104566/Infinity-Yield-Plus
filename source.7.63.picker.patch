@@ -1,0 +1,65 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -591,6 +591,7 @@
+ 		eeSelectEvent = "Select an event",
+ 		eeNoFlows = "No workflows yet\nAdd a command below to create one.",
+ 		eePickEvent = "Select an event to view its workflows.",
++		eePickerEmpty = "No matching commands",
+ 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
+ 		eeEmptyCommand = "Type a command first",
+ 		eeNoEventsMatch = "No events match this filter.",
+@@ -816,6 +817,7 @@
+ 		eeSelectEvent = "Выбери событие",
+ 		eeNoFlows = "Пока нет workflow\nДобавь команду ниже.",
+ 		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
++		eePickerEmpty = "Нет подходящих команд",
+ 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
+ 		eeEmptyCommand = "Сначала введи команду",
+ 		eeNoEventsMatch = "Нет событий по этому фильтру.",
+@@ -7718,7 +7720,7 @@
+ 	end
+ 	local function refreshSuggestions()
+ 		for _, c in ipairs(pickerHolder:GetChildren()) do
+-			if c:IsA("TextButton") then c:Destroy() end
++			if c:IsA("TextButton") or c:IsA("TextLabel") then c:Destroy() end
+ 		end
+ 		suggestionRows = {}
+ 		suggestionIndex = 0
+@@ -7802,11 +7804,27 @@
+ 			y += 29
+ 		end
+ 		if y > 0 then y -= 3 end
++		if #matches == 0 and q ~= "" then
++			local miss = mk("TextLabel", {
++				BackgroundTransparency = 1,
++				BorderSizePixel = 0,
++				Size = UDim2.new(1, 0, 0, 26),
++				Text = T("eePickerEmpty"),
++				TextXAlignment = Enum.TextXAlignment.Left,
++				TextTruncate = Enum.TextTruncate.AtEnd,
++				Font = UI_FONT,
++				TextSize = 11,
++				TextColor3 = EE_MUTED or Color3.fromRGB(151, 146, 169),
++				ZIndex = 51,
++			}, pickerHolder)
++			uiPad(miss, 8, 0, 8, 0)
++			y = 26
++		end
+ 		suggestionIndex = #suggestionRows > 0 and 1 or 0
+ 		styleSuggestions()
+ 		picker.CanvasPosition = Vector2.new(0, 0)
+ 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
+-		setPickerVisible(#suggestionRows > 0, y)
++		setPickerVisible(#suggestionRows > 0 or (q ~= "" and #matches == 0), y)
+ 	end
+ 	local suggestDebounceTok = 0
+ 	local function scheduleSuggestions()
