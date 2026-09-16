@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Typing a command name that matches nothing keeps the panel open and shows a clear empty state instead of a blank list.
+
 ## 7.62 — 2026-09-14
 
 ### Added
