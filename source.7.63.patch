@@ -1,0 +1,44 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -529,6 +529,8 @@
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Manage Plugins",
+ 		noDesc = "No description",
++		lastCmdEmpty = "History",
++		lastCmdEmptyText = "No previous command yet",
+ 		outdated = "Outdated",
+ 		outdatedBody = "Get the new version by executing it again",
+ 		player = "Player",
+@@ -754,6 +756,8 @@
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Плагины",
+ 		noDesc = "Нет описания",
++		lastCmdEmpty = "История",
++		lastCmdEmptyText = "Пока нет предыдущей команды",
+ 		outdated = "Устарело",
+ 		outdatedBody = "Запусти скрипт ещё раз",
+ 		player = "Игрок",
+@@ -18192,8 +18196,13 @@
+ end)
+ 
+ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
++    local prev = (type(cmdHistory) == 'table' and cmdHistory[1]) or nil
++    if type(prev) ~= 'string' or prev == '' then
++        notify(T('lastCmdEmpty'), T('lastCmdEmptyText'))
++        return
++    end
++    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
++        execCmd(prev)
+     end
+ end)

@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Fixed
+- `lastcommand` / `lastcmd` on an empty history now shows a notify instead of indexing nil.
+
+### Notes
+- One `source` loadstring is enough. Leftover `hotfix762` no longer overwrites a newer `currentVersion`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -34,7 +42,7 @@
 
 ### Added
 - `whoami` (`myinfo`, `iypme`) — local name, display name, UserId.
-- `copyuserid` (`cpuid`, `copyuid`) — copies your UserId when clipboard is available.
+- `copyuserid` (`cpuid`, `copyuid`) — copies your UserId.
 - `copyjob` (`cpjob`, `copyjobid`) — copies JobId.
 - `serverage` (`uptime`, `srvage`) — `DistributedGameTime` as h/m/s.
 - `memory` (`mem`, `ram`) — total client memory usage when Stats allows it.
