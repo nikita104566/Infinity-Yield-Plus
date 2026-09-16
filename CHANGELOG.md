@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.71 — 2026-09-16
+
+### Added
+- `settings` (`opensettings`, `iypmenu`) — opens the settings panel from the command list; run again to close.
+
 ## 7.62 — 2026-09-14
 
 ### Added

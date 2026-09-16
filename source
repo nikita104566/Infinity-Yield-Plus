@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.71'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -528,6 +528,8 @@ UI_L = {
 		editWaypoints = "Edit/Goto Waypoints",
 		editEvents = "Automation Studio",
 		managePlugins = "Manage Plugins",
+		settingsTitle = "Settings",
+		settingsMissing = "Settings panel is not available",
 		noDesc = "No description",
 		outdated = "Outdated",
 		outdatedBody = "Get the new version by executing it again",
@@ -753,6 +755,8 @@ UI_L = {
 		editWaypoints = "Точки / телепорт",
 		editEvents = "Automation Studio",
 		managePlugins = "Плагины",
+		settingsTitle = "Настройки",
+		settingsMissing = "Панель настроек недоступна",
 		noDesc = "Нет описания",
 		outdated = "Устарело",
 		outdatedBody = "Запусти скрипт ещё раз",
@@ -11245,6 +11249,7 @@ CMDs[#CMDs + 1] = {NAME = 'unguidelete / noguidelete', DESC = 'Disables guidelet
 CMDs[#CMDs + 1] = {NAME = 'stealgui / stealguis [path] [name]', DESC = "Steals the game's gui, i love you bat/vxsty."}
 CMDs[#CMDs + 1] = {NAME = 'hideiyp', DESC = 'Hides the main '..BRAND_NAME..' GUI'}
 CMDs[#CMDs + 1] = {NAME = 'showiyp', DESC = 'Shows '..BRAND_NAME..' again'}
+CMDs[#CMDs + 1] = {NAME = 'settings / opensettings / iypmenu', DESC = 'Opens the settings panel; run again to close'}
 CMDs[#CMDs + 1] = {NAME = 'keepiyp', DESC = 'Auto execute '..BRAND_NAME..' when you teleport through servers'}
 CMDs[#CMDs + 1] = {NAME = 'unkeepiyp', DESC = 'Disable keepiyp'}
 CMDs[#CMDs + 1] = {NAME = 'togglekeepiyp', DESC = 'Toggles keepiyp'}
@@ -11909,6 +11914,7 @@ do
 		spawnpoint = "Задаёт точку, в которой ты будешь появляться",
 		nospawnpoint = "Убирает свою точку спавна",
 		setwaypoint = "Ставит waypoint в текущей позиции",
+		settings = "Открывает панель настроек",
 		whatexpsareonline = "Какие экзекьюторы онлайн",
 		-- IYP_RU_EXTRA_START
 		addallplugins = 'Добавляет all available plugins из папки workspace',
@@ -17550,6 +17556,19 @@ addcmd('showiyp',{'showiy','unhideiy','showiyr','unhideiyr','unhideiyp'},functio
     else
         minimizeHolder()
     end
+end)
+
+addcmd('settings',{'opensettings','iypmenu'},function(args, speaker)
+    if type(openSettingsPanel) ~= "function" or type(closeSettingsPanel) ~= "function" then
+        notify(T("settingsTitle"), T("settingsMissing"))
+        return
+    end
+    isHidden = false
+    if SettingsOpen then
+        closeSettingsPanel(false)
+        return
+    end
+    openSettingsPanel()
 end)
 
 addcmd('rec', {'record'}, function(args, speaker)
