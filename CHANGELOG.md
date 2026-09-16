@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Fixed
+- `;lastcommand` on a fresh session notifies instead of indexing a nil history row.
+- Leftover `hotfix762` no longer overwrites a newer in-app version badge.
+
 ## 7.62 — 2026-09-14
 
 ### Added
