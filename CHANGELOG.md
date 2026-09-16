@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Command list promotes the matching alias to the front of the row so the hit is readable, and shows an empty-state line when search finds nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
