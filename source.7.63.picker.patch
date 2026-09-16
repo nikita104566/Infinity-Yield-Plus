@@ -1,0 +1,141 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -552,6 +552,7 @@
+ 		keybindPickCmd = "Command",
+ 		keybindPickCmd2 = "Command 2 (toggle off)",
+ 		keybindNoMatch = "No matching commands",
++		eeNoCmdMatch = "No matching commands",
+ 		keybindBrowseHint = "Type to filter or pick from the list",
+ 		keybindToggle = "Create Toggle",
+ 		keybindToggleOn = "Create Toggle",
+@@ -777,6 +778,7 @@
+ 		keybindPickCmd = "Команда",
+ 		keybindPickCmd2 = "Команда 2 (выкл.)",
+ 		keybindNoMatch = "Нет подходящих команд",
++		eeNoCmdMatch = "Нет подходящих команд",
+ 		keybindBrowseHint = "Вводи для фильтра или выбери из списка",
+ 		keybindToggle = "Создать тоггл",
+ 		keybindToggleOn = "Создать тоггл",
+@@ -5462,7 +5464,12 @@
+ 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
+ 	local function setPickerVisible(visible, contentHeight)
+ 		if visible then
+-			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
++			local maxH = 160
++			local centerH = center.AbsoluteSize.Y
++			if centerH > 80 then
++				maxH = math.min(160, math.max(48, centerH - EE_FLOW_REST - 12))
++			end
++			local height = math.min(maxH, math.max(36, (contentHeight or 24) + 8))
+ 			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
+ 			picker.Size = UDim2.new(1, -20, 0, height)
+ 			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
+@@ -7718,7 +7725,7 @@
+ 	end
+ 	local function refreshSuggestions()
+ 		for _, c in ipairs(pickerHolder:GetChildren()) do
+-			if c:IsA("TextButton") then c:Destroy() end
++			if c:IsA("TextButton") or c:IsA("TextLabel") then c:Destroy() end
+ 		end
+ 		suggestionRows = {}
+ 		suggestionIndex = 0
+@@ -7730,9 +7737,9 @@
+ 			addBox.CursorPosition = cursor
+ 			return
+ 		end
+-		local q, _, _, chained = activeCommandToken(normalized)
++		local q = select(1, activeCommandToken(normalized))
+ 		q = q:lower()
+-		if not CMDs or (q == "" and not chained) then
++		if not CMDs or q == "" then
+ 			setPickerVisible(false)
+ 			return
+ 		end
+@@ -7744,25 +7751,25 @@
+ 				local lowerName = name:lower()
+ 				local lowerPrimary = primary:lower()
+ 				local score = nil
+-				if q == "" then
+-					score = 4
+-				elseif lowerPrimary:sub(1, #q) == q then
++				if lowerPrimary:sub(1, #q) == q then
+ 					score = 0
+ 				elseif lowerName:find(q, 1, true) then
+ 					score = 2
+ 				end
+-				if q ~= "" and type(cmdDef.ALIAS) == "table" then
++				if type(cmdDef.ALIAS) == "table" then
+ 					for _, alias in ipairs(cmdDef.ALIAS) do
+ 						local lowerAlias = tostring(alias):lower()
+-						if lowerAlias:sub(1, #q) == q then
+-							score = math.min(score or 9, 1)
+-						elseif lowerAlias:find(q, 1, true) then
+-							score = math.min(score or 9, 3)
++						if lowerAlias ~= "" then
++							if lowerAlias:sub(1, #q) == q then
++								score = math.min(score or 9, 1)
++							elseif lowerAlias:find(q, 1, true) then
++								score = math.min(score or 9, 3)
++							end
+ 						end
+ 					end
+ 				end
+ 				if score then
+-					matches[#matches + 1] = { name = name, primary = primary, score = score }
++					matches[#matches + 1] = { primary = primary, score = score }
+ 				end
+ 			end
+ 		end
+@@ -7771,9 +7778,9 @@
+ 			return a.score < b.score
+ 		end)
+ 		local y = 0
+-		for index = 1, #matches do
+-			local match = matches[index]
+-			local primary = match.primary
++		local limit = math.min(#matches, 40)
++		for index = 1, limit do
++			local primary = matches[index].primary
+ 			local row = mk("TextButton", {
+ 				BackgroundColor3 = EE_SURFACE,
+ 				BorderSizePixel = 0,
+@@ -7801,13 +7808,28 @@
+ 			end)
+ 			y += 29
+ 		end
+-		if y > 0 then y -= 3 end
++		if y == 0 then
++			mk("TextLabel", {
++				BackgroundTransparency = 1,
++				Size = UDim2.new(1, 0, 0, 26),
++				Font = UI_FONT,
++				TextSize = 11,
++				TextXAlignment = Enum.TextXAlignment.Left,
++				TextColor3 = EE_MUTED,
++				Text = T("eeNoCmdMatch"),
++				TextTruncate = Enum.TextTruncate.AtEnd,
++				ZIndex = 51,
++			}, pickerHolder)
++			y = 26
++		end
++		if y > 26 then y -= 3 end
+ 		suggestionIndex = #suggestionRows > 0 and 1 or 0
+ 		styleSuggestions()
+ 		picker.CanvasPosition = Vector2.new(0, 0)
+ 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
+-		setPickerVisible(#suggestionRows > 0, y)
++		setPickerVisible(true, y)
+ 	end
++
+ 	local suggestDebounceTok = 0
+ 	local function scheduleSuggestions()
+ 		suggestDebounceTok += 1
