@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +741,7 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		themeMissing = "Theme editor is not available",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +967,7 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		themeMissing = "Редактор темы не загрузился",
 	},
 }
 
@@ -9453,7 +9455,7 @@ local function makeThemeInput(parent, label, x, y)
 	return box
 end
 
-local function openThemeEditor()
+function openThemeEditor()
 	if themeEditorOpen and themeEditorInst then
 		themeEditorInst:TweenPosition(UDim2.new(0.5, -THEME_EDITOR_W / 2, 0, 72), "InOut", "Quart", 0.35, true, nil)
 		return
@@ -11243,6 +11245,7 @@ CMDs[#CMDs + 1] = {NAME = 'unhideguis', DESC = 'Undoes hideguis'}
 CMDs[#CMDs + 1] = {NAME = 'guidelete', DESC = 'Enables backspace to delete GUI'}
 CMDs[#CMDs + 1] = {NAME = 'unguidelete / noguidelete', DESC = 'Disables guidelete'}
 CMDs[#CMDs + 1] = {NAME = 'stealgui / stealguis [path] [name]', DESC = "Steals the game's gui, i love you bat/vxsty."}
+CMDs[#CMDs + 1] = {NAME = 'theme / edittheme / colors', DESC = 'Opens the theme editor to recolor the panel live'}
 CMDs[#CMDs + 1] = {NAME = 'hideiyp', DESC = 'Hides the main '..BRAND_NAME..' GUI'}
 CMDs[#CMDs + 1] = {NAME = 'showiyp', DESC = 'Shows '..BRAND_NAME..' again'}
 CMDs[#CMDs + 1] = {NAME = 'keepiyp', DESC = 'Auto execute '..BRAND_NAME..' when you teleport through servers'}
@@ -11775,7 +11778,9 @@ do
 		hide = "Скрыть меню",
 		show = "Показать меню",
 		plugins = "Управление плагинами",
-		theme = "Редактор темы",
+		theme = "Открывает редактор темы — перекрась панель вживую",
+		edittheme = "Открывает редактор темы — перекрась панель вживую",
+		colors = "Открывает редактор темы — перекрась панель вживую",
 		animspeed = "Меняет скорость текущей анимации",
 		animspeedloop = "Циклически меняет скорость анимации",
 		stopanimspeed = "Остановить смену скорости анимации",
@@ -17526,6 +17531,14 @@ addcmd('stealgui', {'stealguis'}, function(args, speaker)
 end)
 
 local wasStayOpen = StayOpen
+addcmd('theme', {'edittheme', 'colors'}, function(args, speaker)
+    if type(openThemeEditor) == "function" then
+        openThemeEditor()
+        return
+    end
+    notify(T("editTheme"), T("themeMissing"))
+end)
+
 addcmd('hideiyp',{'hideiy','hideiyr'},function(args, speaker)
     isHidden = true
     wasStayOpen = StayOpen

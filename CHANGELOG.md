@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Added
+- `theme` (`edittheme`, `colors`) — opens the theme editor from the command list so you can recolor the panel live.
+
 ## 7.62 — 2026-09-14
 
 ### Added
