@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Favorited command rows in the panel show a gold star on the right, so pinned names stay obvious while scrolling.
+
 ## 7.62 — 2026-09-14
 
 ### Added

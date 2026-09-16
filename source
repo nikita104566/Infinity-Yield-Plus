@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2120,6 +2120,20 @@ function styleCmdRow(btn)
 	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.ZIndex = 11
 	label.Parent = btn
+	local star = Instance.new("TextLabel")
+	star.Name = "Star"
+	star.BackgroundTransparency = 1
+	star.Position = UDim2.new(1, -16, 0, 0)
+	star.Size = UDim2.new(0, 16, 1, 0)
+	star.Font = UI_FONT
+	star.TextSize = 12
+	star.Text = "★"
+	star.TextColor3 = Color3.fromRGB(255, 214, 102)
+	star.TextXAlignment = Enum.TextXAlignment.Right
+	star.TextYAlignment = Enum.TextYAlignment.Center
+	star.Visible = false
+	star.ZIndex = 12
+	star.Parent = btn
 	applyCmdRowText(btn, btn.Text)
 	local marker = Instance.new("Frame")
 	marker.Name = "Sel"
@@ -12266,7 +12280,25 @@ function FavCmds.apply(btn)
 	local label = btn:FindFirstChild("Label")
 	if label then
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
+		label.Size = fav and UDim2.new(1, -16, 1, 0) or UDim2.new(1, 0, 1, 0)
 	end
+	local star = btn:FindFirstChild("Star")
+	if not star then
+		star = Instance.new("TextLabel")
+		star.Name = "Star"
+		star.BackgroundTransparency = 1
+		star.Position = UDim2.new(1, -16, 0, 0)
+		star.Size = UDim2.new(0, 16, 1, 0)
+		star.Font = UI_FONT
+		star.TextSize = 12
+		star.Text = "★"
+		star.TextColor3 = Color3.fromRGB(255, 214, 102)
+		star.TextXAlignment = Enum.TextXAlignment.Right
+		star.TextYAlignment = Enum.TextYAlignment.Center
+		star.ZIndex = 12
+		star.Parent = btn
+	end
+	star.Visible = fav == true
 end
 function FavCmds.find(key)
 	if not CMDsF then return nil end
