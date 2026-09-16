@@ -1,0 +1,59 @@
+-- Infinity Yield Plus 7.63
+-- One loadstring. Core is the last main blob; this chunk only fixes Studio event names.
+local CORE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+loadstring(game:HttpGet(CORE))()
+
+pcall(function()
+	currentVersion = "7.63"
+	if type(applyHeaderBrand) == "function" then
+		applyHeaderBrand()
+	end
+end)
+
+-- Studio left list: stop clipping OnCharacterRemoving to OnCharact...
+pcall(function()
+	local function decorate(card)
+		if not card or card.Name ~= "EEEventCard" then return end
+		if card:GetAttribute("IYP763Name") then return end
+		card:SetAttribute("IYP763Name", true)
+		pcall(function()
+			card.Size = UDim2.new(1, -4, 0, 56)
+			card.ClipsDescendants = false
+		end)
+		for _, ch in ipairs(card:GetChildren()) do
+			if ch:IsA("TextLabel") and ch.TextSize == 13 then
+				ch.TextWrapped = true
+				ch.TextTruncate = Enum.TextTruncate.None
+				ch.TextYAlignment = Enum.TextYAlignment.Top
+				ch.TextSize = 12
+				ch.Position = UDim2.new(0, 12, 0, 4)
+				ch.Size = UDim2.new(1, -96, 0, 32)
+			elseif ch:IsA("TextLabel") and ch.TextSize == 10 and ch.Position.Y.Offset >= 28 then
+				ch.Position = UDim2.new(0, 12, 0, 36)
+				ch.Size = UDim2.new(1, -96, 0, 14)
+			end
+		end
+	end
+	local function attach(root)
+		if not root then return end
+		for _, d in ipairs(root:GetDescendants()) do
+			decorate(d)
+		end
+		root.DescendantAdded:Connect(function(inst)
+			decorate(inst)
+			if inst.Name == "EEEventCard" then
+				task.defer(decorate, inst)
+			end
+		end)
+	end
+	local lp = game:GetService("Players").LocalPlayer
+	if lp then
+		attach(lp:FindFirstChild("PlayerGui") or lp:WaitForChild("PlayerGui", 5))
+	end
+	pcall(function()
+		attach(game:GetService("CoreGui"))
+	end)
+	pcall(function()
+		attach(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+	end)
+end)
