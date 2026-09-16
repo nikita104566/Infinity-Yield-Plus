@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio left list shows full event names instead of clipping them to OnCharact...
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -85,7 +90,7 @@
 
 ### Improved
 - Consecutive duplicate history entries are collapsed.
-- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in ↑/↓ history.
+- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in history.
 - New command: `showhistory` (`hist`, `cmdhistory`) — shows the last few saved commands.
 - History is re-sanitized and capped at 30 after each exec (still debounced ~0.35s).
 - Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
@@ -97,7 +102,7 @@
 
 ### Improved
 - Save-on-exec from 7.54 is now debounced (~0.35s). Rapid commands no longer hammer `IY_FE.iy`.
-- New command: `clearhistory` (`clrhist`, `wipehistory`) — clears ↑/↓ history and persists the empty list.
+- New command: `clearhistory` (`clrhist`, `wipehistory`) — clears history and persists the empty list.
 - Version badge set to 7.55. Idempotent (`_G.__IYP_755_*` guards).
 
 ### Notes
