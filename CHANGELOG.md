@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-16
+
+### Improved
+- Automation Studio: Up/Down selects the next or previous event in the left list and scrolls it into view. Empty filter does nothing.
+
+### Notes
+- One loadstring of `source` is enough. Version badge 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
