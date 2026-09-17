@@ -4,6 +4,14 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function verParts(v)
+		local a, b = tostring(v or ""):match("^(%d+)%.(%d+)")
+		return tonumber(a) or 0, tonumber(b) or 0
+	end
+	local ma, mi = verParts(currentVersion)
+	if ma > 7 or (ma == 7 and mi >= 63) then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()

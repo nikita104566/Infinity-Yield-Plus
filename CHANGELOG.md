@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Searching the command panel for something that does not exist now keeps the list open and shows a short RU/EN empty hint instead of collapsing the panel.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
