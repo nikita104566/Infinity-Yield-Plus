@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Changed
+- Command panel search with no hits stays open and shows “No matching commands” / “Нет подходящих команд” instead of a blank list.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added

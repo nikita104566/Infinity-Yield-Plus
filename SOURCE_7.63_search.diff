@@ -1,0 +1,86 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -555,6 +555,7 @@ UI_L = {
+ 		keybindBrowseHint = "Type to filter or pick from the list",
+ 		keybindToggle = "Create Toggle",
+ 		keybindToggleOn = "Create Toggle",
++		cmdSearchEmpty = "No matching commands",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
+ 		addFavorite = "Add to favorites",
+@@ -780,6 +781,7 @@ UI_L = {
+ 		keybindBrowseHint = "Вводи для фильтра или выбери из списка",
+ 		keybindToggle = "Создать тоггл",
+ 		keybindToggleOn = "Создать тоггл",
++		cmdSearchEmpty = "Нет подходящих команд",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
+ 		addFavorite = "В избранное",
+@@ -1182,6 +1184,7 @@ function applyUiLanguage()
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdSearchEmpty then cmdSearchEmpty.Text = T("cmdSearchEmpty") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1754,23 @@ cmdAllHeader.ZIndex = 11
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdSearchEmpty = Instance.new("TextLabel")
++cmdSearchEmpty.Name = "IYR_SEARCH_EMPTY"
++cmdSearchEmpty.Parent = CMDsF
++cmdSearchEmpty.BackgroundTransparency = 1
++cmdSearchEmpty.BorderSizePixel = 0
++cmdSearchEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 22)
++cmdSearchEmpty.Font = UI_FONT_MED
++cmdSearchEmpty.TextSize = 12
++cmdSearchEmpty.TextXAlignment = Enum.TextXAlignment.Left
++cmdSearchEmpty.TextYAlignment = Enum.TextYAlignment.Center
++cmdSearchEmpty.TextColor3 = Color3.fromRGB(154, 148, 176)
++cmdSearchEmpty.Text = T("cmdSearchEmpty")
++cmdSearchEmpty.TextTruncate = Enum.TextTruncate.AtEnd
++cmdSearchEmpty.ZIndex = 11
++cmdSearchEmpty.Visible = false
++cmdSearchEmpty.LayoutOrder = 3
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10881,6 +10901,12 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+         cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
++    if cmdSearchEmpty then
++        local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
++        cmdSearchEmpty.Text = T("cmdSearchEmpty")
++        cmdSearchEmpty.Visible = typedFilter ~= "" and not takesPlayer and #favRanked == 0 and #otherRanked == 0
++        cmdSearchEmpty.LayoutOrder = 3
++    end
+ 
+     local function placeCmdRow(item, order)
+         indexnum += 1
+@@ -10951,10 +10977,10 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+         -- Keep the panel open until intro autohide finishes
+     elseif not Ianim then
+         if indexnum == 0 then
+-            if not cmdbar then
+-                minimizeHolder()
+-            elseif cmdbar then
++            if cmdbar then
+                 cmdbarHolder()
++            elseif not cmdbar then
++                minimizeHolder()
+             end
+         else
+             maximizeHolder()
