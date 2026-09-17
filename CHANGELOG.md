@@ -1,5 +1,16 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- `lastcommand` / `lastcmd` notifies instead of erroring when history is empty.
+- Command history is saved in `IY_FE.iy` and restored after reload.
+- `showhistory` (`hist`, `cmdhistory`) lists recent commands; `clearhistory` (`clrhist`, `wipehistory`) wipes them.
+- Meta-commands are not stored in ↑/↓ history.
+
+### Notes
+- One `source` loadstring is enough. In-app version is 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
