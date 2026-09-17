@@ -1,0 +1,101 @@
+diff --git a/source b/source
+index 97e1997..bc8054e 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -557,6 +557,8 @@ UI_L = {
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
++		cmdNoMatch = "No commands match",
++		cmdNoMatchHint = "Try another name or an alias",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+@@ -782,6 +784,8 @@ UI_L = {
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
++		cmdNoMatch = "Нет таких команд",
++		cmdNoMatchHint = "Попробуй другое имя или алиас",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+@@ -1182,6 +1186,11 @@ function applyUiLanguage()
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyLabel then
++		cmdEmptyLabel.Text = T("cmdNoMatch")
++		local hint = cmdEmptyLabel:FindFirstChild("Hint")
++		if hint then hint.Text = T("cmdNoMatchHint") end
++	end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1760,38 @@ cmdAllHeader.ZIndex = 11
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmptyLabel = Instance.new("TextLabel")
++cmdEmptyLabel.Name = "IYR_EMPTY"
++cmdEmptyLabel.Parent = CMDsF
++cmdEmptyLabel.BackgroundTransparency = 1
++cmdEmptyLabel.BorderSizePixel = 0
++cmdEmptyLabel.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 48)
++cmdEmptyLabel.Font = UI_FONT_MED
++cmdEmptyLabel.TextSize = 13
++cmdEmptyLabel.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyLabel.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyLabel.TextColor3 = Color3.fromRGB(176, 168, 196)
++cmdEmptyLabel.Text = T("cmdNoMatch")
++cmdEmptyLabel.TextWrapped = true
++cmdEmptyLabel.TextTruncate = Enum.TextTruncate.None
++cmdEmptyLabel.ZIndex = 11
++cmdEmptyLabel.Visible = false
++cmdEmptyLabel.LayoutOrder = 3
++cmdEmptyHint = Instance.new("TextLabel")
++cmdEmptyHint.Name = "Hint"
++cmdEmptyHint.Parent = cmdEmptyLabel
++cmdEmptyHint.BackgroundTransparency = 1
++cmdEmptyHint.Position = UDim2.new(0, 0, 0, 20)
++cmdEmptyHint.Size = UDim2.new(1, 0, 0, 24)
++cmdEmptyHint.Font = UI_FONT
++cmdEmptyHint.TextSize = 11
++cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyHint.TextColor3 = Color3.fromRGB(132, 126, 154)
++cmdEmptyHint.Text = T("cmdNoMatchHint")
++cmdEmptyHint.TextWrapped = true
++cmdEmptyHint.ZIndex = 11
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10937,6 +10978,18 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+         end
+     end
+ 
++    if cmdEmptyLabel then
++        local typed = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
++        local showEmpty = (not takesPlayer) and typed ~= "" and (#favRanked + #otherRanked) == 0
++        cmdEmptyLabel.Visible = showEmpty
++        cmdEmptyLabel.Text = T("cmdNoMatch")
++        local hint = cmdEmptyLabel:FindFirstChild("Hint")
++        if hint then hint.Text = T("cmdNoMatchHint") end
++        if showEmpty then
++            indexnum += 1
++        end
++    end
++
+     if not selectedCmdIndex or selectedCmdIndex < 1 or not visibleCmdButtons[selectedCmdIndex] then
+         selectedCmdIndex = (#visibleCmdButtons > 0) and 1 or 0
+     end
