@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Added
+- `;lastcommand` on empty history shows a notice instead of erroring; ↑/↓ command history is saved in `IY_FE.iy` and restored after reload.
+
 ## 7.62 — 2026-09-14
 
 ### Added
