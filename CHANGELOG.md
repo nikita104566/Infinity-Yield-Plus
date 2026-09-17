@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Command list keeps the primary name readable: extra aliases collapse to `+N` instead of clipping the start of the row.
+- Searching for a missing command shows a localized empty hint in the panel instead of a blank list.
+
+### Notes
+- One `source` loadstring is enough. Version badge is 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
