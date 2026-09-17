@@ -22,15 +22,35 @@ Open the panel with your prefix (default `;`).
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
-- Command history is saved across reload and rejoin ( lastcommand , ↑ / ↓)
-- Command Palette (Ctrl+K) with recent and favorites
-- `lastcommand` / `lastcmd` re-runs the previous command
-- `showhistory` / `clearhistory` inspect or wipe saved history
+- Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
+- Consecutive duplicates and meta-commands are not stored in history
+- `showhistory` / `hist` lists recent saved commands
+- `clearhistory` / `clrhist` wipes saved history
+- `copyhistory` / `copycmd` copies the last command (`copyhistory all` for the full list)
+- `starlast` / `favlast` pins the last command to favorites
+- `repeatlast` / `again` re-runs the last real command
+- `ping` / `fps` / `cmdcount` — quick diagnostics
+- `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and loaded patches
+- `whoami` / `copyuserid` / `copyjob` / `serverage` / `memory` — local player, job, uptime, RAM
+- `info` / `dump` — one notify with version, you, place, job, slots, age, ping, memory
+- `copyjoin` — copies `PlaceId | JobId`
+- `creator` / `clock` / `maxplayers` — owner, local time, player cap
+- `env` / `device` / `showprefix` / `timezone` / `display` — executor, input, prefix, zone, viewport
+- `checkupdate` / `upd` compares the local version with GitHub and shows announcements
 - Automation Studio — run command workflows on spawn, chat, tools, prompts, and other events
 - Themes, keybinds, aliases, waypoints
 - Russian / English UI
-- Chain commands with \\
+- Chain commands with `\\\\`
+- Hot reload via `reload`
+
+## Credits
+
+Based on Infinite Yield and Infinite Yield Reborn. Thanks to the original IY / IYR teams and contributors.
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
+
+## Disclaimer
+
+This is an exploit script and violates Roblox ToS. Use at your own risk. Not affiliated with Roblox.
