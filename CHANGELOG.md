@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Added
+- `favcmd` (`pincmd`, `starcmd`) pins a command to Favorites from the bar; `unfavcmd` unpins; `listfav` lists pins. Empty name and unknown command show a notice.
+
 ## 7.62 — 2026-09-14
 
 ### Added
