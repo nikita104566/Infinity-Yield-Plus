@@ -1,0 +1,40 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -4138,7 +4138,7 @@
+ 		end
+ 	end)
+ 	local EE_W, EE_H, EE_TITLE = 1020, 660, 50
+-	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
++	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 280, 248, 12, 52
+ 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
+ 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
+ 	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
+@@ -7385,14 +7385,16 @@
+ 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+-					Position = UDim2.new(0, 14, 0, 8),
+-					Size = UDim2.new(1, -108, 0, 18),
++					Position = UDim2.new(0, 10, 0, 6),
++					Size = UDim2.new(1, -100, 0, 22),
+ 					Font = UI_FONT_MED,
+ 					TextSize = 13,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
++					TextYAlignment = Enum.TextYAlignment.Top,
+ 					TextColor3 = nameColor,
+ 					Text = name,
+-					TextTruncate = Enum.TextTruncate.AtEnd,
++					TextWrapped = true,
++					TextTruncate = Enum.TextTruncate.None,
+ 					ZIndex = 44,
+ 				}, row)
+ 				mk("TextLabel", {
