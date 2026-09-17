@@ -1,0 +1,27 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -561,6 +561,17 @@
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
++		favcmd = "Pin a command to Favorites",
++		pincmd = "Pin a command to Favorites",
++		starcmd = "Pin a command to Favorites",
++		unfavcmd = "Unpin a command from Favorites",
++		unstarcmd = "Unpin a command from Favorites",
++		listfav = "List pinned favorites",
++		favs = "List pinned favorites",
++		showfav = "List pinned favorites",
++		favNeedName = "Type a command name",
++		favUnknown = "No such command",
++		favEmptyList = "No favorites yet. Right-click a row or use favcmd.",
+ 		refTitle = "Reference",
