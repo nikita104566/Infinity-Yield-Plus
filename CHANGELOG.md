@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+Command list rows now show the primary name and a compact +N alias count so long names stay readable.
+
 ## 7.62 — 2026-09-14
 
 ### Added
