@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Automation Studio left list shows full event names (OnCharacterRemoving) instead of cutting them at OnCharact…
+
+### Notes
+- One loadstring: `source`. No new hotfix.
+
 ## 7.62 — 2026-09-14
 
 ### Added
