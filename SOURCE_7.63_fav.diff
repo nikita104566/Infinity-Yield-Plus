@@ -1,0 +1,90 @@
+diff --git a/source b/source
+index 97e1997..ac72e8f 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -561,6 +561,8 @@ UI_L = {
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
++		favEmpty = "Right-click a command to pin it here",
++		favCount = "Favorites",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+ 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
+@@ -786,6 +788,8 @@ UI_L = {
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
++		favEmpty = "ПКМ по команде — закрепить сверху",
++		favCount = "Избранное",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+ 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
+@@ -1181,6 +1185,7 @@ function applyUiLanguage()
+ 		refreshKbCmdPicker()
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
++	if cmdFavEmpty then cmdFavEmpty.Text = T("favEmpty") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+@@ -1734,6 +1739,23 @@ cmdFavHeader.ZIndex = 11
+ cmdFavHeader.Visible = false
+ cmdFavHeader.LayoutOrder = 1
+ 
++cmdFavEmpty = Instance.new("TextLabel")
++cmdFavEmpty.Name = "IYR_FAV_EMPTY"
++cmdFavEmpty.Parent = CMDsF
++cmdFavEmpty.BackgroundTransparency = 1
++cmdFavEmpty.BorderSizePixel = 0
++cmdFavEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 18)
++cmdFavEmpty.Font = UI_FONT
++cmdFavEmpty.TextSize = 11
++cmdFavEmpty.TextXAlignment = Enum.TextXAlignment.Left
++cmdFavEmpty.TextYAlignment = Enum.TextYAlignment.Center
++cmdFavEmpty.TextColor3 = Color3.fromRGB(168, 160, 186)
++cmdFavEmpty.Text = T("favEmpty")
++cmdFavEmpty.TextTruncate = Enum.TextTruncate.AtEnd
++cmdFavEmpty.ZIndex = 11
++cmdFavEmpty.Visible = false
++cmdFavEmpty.LayoutOrder = 2
++
+ cmdAllHeader = Instance.new("TextLabel")
+ cmdAllHeader.Name = "IYR_ALL_HDR"
+ cmdAllHeader.Parent = CMDsF
+@@ -10874,11 +10896,24 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+     end
+ 
+     if cmdFavHeader then
+-        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
++        cmdFavHeader.Visible = not takesPlayer
+         cmdFavHeader.LayoutOrder = 1
++        if cmdFavHeader.Visible then
++            local n = #favRanked
++            if n > 0 then
++                cmdFavHeader.Text = T("favorites") .. " · " .. tostring(n)
++            else
++                cmdFavHeader.Text = T("favorites")
++            end
++        end
++    end
++    if cmdFavEmpty then
++        cmdFavEmpty.Visible = not takesPlayer and #favRanked == 0
++        cmdFavEmpty.LayoutOrder = 2
++        cmdFavEmpty.Text = T("favEmpty")
+     end
+     if cmdAllHeader then
+-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
++        cmdAllHeader.Visible = not takesPlayer and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
+ 
