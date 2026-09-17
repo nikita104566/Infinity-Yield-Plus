@@ -1,0 +1,73 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -593,6 +593,7 @@
+ 		eePickEvent = "Select an event to view its workflows.",
+ 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
+ 		eeEmptyCommand = "Type a command first",
++		eePickerEmpty = "No matching commands",
+ 		eeNoEventsMatch = "No events match this filter.",
+ 		eeAdd = "+ Add",
+ 		eeInspector = "Inspector",
+@@ -818,6 +819,7 @@
+ 		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
+ 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
+ 		eeEmptyCommand = "Сначала введи команду",
++		eePickerEmpty = "Нет подходящих команд",
+ 		eeNoEventsMatch = "Нет событий по этому фильтру.",
+ 		eeAdd = "+ Доб.",
+ 		eeInspector = "Инспектор",
+@@ -5443,7 +5445,7 @@
+ 		Position = UDim2.new(0, 10, 1, -178),
+ 		Size = UDim2.new(1, -20, 0, 130),
+ 		CanvasSize = UDim2.new(0, 0, 0, 0),
+-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
++		AutomaticCanvasSize = Enum.AutomaticSize.None,
+ 		ScrollBarThickness = 5,
+ 		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
+ 		ScrollBarImageTransparency = 0.3,
+@@ -7718,7 +7720,7 @@
+ 	end
+ 	local function refreshSuggestions()
+ 		for _, c in ipairs(pickerHolder:GetChildren()) do
+-			if c:IsA("TextButton") then c:Destroy() end
++			if c:IsA("TextButton") or c:IsA("TextLabel") then c:Destroy() end
+ 		end
+ 		suggestionRows = {}
+ 		suggestionIndex = 0
+@@ -7802,11 +7804,26 @@
+ 			y += 29
+ 		end
+ 		if y > 0 then y -= 3 end
++		if #suggestionRows == 0 then
++			mk("TextLabel", {
++				BackgroundTransparency = 1,
++				BorderSizePixel = 0,
++				Size = UDim2.new(1, 0, 0, 26),
++				Font = UI_FONT,
++				TextSize = 11,
++				TextColor3 = EE_MUTED,
++				Text = T("eePickerEmpty"),
++				TextXAlignment = Enum.TextXAlignment.Left,
++				TextWrapped = true,
++				ZIndex = 51,
++			}, pickerHolder)
++			y = 26
++		end
+ 		suggestionIndex = #suggestionRows > 0 and 1 or 0
+ 		styleSuggestions()
+ 		picker.CanvasPosition = Vector2.new(0, 0)
+ 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
+-		setPickerVisible(#suggestionRows > 0, y)
++		setPickerVisible(true, y)
+ 	end
+ 	local suggestDebounceTok = 0
+ 	local function scheduleSuggestions()
