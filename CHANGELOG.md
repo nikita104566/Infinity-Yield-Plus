@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Searching the command list for something that does not exist no longer collapses the panel: you see “No matching commands” plus a short hint (EN/RU).
+
 ## 7.62 — 2026-09-14
 
 ### Added
