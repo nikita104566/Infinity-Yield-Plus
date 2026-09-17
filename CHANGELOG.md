@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Command panel keeps the list open when a search matches nothing and shows a short EN/RU empty row instead of a blank collapse.
+
 ## 7.62 — 2026-09-14
 
 ### Added
