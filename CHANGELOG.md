@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Command list keeps the primary name fully visible; aliases and `[args]` truncate at the end of the row.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
