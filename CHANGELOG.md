@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Command list always shows Favorites at the top; if none are pinned, a short EN/RU hint explains right-click to pin.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
