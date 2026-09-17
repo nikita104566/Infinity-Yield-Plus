@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-17
+
+### Improved
+- Command list rows keep the primary name visible: extra aliases collapse to `/ first +N`, favorites show a star, `[args]` stay tinted.
+
 ## 7.62 — 2026-09-14
 
 ### Added
