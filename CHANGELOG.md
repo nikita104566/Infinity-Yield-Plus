@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Automation Studio event list shows the full event name on the left (`OnCharacterRemoving` is no longer cut to `OnCharact…`); the count badge stays on the second line.
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -85,7 +90,7 @@
 
 ### Improved
 - Consecutive duplicate history entries are collapsed.
-- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in ↑/↓ history.
+- Meta commands (`clearhistory`, `lastcommand`, `showhistory` and aliases) are not stored in history.
 - New command: `showhistory` (`hist`, `cmdhistory`) — shows the last few saved commands.
 - History is re-sanitized and capped at 30 after each exec (still debounced ~0.35s).
 - Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
