@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Command list now shows a clear empty state when search matches nothing (EN/RU), instead of a blank panel.
+
 ## 7.62 — 2026-09-14
 
 ### Added
