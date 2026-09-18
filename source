@@ -1250,7 +1250,6 @@ end
 
 function applyUiLanguage()
 	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
-	if type(updatePrefixChip) == "function" then updatePrefixChip() end
 	if Prefix then Prefix.Text = T("prefix") end
 	local stayOpenRow = SettingsHolder and SettingsHolder:FindFirstChild("StayOpen")
 	if stayOpenRow and stayOpenRow:IsA("TextLabel") then
@@ -1747,29 +1746,12 @@ table.insert(shade1, CmdbarWrap)
 uiCorner(CmdbarWrap, 7)
 uiStroke(CmdbarWrap, Color3.fromRGB(255, 255, 255), 1, 0.9)
 
-PrefixChip = Instance.new("TextLabel")
-PrefixChip.Name = "PrefixChip"
-PrefixChip.Parent = CmdbarWrap
-PrefixChip.BackgroundColor3 = Color3.fromRGB(36, 34, 48)
-PrefixChip.BackgroundTransparency = 0.15
-PrefixChip.BorderSizePixel = 0
-PrefixChip.Position = UDim2.new(0, 6, 0.5, -9)
-PrefixChip.Size = UDim2.new(0, 22, 0, 18)
-PrefixChip.Font = UI_FONT_MED
-PrefixChip.TextSize = 13
-PrefixChip.TextColor3 = Color3.fromRGB(255, 214, 102)
-PrefixChip.Text = ";"
-PrefixChip.ZIndex = 12
-PrefixChip.TextTruncate = Enum.TextTruncate.AtEnd
-uiCorner(PrefixChip, 4)
-table.insert(text1, PrefixChip)
-
 CmdGhost = Instance.new("TextLabel")
 CmdGhost.Name = "Ghost"
 CmdGhost.Parent = CmdbarWrap
 CmdGhost.BackgroundTransparency = 1
-CmdGhost.Position = UDim2.new(0, 32, 0, 0)
-CmdGhost.Size = UDim2.new(1, -40, 1, 0)
+CmdGhost.Position = UDim2.new(0, 10, 0, 0)
+CmdGhost.Size = UDim2.new(1, -20, 1, 0)
 CmdGhost.Font = UI_FONT
 CmdGhost.TextSize = 14
 CmdGhost.TextXAlignment = Enum.TextXAlignment.Left
@@ -1783,8 +1765,8 @@ Cmdbar.Name = "Cmdbar"
 Cmdbar.Parent = CmdbarWrap
 Cmdbar.BackgroundTransparency = 1
 Cmdbar.BorderSizePixel = 0
-Cmdbar.Position = UDim2.new(0, 32, 0, 0)
-Cmdbar.Size = UDim2.new(1, -40, 1, 0)
+Cmdbar.Position = UDim2.new(0, 10, 0, 0)
+Cmdbar.Size = UDim2.new(1, -20, 1, 0)
 Cmdbar.Font = UI_FONT
 Cmdbar.TextSize = 14
 Cmdbar.TextXAlignment = Enum.TextXAlignment.Left
@@ -10537,28 +10519,8 @@ end)
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
     prefix = PrefixBox.Text
     Cmdbar.PlaceholderText = T("command")
-    if type(updatePrefixChip) == "function" then updatePrefixChip() end
     updatesaves()
 end)
-
-function updatePrefixChip()
-	if not PrefixChip then return end
-	local p = tostring(prefix or "")
-	if p == "" then p = ";" end
-	local n = utf8.len(p)
-	if type(n) == "number" and n > 2 then
-		local ok, off = pcall(utf8.offset, p, 3)
-		if ok and type(off) == "number" then
-			p = string.sub(p, 1, off - 1)
-		else
-			p = string.sub(p, 1, 2)
-		end
-	elseif (not n) and #p > 2 then
-		p = string.sub(p, 1, 2)
-	end
-	PrefixChip.Text = p
-end
-updatePrefixChip()
 
 function CamViewport()
     local cam = workspace.CurrentCamera

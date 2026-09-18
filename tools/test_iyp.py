@@ -252,9 +252,9 @@ class SourceBakeTests(unittest.TestCase):
         self.assertIn("addcmd('studio', {'autostudio', 'eventstudio'}", self.source)
         self.assertIn("eventEditor.Open()", self.source)
 
-    def test_astra_prefix_chip(self):
-        self.assertIn('PrefixChip.Name = "PrefixChip"', self.source)
-        self.assertIn("function updatePrefixChip()", self.source)
+    def test_no_prefix_chip(self):
+        self.assertNotIn("PrefixChip", self.source)
+        self.assertNotIn("updatePrefixChip", self.source)
 
     def test_astra_section_counts(self):
         self.assertIn("function refreshCmdSectionHeaders()", self.source)

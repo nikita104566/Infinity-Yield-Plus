@@ -6,7 +6,6 @@
 - Automation Studio left list is 256px wide; event names are not truncated (`OnCharacterRemoving` fits). Category rows show enabled/total counts.
 - Empty command search keeps the panel open and shows an EN/RU hint (`cmdNoMatch`) instead of collapsing.
 - `studio` (`autostudio`, `eventstudio`) opens Automation Studio; running it again closes the editor.
-- Command bar shows the current prefix as a gold chip; it follows Settings → Prefix.
 - Favorites / Commands headers show row counts (`Favorites · N`).
 - Long alias lists collapse to `/ first +N` so the primary name and `[args]` stay readable.
 - Favorited rows show a gold star. `favcmd` / `unfavcmd` / `listfav` pin from the command bar.
