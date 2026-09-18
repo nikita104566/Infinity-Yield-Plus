@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -7369,7 +7369,7 @@ eventEditor = (function()
 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
 					BackgroundTransparency = selectedRow and 0.08 or 0.76,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -4, 0, 52),
+					Size = UDim2.new(1, -4, 0, 56),
 					LayoutOrder = order,
 					ClipsDescendants = true,
 					ZIndex = 43,
@@ -7385,20 +7385,22 @@ eventEditor = (function()
 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 8),
-					Size = UDim2.new(1, -108, 0, 18),
+					Position = UDim2.new(0, 14, 0, 6),
+					Size = UDim2.new(1, -52, 0, 28),
 					Font = UI_FONT_MED,
 					TextSize = 13,
 					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = nameColor,
 					Text = name,
+					TextWrapped = true,
 					TextTruncate = Enum.TextTruncate.AtEnd,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 30),
-					Size = UDim2.new(1, -108, 0, 14),
+					Position = UDim2.new(0, 14, 0, 36),
+					Size = UDim2.new(1, -52, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
@@ -7409,7 +7411,7 @@ eventEditor = (function()
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -98, 1, 0),
+					Size = UDim2.new(1, -48, 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -7451,7 +7453,7 @@ eventEditor = (function()
 						if row.Parent then selectEvent(name) end
 					end)
 				end)
-				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0.5, -9), function()
+				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 1, -22), function()
 					ensureEventExtras(ev)
 					pushUndo()
 					ev.enabled = not (ev.enabled ~= false)
@@ -7467,8 +7469,8 @@ eventEditor = (function()
 					local badge = mk("TextLabel", {
 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
 						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
-						Size = UDim2.new(0, 42, 0, 18),
+						Position = UDim2.new(1, -42, 0, 4),
+						Size = UDim2.new(0, 34, 0, 14),
 						Font = UI_FONT_MED,
 						TextSize = 10,
 						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
@@ -7477,7 +7479,7 @@ eventEditor = (function()
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 59
+				y += 63
 			end
 		end
 		if #visible == 0 then
