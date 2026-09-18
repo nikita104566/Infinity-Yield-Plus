@@ -33,12 +33,12 @@ pcall(function()
 		I18N.en.hfTitle = I18N.en.hfTitle or "Hotfixes"
 	end
 	if type(I18N.ru) == "table" then
-		I18N.ru.envTitle = I18N.ru.envTitle or "Sreda"
-		I18N.ru.deviceTitle = I18N.ru.deviceTitle or "Ustrojstvo"
-		I18N.ru.prefixTitle = I18N.ru.prefixTitle or "Prefiks"
-		I18N.ru.tzTitle = I18N.ru.tzTitle or "Poyas"
-		I18N.ru.displayTitle = I18N.ru.displayTitle or "Ekran"
-		I18N.ru.hfTitle = I18N.ru.hfTitle or "Hotfiksy"
+		I18N.ru.envTitle = I18N.ru.envTitle or "Среда"
+		I18N.ru.deviceTitle = I18N.ru.deviceTitle or "Устройство"
+		I18N.ru.prefixTitle = I18N.ru.prefixTitle or "Префикс"
+		I18N.ru.tzTitle = I18N.ru.tzTitle or "Пояс"
+		I18N.ru.displayTitle = I18N.ru.displayTitle or "Экран"
+		I18N.ru.hfTitle = I18N.ru.hfTitle or "Хотфиксы"
 	end
 end)
 
