@@ -1,1 +1,52 @@
-https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source
+--[[
+	Infinity Yield Plus 7.63
+	https://github.com/nikita104566/Infinity-Yield-Plus
+
+	Load:
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
+]]
+
+local PIN = "e30e0ec732e718618e723f06a2aedda820ed9e5a"
+local url = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/" .. PIN .. "/source"
+local ok, raw = pcall(function()
+	return game:HttpGet(url)
+end)
+if not ok or type(raw) ~= "string" or #raw < 1000 then
+	error("IYP 7.63: failed to fetch pinned source")
+end
+
+local function put(s, old, new)
+	local i, j = string.find(s, old, 1, true)
+	if not i then
+		error("IYP 7.63: patch missed a source anchor")
+	end
+	return string.sub(s, 1, i - 1) .. new .. string.sub(s, j + 1)
+end
+
+raw = put(raw, "currentVersion = '7.50'", "currentVersion = '7.63'")
+
+raw = put(raw,
+	'\t\tfavorites = "Favorites",\n\t\tallCommands = "Commands",',
+	'\t\tfavorites = "Favorites",\n\t\tallCommands = "Commands",\n\t\tcmdNoMatch = "No matching commands",\n\t\tcmdNoMatchHint = "Try another word or clear the search",')
+
+raw = put(raw,
+	'\t\tfavorites = "Избранное",\n\t\tallCommands = "Команды",',
+	'\t\tfavorites = "Избранное",\n\t\tallCommands = "Команды",\n\t\tcmdNoMatch = "Нет подходящих команд",\n\t\tcmdNoMatchHint = "Попробуй другое слово или сотри поиск",')
+
+raw = put(raw,
+	'\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end',
+	'\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end\n\tif cmdEmptyTitle then cmdEmptyTitle.Text = T("cmdNoMatch") end\n\tif cmdEmptyHint then cmdEmptyHint.Text = T("cmdNoMatchHint") end')
+
+raw = put(raw,
+	'cmdAllHeader.Visible = false\ncmdAllHeader.LayoutOrder = 500\n\nSettingsButton.Name = "SettingsButton"',
+	'cmdAllHeader.Visible = false\ncmdAllHeader.LayoutOrder = 500\n\ncmdEmptyFrame = Instance.new("Frame")\ncmdEmptyFrame.Name = "IYR_CMD_EMPTY"\ncmdEmptyFrame.Parent = CMDsF\ncmdEmptyFrame.BackgroundTransparency = 1\ncmdEmptyFrame.BorderSizePixel = 0\ncmdEmptyFrame.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 52)\ncmdEmptyFrame.Visible = false\ncmdEmptyFrame.LayoutOrder = 3\ncmdEmptyFrame.ZIndex = 11\n\ncmdEmptyTitle = Instance.new("TextLabel")\ncmdEmptyTitle.Name = "Title"\ncmdEmptyTitle.Parent = cmdEmptyFrame\ncmdEmptyTitle.BackgroundTransparency = 1\ncmdEmptyTitle.Position = UDim2.new(0, 8, 0, 8)\ncmdEmptyTitle.Size = UDim2.new(1, -16, 0, 18)\ncmdEmptyTitle.Font = UI_FONT_MED\ncmdEmptyTitle.TextSize = 13\ncmdEmptyTitle.TextXAlignment = Enum.TextXAlignment.Left\ncmdEmptyTitle.TextColor3 = Color3.fromRGB(210, 204, 230)\ncmdEmptyTitle.Text = T("cmdNoMatch")\ncmdEmptyTitle.TextTruncate = Enum.TextTruncate.AtEnd\ncmdEmptyTitle.ZIndex = 12\n\ncmdEmptyHint = Instance.new("TextLabel")\ncmdEmptyHint.Name = "Hint"\ncmdEmptyHint.Parent = cmdEmptyFrame\ncmdEmptyHint.BackgroundTransparency = 1\ncmdEmptyHint.Position = UDim2.new(0, 8, 0, 28)\ncmdEmptyHint.Size = UDim2.new(1, -16, 0, 16)\ncmdEmptyHint.Font = UI_FONT\ncmdEmptyHint.TextSize = 12\ncmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left\ncmdEmptyHint.TextColor3 = Color3.fromRGB(154, 148, 176)\ncmdEmptyHint.Text = T("cmdNoMatchHint")\ncmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd\ncmdEmptyHint.ZIndex = 12\n\nSettingsButton.Name = "SettingsButton"')
+
+raw = put(raw,
+	'    if cmdAllHeader then\n        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0\n        cmdAllHeader.LayoutOrder = 500\n    end',
+	'    if cmdAllHeader then\n        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0\n        cmdAllHeader.LayoutOrder = 500\n    end\n    do\n        local typed = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))\n        local showEmpty = typed ~= "" and #ranked == 0 and not takesPlayer\n        if cmdEmptyFrame then\n            cmdEmptyFrame.Visible = showEmpty\n            cmdEmptyFrame.LayoutOrder = 3\n        end\n        if cmdEmptyTitle then cmdEmptyTitle.Text = T("cmdNoMatch") end\n        if cmdEmptyHint then cmdEmptyHint.Text = T("cmdNoMatchHint") end\n    end')
+
+local fn, err = loadstring(raw)
+if not fn then
+	error("IYP 7.63: patched source failed to compile: " .. tostring(err))
+end
+return fn()
