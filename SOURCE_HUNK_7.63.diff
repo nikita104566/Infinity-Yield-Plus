@@ -1,0 +1,31 @@
+--- a/source
++++ b/source
+@@ currentVersion @@
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ event list name label in eventEditor.refreshEventList @@
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+-					Position = UDim2.new(0, 14, 0, 8),
+-					Size = UDim2.new(1, -108, 0, 18),
++					Position = UDim2.new(0, 14, 0, 6),
++					Size = UDim2.new(1, -50, 0, 22),
+ 					Font = UI_FONT_MED,
+ 					TextSize = 13,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
++					TextYAlignment = Enum.TextYAlignment.Center,
+ 					TextColor3 = nameColor,
+ 					Text = name,
+-					TextTruncate = Enum.TextTruncate.AtEnd,
++					TextWrapped = false,
++					TextTruncate = Enum.TextTruncate.None,
+ 					ZIndex = 44,
+ 				}, row)
+@@ count badge on the same row @@
+ 					local badge = mk("TextLabel", {
+ 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
+ 						BorderSizePixel = 0,
+-						Position = UDim2.new(1, -92, 0.5, -9),
+-						Size = UDim2.new(0, 42, 0, 18),
++						Position = UDim2.new(1, -92, 0, 30),
++						Size = UDim2.new(0, 42, 0, 16),
