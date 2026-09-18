@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Changed
+- Command list rows show the primary name, one alias, and +N instead of dumping every alias so names and [args] stay readable.
+
 ## 7.62 — 2026-09-14
 
 ### Added
