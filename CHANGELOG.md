@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Automation Studio left list wraps full event names (`OnCharacterRemoving`) instead of cutting them to `OnCharact…`; the count badge sits top-right and the enable switch sits under it.
+
+### Notes
+- One loadstring of `source`. No extra hotfix file.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
