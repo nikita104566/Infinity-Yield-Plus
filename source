@@ -1,1 +1,3 @@
-@file:/tmp/iyp_source.lua
+-- Infinity Yield Plus source (restore shim while the 7.63 Studio name wrap is applied).
+-- Loads the last intact main source. Do not treat this shim as the product file.
+return loadstring(game:HttpGet("https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"))()
