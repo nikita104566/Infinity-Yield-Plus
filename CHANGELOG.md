@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- `lastcommand` no longer errors on an empty history; it shows a short notice instead.
+- Command history is stored in `IY_FE.iy` and restored after reload.
+- `showhistory` / `hist` and `clearhistory` / `clrhist` work from the main source loadstring.
+
 ## 7.62 — 2026-09-14
 
 ### Added
