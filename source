@@ -1,1 +1,3 @@
-@file:/tmp/iyp_source.lua
+-- DO NOT LOAD THIS BRANCH.
+-- Accidental stub. Use main/source.
+error("Infinity Yield Plus: this branch source is a stub. Use main.")
