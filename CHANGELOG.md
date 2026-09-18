@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Automation Studio command picker stays inside the center column: no blank rows, at most 12 suggestions, and a clear “no match” line.
+
+### Notes
+- One loadstring of `source` is enough.
+
 ## 7.62 — 2026-09-14
 
 ### Added

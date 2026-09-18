@@ -4,6 +4,10 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local cur = tonumber((tostring(currentVersion or ""):match("(%d+%.%d+)") or "0"))
+	if cur and cur >= 7.63 then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()

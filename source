@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -594,6 +594,7 @@ UI_L = {
 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
 		eeEmptyCommand = "Type a command first",
 		eeNoEventsMatch = "No events match this filter.",
+		eeNoCmdsMatch = "No matching commands",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
@@ -819,6 +820,7 @@ UI_L = {
 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
 		eeEmptyCommand = "Сначала введи команду",
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
+		eeNoCmdsMatch = "Нет таких команд",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
@@ -5443,7 +5445,8 @@ eventEditor = (function()
 		Position = UDim2.new(0, 10, 1, -178),
 		Size = UDim2.new(1, -20, 0, 130),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
+		ClipsDescendants = true,
 		ScrollBarThickness = 5,
 		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
 		ScrollBarImageTransparency = 0.3,
@@ -5456,13 +5459,16 @@ eventEditor = (function()
 	local pickerHolder = mk("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		AutomaticSize = Enum.AutomaticSize.None,
 		ZIndex = 50,
 	}, picker)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
 	local function setPickerVisible(visible, contentHeight)
 		if visible then
 			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
+			if center.AbsoluteSize.Y > 80 then
+				height = math.min(height, math.max(48, center.AbsoluteSize.Y - 142))
+			end
 			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
 			picker.Size = UDim2.new(1, -20, 0, height)
 			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
@@ -5623,6 +5629,8 @@ eventEditor = (function()
 		BorderSizePixel = 0,
 		Visible = false,
 		ZIndex = 80,
+		ClipsDescendants = true,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 5,
 		ScrollBarImageColor3 = Color3.fromRGB(90, 84, 120),
 	}, shell)
@@ -5646,29 +5654,54 @@ eventEditor = (function()
 	local function showInspDrop(anchorBtn, options, currentIdx, prettyFn, onPick)
 		hideInspDrop()
 		if not anchorBtn or not anchorBtn.Parent then return end
+		if type(options) ~= "table" then return end
 		inspDropAnchor = anchorBtn
 		local rowH = 24
 		local maxH = 180
-		local h = math.min(#options * rowH + 6, maxH)
+		local visibleN = 0
+		for i, option in ipairs(options) do
+			local label = prettyFn(option)
+			if type(label) == "string" and label ~= "" then
+				visibleN += 1
+			end
+		end
+		if visibleN == 0 then return end
+		local h = math.min(visibleN * rowH + 6, maxH)
 		local w = math.max(anchorBtn.AbsoluteSize.X, 160)
 		local shellPos = shell.AbsolutePosition
+		local shellSize = shell.AbsoluteSize
 		local btnPos = anchorBtn.AbsolutePosition
+		local x = btnPos.X - shellPos.X
+		local yPos = btnPos.Y - shellPos.Y + anchorBtn.AbsoluteSize.Y + 2
+		if x < 8 then x = 8 end
+		if x + w > shellSize.X - 8 then x = math.max(8, shellSize.X - 8 - w) end
+		if yPos + h > shellSize.Y - 8 then
+			yPos = btnPos.Y - shellPos.Y - h - 2
+			if yPos < 8 then yPos = 8 end
+		end
 		inspDrop.Size = UDim2.new(0, w, 0, h)
-		inspDrop.Position = UDim2.new(0, btnPos.X - shellPos.X, 0, btnPos.Y - shellPos.Y + anchorBtn.AbsoluteSize.Y + 2)
-		inspDrop.CanvasSize = UDim2.new(0, 0, 0, #options * rowH + 4)
+		inspDrop.Position = UDim2.new(0, x, 0, yPos)
+		inspDrop.CanvasSize = UDim2.new(0, 0, 0, visibleN * rowH)
+		inspDrop.CanvasPosition = Vector2.new(0, 0)
+		local order = 0
 		for i, option in ipairs(options) do
-			local choice = btn(inspDropHolder, prettyFn(option), UDim2.new(1, -4, 0, 22), UDim2.new(0, 2, 0, 0), function()
-				onPick(i, option)
-				hideInspDrop()
-			end)
-			choice.LayoutOrder = i
-			choice.ZIndex = 82
-			choice.TextSize = 11
-			choice.TextTruncate = Enum.TextTruncate.AtEnd
-			if i == currentIdx then
-				choice:SetAttribute("EEActive", true)
-				choice:SetAttribute("EEActiveColor", EE_PRIMARY)
-				choice.BackgroundColor3 = EE_PRIMARY
+			local label = prettyFn(option)
+			if type(label) == "string" and label ~= "" then
+				order += 1
+				local choice = btn(inspDropHolder, label, UDim2.new(1, -4, 0, 22), UDim2.new(0, 2, 0, 0), function()
+					onPick(i, option)
+					hideInspDrop()
+				end)
+				choice.LayoutOrder = order
+				choice.ZIndex = 82
+				choice.TextSize = 11
+				choice.TextTruncate = Enum.TextTruncate.AtEnd
+				choice.ClipsDescendants = true
+				if i == currentIdx then
+					choice:SetAttribute("EEActive", true)
+					choice:SetAttribute("EEActiveColor", EE_PRIMARY)
+					choice.BackgroundColor3 = EE_PRIMARY
+				end
 			end
 		end
 		inspDrop.Visible = true
@@ -7772,12 +7805,14 @@ eventEditor = (function()
 		end)
 		local y = 0
 		for index = 1, #matches do
+			if index > 12 then break end
 			local match = matches[index]
 			local primary = match.primary
 			local row = mk("TextButton", {
 				BackgroundColor3 = EE_SURFACE,
 				BorderSizePixel = 0,
-				Size = UDim2.new(1, 0, 0, 26),
+				Size = UDim2.new(1, -2, 0, 24),
+				LayoutOrder = index,
 				Text = primary,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
@@ -7785,6 +7820,7 @@ eventEditor = (function()
 				TextSize = 11,
 				TextColor3 = EE_TEXT,
 				AutoButtonColor = false,
+				ClipsDescendants = true,
 				ZIndex = 51,
 			}, pickerHolder)
 			uiCorner(row, 6)
@@ -7799,14 +7835,36 @@ eventEditor = (function()
 			row.MouseButton1Click:Connect(function()
 				applySuggestion(primary)
 			end)
-			y += 29
+			y += 27
 		end
 		if y > 0 then y -= 3 end
+		if y == 0 and q ~= "" then
+			local row = mk("TextButton", {
+				BackgroundColor3 = EE_SURFACE,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -2, 0, 24),
+				LayoutOrder = 1,
+				Text = T("eeNoCmdsMatch"),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				Font = UI_FONT,
+				TextSize = 11,
+				TextColor3 = EE_MUTED,
+				AutoButtonColor = false,
+				Active = false,
+				ClipsDescendants = true,
+				ZIndex = 51,
+			}, pickerHolder)
+			uiCorner(row, 6)
+			uiPad(row, 8, 0, 8, 0)
+			y = 24
+		end
 		suggestionIndex = #suggestionRows > 0 and 1 or 0
 		styleSuggestions()
+		pickerHolder.Size = UDim2.new(1, 0, 0, y)
 		picker.CanvasPosition = Vector2.new(0, 0)
-		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
-		setPickerVisible(#suggestionRows > 0, y)
+		picker.CanvasSize = UDim2.new(0, 0, 0, y)
+		setPickerVisible(y > 0, y)
 	end
 	local suggestDebounceTok = 0
 	local function scheduleSuggestions()
@@ -8289,6 +8347,7 @@ eventEditor = (function()
 		refreshEventList()
 		refreshFlows()
 		refreshInspector()
+		if picker.Visible then refreshSuggestions() end
 		if historyFrame.Visible then refreshHistory() end
 	end
 
