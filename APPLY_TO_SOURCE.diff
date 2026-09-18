@@ -1,0 +1,51 @@
+--- source
++++ source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ apply language headers
+-        if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+-        if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++        if type(refreshCmdSectionHeaders) == "function" then
++                refreshCmdSectionHeaders()
++        else
++                if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
++                if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++        end
+@@ after applyCmdRowText
++cmdSectionFavN = 0
++cmdSectionOtherN = 0
++
++function refreshCmdSectionHeaders()
++	if cmdFavHeader then
++		local n = tonumber(cmdSectionFavN) or 0
++		if n > 0 then
++			cmdFavHeader.Text = T("favorites") .. " · " .. tostring(n)
++		else
++			cmdFavHeader.Text = T("favorites")
++		end
++	end
++	if cmdAllHeader then
++		local n = tonumber(cmdSectionOtherN) or 0
++		if n > 0 then
++			cmdAllHeader.Text = T("allCommands") .. " · " .. tostring(n)
++		else
++			cmdAllHeader.Text = T("allCommands")
++		end
++	end
++end
+@@ IndexContents headers
++    cmdSectionFavN = #favRanked
++    cmdSectionOtherN = #otherRanked
+     if cmdFavHeader then
+         cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
+         cmdFavHeader.LayoutOrder = 1
+     end
+     if cmdAllHeader then
+-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
++        cmdAllHeader.Visible = not takesPlayer and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
++    if type(refreshCmdSectionHeaders) == "function" then
++        refreshCmdSectionHeaders()
++    end
