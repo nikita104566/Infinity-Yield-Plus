@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Command list rows with aliases or `[args]` now wrap to two lines so the primary name stays fully visible and aliases are no longer clipped.
+
 ## 7.62 — 2026-09-14
 
 ### Added

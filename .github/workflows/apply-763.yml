@@ -1,0 +1,26 @@
+name: apply-763
+on:
+  workflow_dispatch:
+  push:
+    branches: [iyp-763-cmd-row-wrap]
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: iyp-763-cmd-row-wrap
+      - name: Apply patch if source still 7.50
+        run: |
+          if grep -q "currentVersion = '7.63'" source; then
+            echo already applied
+            exit 0
+          fi
+          patch -p1 < source.763.patch
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add source
+          git commit -m "7.63: apply two-line command rows to source"
+          git push
