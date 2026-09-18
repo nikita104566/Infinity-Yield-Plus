@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.63",
+	"Announcement": "7.63: lastcommand is safe when history is empty; command history is saved in IY_FE.iy"
 }
