@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- `;lastcommand` on an empty history shows a notice instead of erroring; command history is written to `IY_FE.iy` so ↑/↓ survive reload.
+
 ## 7.62 — 2026-09-14
 
 ### Added
