@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Studio left event list shows full names like OnCharacterRemoving; the count badge sits on the category line so the title is not clipped.
+
 ## 7.62 — 2026-09-14
 
 ### Added
