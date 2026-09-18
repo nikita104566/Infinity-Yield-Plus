@@ -2,16 +2,34 @@
 -- Load after source (and after 756–761 if you still use them).
 -- Adds env, device, prefix, timezone, display.
 -- Safe to run more than once. Does not replace main source.
+-- Does not overwrite currentVersion when source is already newer than 7.62.
 
 pcall(function()
-	currentVersion = "7.62"
-	if type(applyHeaderBrand) == "function" then
-		applyHeaderBrand()
-	elseif VersionLabel then
-		VersionLabel.Text = "· 7.62"
+	local cur = tostring(currentVersion or "")
+	local function older(a, b)
+		local function parts(v)
+			local t = {}
+			for n in tostring(v):gmatch("%d+") do t[#t+1] = tonumber(n) or 0 end
+			return t
+		end
+		local x, y = parts(a), parts(b)
+		local n = math.max(#x, #y)
+		for i = 1, n do
+			local ai, bi = x[i] or 0, y[i] or 0
+			if ai ~= bi then return ai < bi end
+		end
+		return false
 	end
-	if SubLabel then
-		SubLabel.Text = "7.62"
+	if cur == "" or older(cur, "7.62") then
+		currentVersion = "7.62"
+		if type(applyHeaderBrand) == "function" then
+			applyHeaderBrand()
+		elseif VersionLabel then
+			VersionLabel.Text = "· 7.62"
+		end
+		if SubLabel then
+			SubLabel.Text = "7.62"
+		end
 	end
 end)
 
