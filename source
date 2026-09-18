@@ -611,6 +611,9 @@ UI_L = {
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
 		favHintRemove = "★  Favorited · right-click to remove",
+		favNeedName = "Type a command name",
+		favUnknown = "No such command",
+		favEmptyList = "No favorites yet. Right-click a row or use favcmd.",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -643,6 +646,7 @@ UI_L = {
 		eePickEvent = "Select an event to view its workflows.",
 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
 		eeEmptyCommand = "Type a command first",
+		eePickerEmpty = "No matching commands",
 		eeNoEventsMatch = "No events match this filter.",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
@@ -886,6 +890,9 @@ UI_L = {
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
 		favHintRemove = "★  В избранном · ПКМ — убрать",
+		favNeedName = "Укажи имя команды",
+		favUnknown = "Нет такой команды",
+		favEmptyList = "Избранное пусто. ПКМ по строке или favcmd.",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -918,6 +925,7 @@ UI_L = {
 		eePickEvent = "Выбери событие, чтобы увидеть workflow.",
 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
 		eeEmptyCommand = "Сначала введи команду",
+		eePickerEmpty = "Нет подходящих команд",
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
@@ -1242,6 +1250,7 @@ end
 
 function applyUiLanguage()
 	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
+	if type(updatePrefixChip) == "function" then updatePrefixChip() end
 	if Prefix then Prefix.Text = T("prefix") end
 	local stayOpenRow = SettingsHolder and SettingsHolder:FindFirstChild("StayOpen")
 	if stayOpenRow and stayOpenRow:IsA("TextLabel") then
@@ -1280,8 +1289,12 @@ function applyUiLanguage()
 	if type(refreshKbCmdPicker) == "function" then
 		refreshKbCmdPicker()
 	end
-	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
-	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+	if type(refreshCmdSectionHeaders) == "function" then
+		refreshCmdSectionHeaders()
+	else
+		if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+		if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+	end
 	if cmdEmptyLabel then cmdEmptyLabel.Text = T("cmdNoMatch") end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
@@ -1734,12 +1747,29 @@ table.insert(shade1, CmdbarWrap)
 uiCorner(CmdbarWrap, 7)
 uiStroke(CmdbarWrap, Color3.fromRGB(255, 255, 255), 1, 0.9)
 
+PrefixChip = Instance.new("TextLabel")
+PrefixChip.Name = "PrefixChip"
+PrefixChip.Parent = CmdbarWrap
+PrefixChip.BackgroundColor3 = Color3.fromRGB(36, 34, 48)
+PrefixChip.BackgroundTransparency = 0.15
+PrefixChip.BorderSizePixel = 0
+PrefixChip.Position = UDim2.new(0, 6, 0.5, -9)
+PrefixChip.Size = UDim2.new(0, 22, 0, 18)
+PrefixChip.Font = UI_FONT_MED
+PrefixChip.TextSize = 13
+PrefixChip.TextColor3 = Color3.fromRGB(255, 214, 102)
+PrefixChip.Text = ";"
+PrefixChip.ZIndex = 12
+PrefixChip.TextTruncate = Enum.TextTruncate.AtEnd
+uiCorner(PrefixChip, 4)
+table.insert(text1, PrefixChip)
+
 CmdGhost = Instance.new("TextLabel")
 CmdGhost.Name = "Ghost"
 CmdGhost.Parent = CmdbarWrap
 CmdGhost.BackgroundTransparency = 1
-CmdGhost.Position = UDim2.new(0, 10, 0, 0)
-CmdGhost.Size = UDim2.new(1, -20, 1, 0)
+CmdGhost.Position = UDim2.new(0, 32, 0, 0)
+CmdGhost.Size = UDim2.new(1, -40, 1, 0)
 CmdGhost.Font = UI_FONT
 CmdGhost.TextSize = 14
 CmdGhost.TextXAlignment = Enum.TextXAlignment.Left
@@ -1753,8 +1783,8 @@ Cmdbar.Name = "Cmdbar"
 Cmdbar.Parent = CmdbarWrap
 Cmdbar.BackgroundTransparency = 1
 Cmdbar.BorderSizePixel = 0
-Cmdbar.Position = UDim2.new(0, 10, 0, 0)
-Cmdbar.Size = UDim2.new(1, -20, 1, 0)
+Cmdbar.Position = UDim2.new(0, 32, 0, 0)
+Cmdbar.Size = UDim2.new(1, -40, 1, 0)
 Cmdbar.Font = UI_FONT
 Cmdbar.TextSize = 14
 Cmdbar.TextXAlignment = Enum.TextXAlignment.Left
@@ -2172,12 +2202,28 @@ function formatCmdRich(text)
 	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
 	primary = (primary or names):gsub("%s+$", "")
 	aliases = aliases or ""
-	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+	local compact = ""
 	if aliases ~= "" then
-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+		local parts = {}
+		for part in aliases:gmatch("[^/]+") do
+			part = part:gsub("^%s+", ""):gsub("%s+$", "")
+			if part ~= "" then
+				parts[#parts + 1] = part
+			end
+		end
+		if #parts > 0 then
+			compact = " / " .. parts[1]
+			if #parts > 1 then
+				compact = compact .. " +" .. tostring(#parts - 1)
+			end
+		end
 	end
+	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
 	if args ~= "" then
 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
+	end
+	if compact ~= "" then
+		html = html .. "<font color=\"#7A778C\">" .. compact .. "</font>"
 	end
 	return html
 end
@@ -2191,6 +2237,28 @@ function applyCmdRowText(btn, text)
 			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
 		else
 			label.Text = formatCmdRich(text)
+		end
+	end
+end
+
+cmdSectionFavN = 0
+cmdSectionOtherN = 0
+
+function refreshCmdSectionHeaders()
+	if cmdFavHeader then
+		local n = tonumber(cmdSectionFavN) or 0
+		if n > 0 then
+			cmdFavHeader.Text = T("favorites") .. " · " .. tostring(n)
+		else
+			cmdFavHeader.Text = T("favorites")
+		end
+	end
+	if cmdAllHeader then
+		local n = tonumber(cmdSectionOtherN) or 0
+		if n > 0 then
+			cmdAllHeader.Text = T("allCommands") .. " · " .. tostring(n)
+		else
+			cmdAllHeader.Text = T("allCommands")
 		end
 	end
 end
@@ -5561,7 +5629,7 @@ eventEditor = (function()
 		Position = UDim2.new(0, 10, 1, -178),
 		Size = UDim2.new(1, -20, 0, 130),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 5,
 		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
 		ScrollBarImageTransparency = 0.3,
@@ -7826,7 +7894,7 @@ eventEditor = (function()
 	end
 	local function refreshSuggestions()
 		for _, c in ipairs(pickerHolder:GetChildren()) do
-			if c:IsA("TextButton") then c:Destroy() end
+			if c:IsA("TextButton") or c:IsA("TextLabel") then c:Destroy() end
 		end
 		suggestionRows = {}
 		suggestionIndex = 0
@@ -7910,11 +7978,26 @@ eventEditor = (function()
 			y += 29
 		end
 		if y > 0 then y -= 3 end
+		if #suggestionRows == 0 then
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, 0, 0, 26),
+				Font = UI_FONT,
+				TextSize = 11,
+				TextColor3 = EE_MUTED,
+				Text = T("eePickerEmpty"),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextWrapped = true,
+				ZIndex = 51,
+			}, pickerHolder)
+			y = 26
+		end
 		suggestionIndex = #suggestionRows > 0 and 1 or 0
 		styleSuggestions()
 		picker.CanvasPosition = Vector2.new(0, 0)
 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
-		setPickerVisible(#suggestionRows > 0, y)
+		setPickerVisible(true, y)
 	end
 	local suggestDebounceTok = 0
 	local function scheduleSuggestions()
@@ -10454,8 +10537,28 @@ end)
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
     prefix = PrefixBox.Text
     Cmdbar.PlaceholderText = T("command")
+    if type(updatePrefixChip) == "function" then updatePrefixChip() end
     updatesaves()
 end)
+
+function updatePrefixChip()
+	if not PrefixChip then return end
+	local p = tostring(prefix or "")
+	if p == "" then p = ";" end
+	local n = utf8.len(p)
+	if type(n) == "number" and n > 2 then
+		local ok, off = pcall(utf8.offset, p, 3)
+		if ok and type(off) == "number" then
+			p = string.sub(p, 1, off - 1)
+		else
+			p = string.sub(p, 1, 2)
+		end
+	elseif (not n) and #p > 2 then
+		p = string.sub(p, 1, 2)
+	end
+	PrefixChip.Text = p
+end
+updatePrefixChip()
 
 function CamViewport()
     local cam = workspace.CurrentCamera
@@ -11003,13 +11106,18 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         end)
     end
 
+    cmdSectionFavN = #favRanked
+    cmdSectionOtherN = #otherRanked
     if cmdFavHeader then
         cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
         cmdFavHeader.LayoutOrder = 1
     end
     if cmdAllHeader then
-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+        cmdAllHeader.Visible = not takesPlayer and #otherRanked > 0
         cmdAllHeader.LayoutOrder = 500
+    end
+    if type(refreshCmdSectionHeaders) == "function" then
+        refreshCmdSectionHeaders()
     end
 
     local function placeCmdRow(item, order)
@@ -11789,6 +11897,9 @@ CMDs[#CMDs + 1] = {NAME = 'addplugin / plugin [name]', DESC = 'Add a plugin via 
 CMDs[#CMDs + 1] = {NAME = 'removeplugin / deleteplugin [name]', DESC = 'Remove a plugin via command'}
 CMDs[#CMDs + 1] = {NAME = 'reloadplugin [name]', DESC = 'Reloads a plugin'}
 CMDs[#CMDs + 1] = {NAME = 'reload / iypreload / iyreload / reiy / refreshiy', DESC = 'Reloads Infinity Yield Plus without rejoining'}
+CMDs[#CMDs + 1] = {NAME = 'favcmd / pincmd / starcmd [command]', DESC = 'Pin a command to Favorites'}
+CMDs[#CMDs + 1] = {NAME = 'unfavcmd / unstarcmd [command]', DESC = 'Unpin a command from Favorites'}
+CMDs[#CMDs + 1] = {NAME = 'listfav / favs / showfav', DESC = 'List pinned favorites'}
 CMDs[#CMDs + 1] = {NAME = 'addallplugins / loadallplugins', DESC = 'Adds all available plugins from the workspace folder'}
 CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
 CMDs[#CMDs + 1] = {NAME = 'breakloops / break (cmd loops)', DESC = 'Stops any cmd loops (;100^1^cmd)'}
@@ -12071,6 +12182,14 @@ do
 		reloadplugin = "Перезагрузить плагин",
 		reload = "Перезагрузить админку без rejoin",
 		iyreload = "Перезагрузить админку без rejoin",
+		favcmd = "Закрепить команду в избранном",
+		pincmd = "Закрепить команду в избранном",
+		starcmd = "Закрепить команду в избранном",
+		unfavcmd = "Убрать команду из избранного",
+		unstarcmd = "Убрать команду из избранного",
+		listfav = "Показать избранные команды",
+		favs = "Показать избранные команды",
+		showfav = "Показать избранные команды",
 		reiy = "Перезагрузить админку без rejoin",
 		spawnpoint = "Задаёт точку, в которой ты будешь появляться",
 		nospawnpoint = "Убирает свою точку спавна",
@@ -12430,6 +12549,22 @@ function FavCmds.apply(btn)
 	local title = tostring(btn:GetAttribute("Title") or btn.Text)
 	local fav = FavCmds.is(title)
 	local label = btn:FindFirstChild("Label")
+	local star = btn:FindFirstChild("FavStar")
+	if fav and not star then
+		star = Instance.new("TextLabel")
+		star.Name = "FavStar"
+		star.BackgroundTransparency = 1
+		star.Size = UDim2.new(0, 12, 1, 0)
+		star.Position = UDim2.new(1, -14, 0, 0)
+		star.Font = UI_FONT_MED
+		star.TextSize = 11
+		star.Text = "★"
+		star.TextColor3 = Color3.fromRGB(255, 214, 102)
+		star.TextXAlignment = Enum.TextXAlignment.Center
+		star.ZIndex = (btn.ZIndex or 10) + 1
+		star.Parent = btn
+	end
+	if star then star.Visible = fav and true or false end
 	if label then
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
 	end
@@ -18788,6 +18923,9 @@ registerRuDesc("showprefix", "Текущий префикс")
 registerRuDesc("timezone", "Часовой пояс")
 registerRuDesc("display", "Размер экрана")
 registerRuDesc("studio", "Открыть Automation Studio")
+registerRuDesc("favcmd", "Закрепить команду в избранном")
+registerRuDesc("unfavcmd", "Убрать команду из избранного")
+registerRuDesc("listfav", "Показать избранные команды")
 
 addcmd('windowfocus', {}, function(args, speaker)
     wfenabled = true
@@ -25507,6 +25645,58 @@ addcmd('reload', {'iypreload', 'iyreload', 'reiy', 'refreshiy'}, function(args, 
     else
         notify("Reload", "Could not read iyp.lua / iyr.lua / remote source")
     end
+end)
+
+addcmd('favcmd', {'pincmd', 'starcmd'}, function(args, speaker)
+    local raw = getstring(1, args)
+    if type(raw) ~= "string" then raw = "" end
+    raw = raw:match("^%s*(.-)%s*$") or ""
+    if raw == "" then
+        notify(T("favorites"), T("favNeedName"))
+        return
+    end
+    local token = raw:match("^(%S+)") or raw
+    local found = findCmd(token)
+    if not found then
+        notify(T("favorites"), T("favUnknown") .. ": " .. token)
+        return
+    end
+    local key = cmdPrimaryKey(found.NAME)
+    if FavCmds.is(key) then
+        notify(T("favorites"), T("starAlready") .. ": " .. key)
+        return
+    end
+    FavCmds.toggle(key)
+end)
+
+addcmd('unfavcmd', {'unstarcmd'}, function(args, speaker)
+    local raw = getstring(1, args)
+    if type(raw) ~= "string" then raw = "" end
+    raw = raw:match("^%s*(.-)%s*$") or ""
+    if raw == "" then
+        notify(T("favorites"), T("favNeedName"))
+        return
+    end
+    local token = raw:match("^(%S+)") or raw
+    local found = findCmd(token)
+    local key = found and cmdPrimaryKey(found.NAME) or cmdPrimaryKey(token)
+    if key == "" then
+        notify(T("favorites"), T("favUnknown") .. ": " .. token)
+        return
+    end
+    if not FavCmds.is(key) then
+        notify(T("favorites"), T("favUnknown") .. ": " .. key)
+        return
+    end
+    FavCmds.toggle(key)
+end)
+
+addcmd('listfav', {'favs', 'showfav'}, function(args, speaker)
+    if type(favCmds) ~= "table" or #favCmds == 0 then
+        notify(T("favorites"), T("favEmptyList"))
+        return
+    end
+    notify(T("favorites"), table.concat(favCmds, ", "))
 end)
 
 addcmd('removecmd',{'deletecmd'},function(args, speaker)

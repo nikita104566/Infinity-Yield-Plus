@@ -24,9 +24,11 @@ From a checkout: `python3 tools/iyp.py list` (legacy sidecar inventory), `python
 
 ## Features
 
-- Command panel with search, autocomplete, and a **Favorites** section at the top of the list
+- Command panel with search, autocomplete, and a **Favorites** section at the top of the list (headers show counts)
+- Command bar shows the current prefix as a gold chip
+- Long alias lists collapse to `/ first +N`; favorited rows show a gold star
 - Empty search keeps the panel open and shows an EN/RU “no match” hint
-- Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
+- Add or remove favorites from the helper popup, right-click, or `favcmd` / `unfavcmd` / `listfav`
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands are not stored in history
 - `showhistory` / `hist` lists recent saved commands

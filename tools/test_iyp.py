@@ -227,6 +227,9 @@ class SourceBakeTests(unittest.TestCase):
             "timezone",
             "display",
             "studio",
+            "favcmd",
+            "unfavcmd",
+            "listfav",
         ):
             self.assertIn(f"addcmd('{name}'", self.source)
 
@@ -248,6 +251,21 @@ class SourceBakeTests(unittest.TestCase):
     def test_studio_command_opens_editor(self):
         self.assertIn("addcmd('studio', {'autostudio', 'eventstudio'}", self.source)
         self.assertIn("eventEditor.Open()", self.source)
+
+    def test_astra_prefix_chip(self):
+        self.assertIn('PrefixChip.Name = "PrefixChip"', self.source)
+        self.assertIn("function updatePrefixChip()", self.source)
+
+    def test_astra_section_counts(self):
+        self.assertIn("function refreshCmdSectionHeaders()", self.source)
+        self.assertIn("cmdSectionFavN = #favRanked", self.source)
+
+    def test_astra_compact_aliases(self):
+        self.assertIn('compact = compact .. " +" .. tostring(#parts - 1)', self.source)
+
+    def test_astra_picker_empty(self):
+        self.assertIn("eePickerEmpty", self.source)
+        self.assertIn("setPickerVisible(true, y)", self.source)
 
 
 class HotfixStubTests(unittest.TestCase):
