@@ -1,0 +1,104 @@
+{
+  "repo": "nikita104566/Infinity-Yield-Plus",
+  "core": {
+    "file": "source",
+    "versionFile": "version",
+    "pinnedCommit": "e30e0ec",
+    "note": "Main source is 7.63. Commands and history fixes from 7.54–7.62 are baked in. Sidecar hotfix files are no-op stubs when currentVersion >= 7.62."
+  },
+  "loader": "patches.luau",
+  "rawBase": "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/",
+  "patches": [
+    {
+      "id": 753,
+      "file": "hotfix753.luau",
+      "version": "7.54",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked into source 7.63. Compatibility stub; no-op when currentVersion >= 7.62.",
+      "commands": [],
+      "supersededBy": 754
+    },
+    {
+      "id": 754,
+      "file": "hotfix754.luau",
+      "version": "7.54",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: safe lastcommand on empty history; persist cmdHistory in IY_FE.iy.",
+      "commands": ["lastcommand"]
+    },
+    {
+      "id": 755,
+      "file": "hotfix755.luau",
+      "version": "7.55",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: debounce history saves (~0.35s); clearhistory.",
+      "commands": ["clearhistory"]
+    },
+    {
+      "id": 756,
+      "file": "hotfix756.luau",
+      "version": "7.56",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: history dedup, skip meta-commands, showhistory.",
+      "commands": ["showhistory"]
+    },
+    {
+      "id": 757,
+      "file": "hotfix757.luau",
+      "version": "7.57",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: checkupdate, copyhistory, starlast via FavCmds.toggle.",
+      "commands": ["checkupdate", "copyhistory", "starlast"]
+    },
+    {
+      "id": 758,
+      "file": "hotfix758.luau",
+      "version": "7.58",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: repeatlast, latency, fps, cmdcount. Existing ping alias stays on notifyping.",
+      "commands": ["repeatlast", "latency", "fps", "cmdcount"]
+    },
+    {
+      "id": 759,
+      "file": "hotfix759.luau",
+      "version": "7.59",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: placeinfo, copyplace, players, session, hotfixes.",
+      "commands": ["placeinfo", "copyplace", "players", "session", "hotfixes"]
+    },
+    {
+      "id": 760,
+      "file": "hotfix760.luau",
+      "version": "7.60",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: whoami, copyuid, copyjob, serverage, memory. copyuserid stays on the original copyid command.",
+      "commands": ["whoami", "copyuid", "copyjob", "serverage", "memory"]
+    },
+    {
+      "id": 761,
+      "file": "hotfix761.luau",
+      "version": "7.61",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: dump/fullinfo, copyjoin, gameowner, clock, maxplayers. info/creator stay on original commands.",
+      "commands": ["dump", "copyjoin", "gameowner", "clock", "maxplayers"]
+    },
+    {
+      "id": 762,
+      "file": "hotfix762.luau",
+      "version": "7.62",
+      "default": false,
+      "status": "baked",
+      "summary": "Baked: env, device, showprefix, timezone, display.",
+      "commands": ["env", "device", "showprefix", "timezone", "display"]
+    }
+  ]
+}
