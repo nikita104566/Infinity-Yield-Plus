@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Automation Studio left list wraps full event names (OnCharacterRemoving stays readable) and stacks the count badge above the toggle so names are no longer clipped to OnCharact…
+
 ## 7.62 — 2026-09-14
 
 ### Added
