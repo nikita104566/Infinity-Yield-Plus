@@ -1,0 +1,61 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -2055,11 +2055,16 @@
+ 	primary = (primary or names):gsub("%s+$", "")
+ 	aliases = aliases or ""
+ 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
++	local extra = ""
+ 	if aliases ~= "" then
+-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
++		extra = aliases
+ 	end
+ 	if args ~= "" then
+-		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
++		if extra ~= "" then extra = extra .. " " end
++		extra = extra .. args
++	end
++	if extra ~= "" then
++		html = html .. "<br/><font color=\"#8A86A0\" size=\"12\">" .. extra .. "</font>"
+ 	end
+ 	return html
+ end
+@@ -2068,12 +2073,21 @@
+ 	if not btn then return end
+ 	btn.Text = text
+ 	local label = btn:FindFirstChild("Label")
++	local twoLine = false
+ 	if label then
+ 		if btn:GetAttribute("SuggestKind") == "player" then
+ 			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
+ 		else
+ 			label.Text = formatCmdRich(text)
++			local raw = tostring(text or "")
++			twoLine = raw:find("/") ~= nil or raw:find("%[") ~= nil
+ 		end
++		label.TextWrapped = twoLine
++		label.TextYAlignment = twoLine and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center
++	end
++	if btn:GetAttribute("SuggestKind") ~= "player" then
++		local h = twoLine and 40 or 26
++		btn.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, h)
+ 	end
+ end
+ 
+@@ -2117,6 +2131,8 @@
+ 	label.TextXAlignment = Enum.TextXAlignment.Left
+ 	label.TextColor3 = Color3.fromRGB(244, 244, 248)
+ 	label.RichText = true
++	label.TextWrapped = true
++	label.TextYAlignment = Enum.TextYAlignment.Center
+ 	label.TextTruncate = Enum.TextTruncate.AtEnd
+ 	label.ZIndex = 11
+ 	label.Parent = btn
