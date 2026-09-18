@@ -1,0 +1,73 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -577,6 +577,7 @@
+ 		refMultiIntro = "You can execute multiple commands at once using \"\\\"",
+ 		refHistoryHeader = "Browse Command History",
+ 		refHistoryText = "While focused on the command bar, you can use the up and down arrow keys to browse recently used commands",
++		histEmpty = "No command history yet",
+ 		refAutoHeader = "Autocomplete in the Command Bar",
+ 		refAutoText = "While focused on the command bar, you can use the tab key to insert the top suggested command into the command bar.",
+ 		refEventsHeader = "Using Automation Studio",
+@@ -802,6 +803,7 @@
+ 		refMultiIntro = "Несколько команд можно выполнить через «\\\u00bb",
+ 		refHistoryHeader = "История команд",
+ 		refHistoryText = "Когда фокус в поле команды, стрелки ↑↓ листают недавно использованные команды",
++		histEmpty = "История команд пока пуста",
+ 		refAutoHeader = "Автодополнение",
+ 		refAutoText = "Когда фокус в поле команды, Tab подставляет верхнюю подсказку в строку",
+ 		refEventsHeader = "Automation Studio",
+@@ -8614,6 +8616,7 @@
+     WayPoints = {};
+     PluginsTable = {};
+     favCmds = {};
++    cmdHistory = {};
+     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
+@@ -8751,6 +8754,7 @@
+                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
++                    if vtype(json.cmdHistory, "table") then IYP_LOADED_HIST = json.cmdHistory end
+@@ -8838,6 +8842,7 @@
+             favCmds = favCmds or {};
++            cmdHistory = cmdHistory or {};
+@@ -12736,6 +12741,20 @@
+ cmdHistory = {}
++do
++    local loaded = IYP_LOADED_HIST
++    IYP_LOADED_HIST = nil
++    if type(loaded) == "table" then
++        local clean = {}
++        for i = 1, math.min(#loaded, 30) do
++            local row = loaded[i]
++            if type(row) == "string" and row ~= "" then
++                clean[#clean + 1] = row
++            end
++        end
++        cmdHistory = clean
++    end
++end
+@@ -12797,6 +12816,9 @@
+                             table.insert(cmdHistory,1,rawCmdStr)
++                            if type(updatesaves) == "function" then
++                                pcall(updatesaves)
++                            end
+@@ -18192,8 +18214,13 @@
+ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
++    local last = cmdHistory and cmdHistory[1]
++    if type(last) ~= "string" or last == "" then
++        notify(T("histEmpty", "No command history yet"), "")
++        return
++    end
++    if last:sub(1,11) ~= 'lastcommand' and last:sub(1,7) ~= 'lastcmd' then
++        execCmd(last)
+     end
+ end)
