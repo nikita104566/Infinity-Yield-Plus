@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Command list headers now show counts (`Favorites · 3`, `Commands · 812`) and the Commands header stays visible even with no favorites.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
