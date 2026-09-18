@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-18
+
+### Improved
+- Command list rows now keep the primary name and `[arguments]` visible; long alias tails are what get clipped.
+
 ## 7.62 — 2026-09-14
 
 ### Added
