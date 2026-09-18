@@ -1,17 +1,22 @@
 -- Infinity Yield Plus 7.62 hotfix
--- Load after source (and after 756–761 if you still use them).
+-- Load after source (and after 756-761 if you still use them).
 -- Adds env, device, prefix, timezone, display.
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
-	currentVersion = "7.62"
-	if type(applyHeaderBrand) == "function" then
-		applyHeaderBrand()
-	elseif VersionLabel then
-		VersionLabel.Text = "· 7.62"
-	end
-	if SubLabel then
-		SubLabel.Text = "7.62"
+	local cur = tostring(currentVersion or "")
+	local major, minor = cur:match("^(%d+)%.(%d+)")
+	local newer = major and ((tonumber(major) > 7) or (tonumber(major) == 7 and tonumber(minor) >= 63))
+	if not newer then
+		currentVersion = "7.62"
+		if type(applyHeaderBrand) == "function" then
+			applyHeaderBrand()
+		elseif VersionLabel then
+			VersionLabel.Text = "· 7.62"
+		end
+		if SubLabel then
+			SubLabel.Text = "7.62"
+		end
 	end
 end)
 
@@ -90,41 +95,17 @@ local function showEnv()
 	local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 	local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
 	local ver = tostring(currentVersion or "7.62")
-	say(t("envTitle", "Env"), table.concat({
-		ver,
-		exec,
-		http,
-		clip,
-		fs,
-		hook,
-	}, "\n"))
+	say(t("envTitle", "Env"), table.concat({ ver, exec, http, clip, fs, hook }, "\n"))
 end
 
 local function showDevice()
-	local touch = safeGet(function()
-		return game:GetService("UserInputService").TouchEnabled
-	end)
-	local kb = safeGet(function()
-		return game:GetService("UserInputService").KeyboardEnabled
-	end)
-	local gp = safeGet(function()
-		return game:GetService("UserInputService").GamepadEnabled
-	end)
-	local acc = safeGet(function()
-		return game:GetService("UserInputService").AccelerometerEnabled
-	end)
-	local plat = safeGet(function()
-		return tostring(game:GetService("UserInputService"):GetPlatform())
-	end) or "?"
+	local touch = safeGet(function() return game:GetService("UserInputService").TouchEnabled end)
+	local kb = safeGet(function() return game:GetService("UserInputService").KeyboardEnabled end)
+	local gp = safeGet(function() return game:GetService("UserInputService").GamepadEnabled end)
+	local acc = safeGet(function() return game:GetService("UserInputService").AccelerometerEnabled end)
+	local plat = safeGet(function() return tostring(game:GetService("UserInputService"):GetPlatform()) end) or "?"
 	local kind = touch and not kb and "mobile" or (kb and "desktop" or "mixed")
-	say(t("deviceTitle", "Device"), table.concat({
-		kind,
-		"platform " .. plat,
-		"touch " .. tostring(touch),
-		"keyboard " .. tostring(kb),
-		"gamepad " .. tostring(gp),
-		"accel " .. tostring(acc),
-	}, "\n"))
+	say(t("deviceTitle", "Device"), table.concat({ kind, "platform " .. plat, "touch " .. tostring(touch), "keyboard " .. tostring(kb), "gamepad " .. tostring(gp), "accel " .. tostring(acc) }, "\n"))
 end
 
 local function showPrefix()
@@ -140,28 +121,18 @@ local function showPrefix()
 end
 
 local function showTz()
-	local off = safeGet(function()
-		return os.date("%z")
-	end) or "?"
-	local name = safeGet(function()
-		return os.date("%Z")
-	end) or "?"
-	local stamp = safeGet(function()
-		return os.date("%Y-%m-%d %H:%M:%S")
-	end) or "n/a"
+	local off = safeGet(function() return os.date("%z") end) or "?"
+	local name = safeGet(function() return os.date("%Z") end) or "?"
+	local stamp = safeGet(function() return os.date("%Y-%m-%d %H:%M:%S") end) or "n/a"
 	say(t("tzTitle", "Timezone"), name .. " " .. off .. "\n" .. stamp)
 end
 
 local function showDisplay()
-	local cam = safeGet(function()
-		return workspace.CurrentCamera
-	end)
+	local cam = safeGet(function() return workspace.CurrentCamera end)
 	local vs = cam and cam.ViewportSize
 	local w = vs and math.floor(vs.X) or "?"
 	local h = vs and math.floor(vs.Y) or "?"
-	local gui = safeGet(function()
-		return game:GetService("GuiService"):GetGuiInset()
-	end)
+	local gui = safeGet(function() return game:GetService("GuiService"):GetGuiInset() end)
 	local inset = gui and string.format("%d,%d", gui.X, gui.Y) or "n/a"
 	local scale = safeGet(function()
 		local cam2 = workspace.CurrentCamera
@@ -194,7 +165,6 @@ pcall(function()
 		return
 	end
 	_G.__IYP_762_CMDS = true
-
 	local function register(name, aliases, fn)
 		if type(findCmd) == "function" then
 			local existing = findCmd(name)
@@ -214,23 +184,10 @@ pcall(function()
 			addcmd(name, aliases, fn)
 		end
 	end
-
-	register("env", { "executor", "uncinfo" }, function()
-		showEnv()
-	end)
-	register("device", { "platform", "input" }, function()
-		showDevice()
-	end)
-	register("showprefix", { "getprefix", "pfx" }, function()
-		showPrefix()
-	end)
-	register("timezone", { "tz", "zone" }, function()
-		showTz()
-	end)
-	register("display", { "resolution", "viewport" }, function()
-		showDisplay()
-	end)
-	register("hotfixes", { "hf", "patches" }, function()
-		showHotfixes()
-	end)
+	register("env", { "executor", "uncinfo" }, function() showEnv() end)
+	register("device", { "platform", "input" }, function() showDevice() end)
+	register("showprefix", { "getprefix", "pfx" }, function() showPrefix() end)
+	register("timezone", { "tz", "zone" }, function() showTz() end)
+	register("display", { "resolution", "viewport" }, function() showDisplay() end)
+	register("hotfixes", { "hf", "patches" }, function() showHotfixes() end)
 end)
