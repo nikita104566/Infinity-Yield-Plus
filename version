@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.63",
+	"Announcement": "7.63: denser command list + empty search stays visible"
 }

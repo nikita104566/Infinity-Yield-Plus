@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command list rows are tighter (22px) so more names fit on one screen, and a typed search with no hits keeps the panel open with a localized “No matching commands” / «Нет подходящих команд» line instead of collapsing empty.
+
 ## 7.62 — 2026-09-14
 
 ### Added
