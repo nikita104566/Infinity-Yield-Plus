@@ -1,1 +1,98 @@
-file:///tmp/iyp_source.lua
+-- Infinity Yield Plus 7.63
+-- Loads the 7.50 core blob, then applies the command-panel empty-search state.
+local _iypCoreUrl = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+local ok, raw = pcall(function()
+	return game:HttpGet(_iypCoreUrl)
+end)
+if not ok or type(raw) ~= "string" or #raw < 1000 then
+	error("Infinity Yield Plus: failed to fetch core source")
+end
+raw = raw:gsub("currentVersion = '7.50'", "currentVersion = '7.63'", 1)
+raw = raw:gsub(
+	'\t\tfavHintRemove = "★  Favorited · right-click to remove",',
+	'\t\tfavHintRemove = "★  Favorited · right-click to remove",\n\t\tnoCmdMatch = "No commands match",\n\t\tnoCmdMatchHint = "Try another name or clear the search",',
+	1
+)
+raw = raw:gsub(
+	'\t\tfavHintRemove = "★  В избранном · ПКМ — убрать",',
+	'\t\tfavHintRemove = "★  В избранном · ПКМ — убрать",\n\t\tnoCmdMatch = "Нет подходящих команд",\n\t\tnoCmdMatchHint = "Другое имя или очисти поиск",',
+	1
+)
+raw = raw:gsub(
+	'\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end',
+	'\tif cmdAllHeader then cmdAllHeader.Text = T("allCommands") end\n\tif cmdEmptyTitle then cmdEmptyTitle.Text = T("noCmdMatch") end\n\tif cmdEmptyHint then cmdEmptyHint.Text = T("noCmdMatchHint") end',
+	1
+)
+raw = raw:gsub(
+	"cmdAllHeader.Visible = false\ncmdAllHeader.LayoutOrder = 500\n\nSettingsButton.Name = \"SettingsButton\"",
+	table.concat({
+		"cmdAllHeader.Visible = false",
+		"cmdAllHeader.LayoutOrder = 500",
+		"",
+		"cmdEmpty = Instance.new(\"Frame\")",
+		"cmdEmpty.Name = \"IYR_CMD_EMPTY\"",
+		"cmdEmpty.Parent = CMDsF",
+		"cmdEmpty.BackgroundTransparency = 1",
+		"cmdEmpty.BorderSizePixel = 0",
+		"cmdEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 48)",
+		"cmdEmpty.Visible = false",
+		"cmdEmpty.LayoutOrder = 2",
+		"cmdEmpty.ZIndex = 11",
+		"",
+		"cmdEmptyTitle = Instance.new(\"TextLabel\")",
+		"cmdEmptyTitle.Name = \"Title\"",
+		"cmdEmptyTitle.Parent = cmdEmpty",
+		"cmdEmptyTitle.BackgroundTransparency = 1",
+		"cmdEmptyTitle.Position = UDim2.new(0, 4, 0, 4)",
+		"cmdEmptyTitle.Size = UDim2.new(1, -8, 0, 18)",
+		"cmdEmptyTitle.Font = UI_FONT_MED",
+		"cmdEmptyTitle.TextSize = 13",
+		"cmdEmptyTitle.TextXAlignment = Enum.TextXAlignment.Left",
+		"cmdEmptyTitle.TextYAlignment = Enum.TextYAlignment.Center",
+		"cmdEmptyTitle.TextColor3 = Color3.fromRGB(210, 204, 228)",
+		"cmdEmptyTitle.Text = T(\"noCmdMatch\")",
+		"cmdEmptyTitle.TextTruncate = Enum.TextTruncate.AtEnd",
+		"cmdEmptyTitle.ZIndex = 12",
+		"",
+		"cmdEmptyHint = Instance.new(\"TextLabel\")",
+		"cmdEmptyHint.Name = \"Hint\"",
+		"cmdEmptyHint.Parent = cmdEmpty",
+		"cmdEmptyHint.BackgroundTransparency = 1",
+		"cmdEmptyHint.Position = UDim2.new(0, 4, 0, 24)",
+		"cmdEmptyHint.Size = UDim2.new(1, -8, 0, 18)",
+		"cmdEmptyHint.Font = UI_FONT",
+		"cmdEmptyHint.TextSize = 11",
+		"cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left",
+		"cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Top",
+		"cmdEmptyHint.TextColor3 = Color3.fromRGB(154, 148, 176)",
+		"cmdEmptyHint.Text = T(\"noCmdMatchHint\")",
+		"cmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd",
+		"cmdEmptyHint.ZIndex = 12",
+		"",
+		"SettingsButton.Name = \"SettingsButton\"",
+	}, "\n"),
+	1
+)
+raw = raw:gsub(
+	"applyCmdSelection%(% )\n\n    frame.CanvasSize = UDim2.new%(0,0,0,cmdListLayout.AbsoluteContentSize.Y%)",
+	table.concat({
+		"applyCmdSelection()",
+		"    if cmdEmpty then",
+		"        local showEmpty = typedFilter ~= \"\" and #visibleCmdButtons == 0",
+		"        cmdEmpty.Visible = showEmpty",
+		"        if showEmpty then",
+		"            cmdEmpty.LayoutOrder = 2",
+		"            if cmdFavHeader then cmdFavHeader.Visible = false end",
+		"            if cmdAllHeader then cmdAllHeader.Visible = false end",
+		"        end",
+		"    end",
+		"",
+		"    frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)",
+	}, "\n"),
+	1
+)
+local fn, err = loadstring(raw)
+if not fn then
+	error("Infinity Yield Plus: core compile failed: " .. tostring(err))
+end
+fn()
