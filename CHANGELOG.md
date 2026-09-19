@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command panel keeps a clear empty state when search finds nothing instead of a blank list.
+
 ## 7.62 — 2026-09-14
 
 ### Added
