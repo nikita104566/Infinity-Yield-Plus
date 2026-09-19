@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command history (↑ / ↓ and lastcommand) now saves in IY_FE.iy from source alone, so it survives reload and rejoin; empty lastcommand notifies instead of erroring.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
