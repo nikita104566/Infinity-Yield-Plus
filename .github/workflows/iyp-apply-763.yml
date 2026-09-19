@@ -1,0 +1,47 @@
+name: apply-763
+on:
+  push:
+    branches: [sprint/7.63-cmd-list-readable]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore source and patch
+        run: |
+          git checkout e30e0ec732e718618e723f06a2aedda820ed9e5a -- source
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("source")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace("currentVersion = '7.50'", "currentVersion = '7.63'", 1)
+          old_apply = """function FavCmds.apply(btn)\n\tlocal title = tostring(btn:GetAttribute(\"Title\") or btn.Text)\n\tlocal fav = FavCmds.is(title)\n\tlocal label = btn:FindFirstChild(\"Label\")\n\tif label then\n\t\tlabel.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)\n\tend\nend"""
+          new_apply = """function FavCmds.apply(btn)\n\tlocal title = tostring(btn:GetAttribute(\"Title\") or btn.Text)\n\tlocal fav = FavCmds.is(title)\n\tlocal label = btn:FindFirstChild(\"Label\")\n\tif label then\n\t\tlabel.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)\n\tend\n\tlocal star = btn:FindFirstChild(\"FavStar\")\n\tif star then\n\t\tstar.Visible = fav and true or false\n\tend\nend"""
+          if old_apply not in s:
+              raise SystemExit("apply missing")
+          s = s.replace(old_apply, new_apply, 1)
+          s = s.replace("label.Size = UDim2.new(1, 0, 1, 0)", "label.Size = UDim2.new(1, -18, 1, 0)", 1)
+          needle = "\tlabel.Parent = btn\n\tapplyCmdRowText(btn, btn.Text)"
+          insert = """\tlabel.Parent = btn\n\tlocal star = Instance.new(\"TextLabel\")\n\tstar.Name = \"FavStar\"\n\tstar.BackgroundTransparency = 1\n\tstar.AnchorPoint = Vector2.new(1, 0.5)\n\tstar.Position = UDim2.new(1, -2, 0.5, 0)\n\tstar.Size = UDim2.fromOffset(14, 16)\n\tstar.Font = UI_FONT_MED\n\tstar.TextSize = 12\n\tstar.TextColor3 = Color3.fromRGB(255, 214, 102)\n\tstar.Text = \"\u2605\"\n\tstar.Visible = false\n\tstar.ZIndex = 12\n\tstar.Parent = btn\n\tapplyCmdRowText(btn, btn.Text)"""
+          if needle not in s:
+              raise SystemExit("label parent missing")
+          s = s.replace(needle, insert, 1)
+          old_alias = "\tif aliases ~= \"\" then\n\t\thtml = html .. \"<font color=\\\"#7A778C\\\"> \" .. aliases .. \"</font>\"\n\tend"
+          new_alias = "\tlocal extra = 0\n\tif aliases ~= \"\" then\n\t\tfor _ in aliases:gmatch(\"[^/%s]+\") do\n\t\t\textra = extra + 1\n\t\tend\n\tend\n\tif extra > 0 then\n\t\thtml = html .. \"<font color=\\\"#7A778C\\\"> +\" .. tostring(extra) .. \"</font>\"\n\tend"
+          if old_alias not in s:
+              raise SystemExit("alias block missing")
+          s = s.replace(old_alias, new_alias, 1)
+          p.write_text(s, encoding="utf-8")
+          print("patched")
+          PY
+          rm -f .github/workflows/iyp-apply-763.yml
+          git config user.name "iyp-sprint"
+          git config user.email "116300960+nikita104566@users.noreply.github.com"
+          git add source
+          git add -A
+          git commit -m "7.63: compact command names and favorite star in the panel"
+          git push
