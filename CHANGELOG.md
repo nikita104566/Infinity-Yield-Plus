@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command list rows show the primary name and arguments only. Alias chains no longer crowd the line or get truncated over the name. Hover helper title is the name; aliases move onto the first line of the description.
+
 ## 7.62 — 2026-09-14
 
 ### Added
