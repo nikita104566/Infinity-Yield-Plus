@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Automation Studio left list shows full event names (OnCharacterAdded no longer clipped to OnCharact…); the command-count badge sits on the category line so the title can use the width next to the switch.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
