@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command Palette (Ctrl+K): click the star on a row to pin or unpin a favorite; an empty search shows the typed query instead of a blank list.
+
+### Notes
+- One loadstring of `source` is enough. Version stays 7.63 even if an old 762 patch still loads.
+
 ## 7.62 — 2026-09-14
 
 ### Added
