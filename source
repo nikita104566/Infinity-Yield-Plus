@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2055,8 +2055,14 @@ function formatCmdRich(text)
 	primary = (primary or names):gsub("%s+$", "")
 	aliases = aliases or ""
 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+	local extra = 0
 	if aliases ~= "" then
-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+		for _ in aliases:gmatch("[^/%s]+") do
+			extra = extra + 1
+		end
+	end
+	if extra > 0 then
+		html = html .. "<font color=\"#7A778C\"> +" .. tostring(extra) .. "</font>"
 	end
 	if args ~= "" then
 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
@@ -2111,7 +2117,7 @@ function styleCmdRow(btn)
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
 	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Size = UDim2.new(1, -18, 1, 0)
 	label.Font = UI_FONT
 	label.TextSize = 13
 	label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2120,6 +2126,19 @@ function styleCmdRow(btn)
 	label.TextTruncate = Enum.TextTruncate.AtEnd
 	label.ZIndex = 11
 	label.Parent = btn
+	local star = Instance.new("TextLabel")
+	star.Name = "FavStar"
+	star.BackgroundTransparency = 1
+	star.AnchorPoint = Vector2.new(1, 0.5)
+	star.Position = UDim2.new(1, -2, 0.5, 0)
+	star.Size = UDim2.fromOffset(14, 16)
+	star.Font = UI_FONT_MED
+	star.TextSize = 12
+	star.TextColor3 = Color3.fromRGB(255, 214, 102)
+	star.Text = "★"
+	star.Visible = false
+	star.ZIndex = 12
+	star.Parent = btn
 	applyCmdRowText(btn, btn.Text)
 	local marker = Instance.new("Frame")
 	marker.Name = "Sel"
@@ -12266,6 +12285,10 @@ function FavCmds.apply(btn)
 	local label = btn:FindFirstChild("Label")
 	if label then
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
+	end
+	local star = btn:FindFirstChild("FavStar")
+	if star then
+		star.Visible = fav and true or false
 	end
 end
 function FavCmds.find(key)

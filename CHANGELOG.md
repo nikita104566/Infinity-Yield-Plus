@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Command list shows the primary name, a compact +N alias count, and arguments so long rows are readable; favorites show a star on the right of the row.
+
 ## 7.62 — 2026-09-14
 
 ### Added
