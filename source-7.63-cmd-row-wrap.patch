@@ -1,0 +1,31 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -2020,7 +2020,7 @@
+ Example.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ Example.BackgroundTransparency = 1
+ Example.BorderSizePixel = 0
+-Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
++Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 36)
+ Example.Visible = false
+ Example.Font = UI_FONT
+ Example.TextSize = 13
+@@ -2117,7 +2117,9 @@
+ 	label.TextXAlignment = Enum.TextXAlignment.Left
+ 	label.TextColor3 = Color3.fromRGB(244, 244, 248)
+ 	label.RichText = true
+-	label.TextTruncate = Enum.TextTruncate.AtEnd
++	label.TextWrapped = true
++	label.TextYAlignment = Enum.TextYAlignment.Center
++	label.TextTruncate = Enum.TextTruncate.None
+ 	label.ZIndex = 11
+ 	label.Parent = btn
+ 	applyCmdRowText(btn, btn.Text)
