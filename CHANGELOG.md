@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- In the command panel, Escape clears the search box; a second Escape unfocuses and folds the panel.
+
 ## 7.62 — 2026-09-14
 
 ### Added
