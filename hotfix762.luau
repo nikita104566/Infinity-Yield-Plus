@@ -4,14 +4,22 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
-	currentVersion = "7.62"
-	if type(applyHeaderBrand) == "function" then
-		applyHeaderBrand()
-	elseif VersionLabel then
-		VersionLabel.Text = "· 7.62"
+	local localVer = tostring(currentVersion or "")
+	local a, b = localVer:match("^(%d+)%.(%d+)")
+	local keep = false
+	if a and b then
+		keep = (tonumber(a) * 1000 + tonumber(b)) > (7 * 1000 + 62)
 	end
-	if SubLabel then
-		SubLabel.Text = "7.62"
+	if not keep then
+		currentVersion = "7.62"
+		if type(applyHeaderBrand) == "function" then
+			applyHeaderBrand()
+		elseif VersionLabel then
+			VersionLabel.Text = "· 7.62"
+		end
+		if SubLabel then
+			SubLabel.Text = "7.62"
+		end
 	end
 end)
 
