@@ -1,0 +1,61 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -1180,8 +1180,22 @@
+ 	if type(refreshKbCmdPicker) == "function" then
+ 		refreshKbCmdPicker()
+ 	end
+-	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+-	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdFavHeader then
++		local n = cmdFavHeader:GetAttribute("IYPCount")
++		if type(n) == "number" and n > 0 and cmdFavHeader.Visible then
++			cmdFavHeader.Text = T("favorites") .. "  " .. tostring(n)
++		else
++			cmdFavHeader.Text = T("favorites")
++		end
++	end
++	if cmdAllHeader then
++		local n = cmdAllHeader:GetAttribute("IYPCount")
++		if type(n) == "number" and n > 0 and cmdAllHeader.Visible then
++			cmdAllHeader.Text = T("allCommands") .. "  " .. tostring(n)
++		else
++			cmdAllHeader.Text = T("allCommands")
++		end
++	end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -10876,10 +10890,23 @@
+     if cmdFavHeader then
+         cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
+         cmdFavHeader.LayoutOrder = 1
++        cmdFavHeader:SetAttribute("IYPCount", #favRanked)
++        if cmdFavHeader.Visible then
++            cmdFavHeader.Text = T("favorites") .. "  " .. tostring(#favRanked)
++        else
++            cmdFavHeader.Text = T("favorites")
++        end
+     end
+     if cmdAllHeader then
+-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
++        local allN = #otherRanked
++        cmdAllHeader.Visible = not takesPlayer and allN > 0
+         cmdAllHeader.LayoutOrder = 500
++        cmdAllHeader:SetAttribute("IYPCount", allN)
++        if cmdAllHeader.Visible then
++            cmdAllHeader.Text = T("allCommands") .. "  " .. tostring(allN)
++        else
++            cmdAllHeader.Text = T("allCommands")
++        end
+     end
+ 
+     local function placeCmdRow(item, order)
