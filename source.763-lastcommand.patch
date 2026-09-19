@@ -1,0 +1,27 @@
+--- a/source
++++ b/source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ UI_L.en after favHintRemove
++		lastHistEmpty = "No command in history yet",
+@@ UI_L.ru after favHintRemove
++		lastHistEmpty = "В истории ещё нет команды",
+@@ addcmd lastcommand
+-addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
+-    end
+-end)
++addcmd('lastcommand',{'lastcmd'},function(args, speaker)
++    local prev = cmdHistory and cmdHistory[1]
++    if type(prev) ~= 'string' or prev == '' then
++        notify(T("command"), T("lastHistEmpty"))
++        return
++    end
++    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
++        execCmd(prev)
++    else
++        notify(T("command"), T("lastHistEmpty"))
++    end
++end)
