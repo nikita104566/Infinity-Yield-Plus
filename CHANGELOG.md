@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Studio command picker sits above the add bar with no empty rows, and typing a miss shows **No matching commands** instead of a blank popup.
+
 ## 7.62 — 2026-09-14
 
 ### Added
