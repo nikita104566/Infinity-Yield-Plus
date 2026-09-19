@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Empty command bar: Down highlights the first list row so you can walk commands with the arrows before typing.
+
 ## 7.62 — 2026-09-14
 
 ### Added

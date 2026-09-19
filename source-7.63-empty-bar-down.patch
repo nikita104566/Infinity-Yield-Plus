@@ -1,0 +1,35 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -13322,7 +13322,9 @@
+     if gameProcessed then
+         if Cmdbar and Cmdbar:IsFocused() then
+             if input.KeyCode == Enum.KeyCode.Up then
+-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
++                if cmdSelectionPainted and #visibleCmdButtons > 0 then
++                    moveCmdSelection(-1)
++                elseif Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
+                     moveCmdSelection(-1)
+                 else
+                 historyCount += 1
+@@ -13331,7 +13333,11 @@
+                 Cmdbar.CursorPosition = 1020
+                 end
+             elseif input.KeyCode == Enum.KeyCode.Down then
+-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
++                if Cmdbar.Text == "" and historyCount == 0 and #visibleCmdButtons > 0 then
++                    moveCmdSelection(1)
++                elseif cmdSelectionPainted and #visibleCmdButtons > 0 then
++                    moveCmdSelection(1)
++                elseif Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
+                     moveCmdSelection(1)
+                 else
+                 historyCount = historyCount - 1
