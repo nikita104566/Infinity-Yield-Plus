@@ -1,0 +1,58 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -594,6 +594,8 @@
+ 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
+ 		eeEmptyCommand = "Type a command first",
+ 		eeNoEventsMatch = "No events match this filter.",
++		eeNoCmdMatch = "No commands match",
++		eeNoCmdMatchHint = "Clear the box or type another name.",
+ 		eeAdd = "+ Add",
+ 		eeInspector = "Inspector",
+ 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
+@@ -819,6 +821,8 @@
+ 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
+ 		eeEmptyCommand = "Сначала введи команду",
+ 		eeNoEventsMatch = "Нет событий по этому фильтру.",
++		eeNoCmdMatch = "Нет подходящих команд",
++		eeNoCmdMatchHint = "Очисти поле или введи другое имя.",
+ 		eeAdd = "+ Доб.",
+ 		eeInspector = "Инспектор",
+ 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
+@@ -7802,11 +7806,27 @@
+ 			y += 29
+ 		end
+ 		if y > 0 then y -= 3 end
++		if #suggestionRows == 0 and q ~= "" then
++			local emptyHint = mk("TextLabel", {
++				BackgroundTransparency = 1,
++				Size = UDim2.new(1, 0, 0, 40),
++				Text = T("eeNoCmdMatch") .. "\n" .. T("eeNoCmdMatchHint"),
++				TextWrapped = true,
++				TextXAlignment = Enum.TextXAlignment.Left,
++				TextYAlignment = Enum.TextYAlignment.Center,
++				Font = UI_FONT,
++				TextSize = 11,
++				TextColor3 = EE_MUTED,
++				ZIndex = 51,
++			}, pickerHolder)
++			uiPad(emptyHint, 8, 4, 8, 4)
++			y = 40
++		end
+ 		suggestionIndex = #suggestionRows > 0 and 1 or 0
+ 		styleSuggestions()
+ 		picker.CanvasPosition = Vector2.new(0, 0)
+ 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
+-		setPickerVisible(#suggestionRows > 0, y)
++		setPickerVisible(#suggestionRows > 0 or (q ~= "" and y > 0), y)
+ 	end
+ 	local suggestDebounceTok = 0
+ 	local function scheduleSuggestions()
