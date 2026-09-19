@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +741,8 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No command in history yet",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +968,8 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "В истории ещё нет команды",
 	},
 }
 
@@ -8621,7 +8625,8 @@ defaultsettings = {
     currentText2 = {currentText2.R,currentText2.G,currentText2.B};
     currentScroll = {currentScroll.R,currentScroll.G,currentScroll.B};
     themeCustomColors = {};
-    eventBinds = eventEditor.SaveData()
+    eventBinds = eventEditor.SaveData();
+    cmdHistory = {};
 }
 
 defaults = HttpService:JSONEncode(defaultsettings)
@@ -8767,6 +8772,17 @@ function saves()
                         end
                     end
                     if vtype(json.eventBinds, "string") then loadedEventData = json.eventBinds end
+                    if vtype(json.cmdHistory, "table") then
+                        local hist = {}
+                        for i = 1, #json.cmdHistory do
+                            local e = json.cmdHistory[i]
+                            if type(e) == "string" and e ~= "" then
+                                hist[#hist + 1] = e
+                                if #hist >= 30 then break end
+                            end
+                        end
+                        cmdHistory = hist
+                    end
                 end)
                 if not success then
                     jsonAttempts = jsonAttempts + 1
@@ -8823,6 +8839,16 @@ function updatesaves()
                 customSave[i] = {c.R, c.G, c.B}
             end
         end
+        local histSave = {}
+        if type(cmdHistory) == "table" then
+            for i = 1, #cmdHistory do
+                local e = cmdHistory[i]
+                if type(e) == "string" and e ~= "" then
+                    histSave[#histSave + 1] = e
+                    if #histSave >= 30 then break end
+                end
+            end
+        end
         local update = {
             prefix = prefix;
             StayOpen = StayOpen;
@@ -8845,7 +8871,8 @@ function updatesaves()
             currentText2 = {currentText2.R,currentText2.G,currentText2.B};
             currentScroll = {currentScroll.R,currentScroll.G,currentScroll.B};
             themeCustomColors = customSave;
-            eventBinds = eventEditor.SaveData()
+            eventBinds = eventEditor.SaveData();
+            cmdHistory = histSave
         }
         writefileCooldown("IY_FE.iy", HttpService:JSONEncode(update))
     end
@@ -12735,7 +12762,7 @@ function splitString(str,delim)
     return broken
 end
 
-cmdHistory = {}
+if type(cmdHistory) ~= "table" then cmdHistory = {} end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12800,6 +12827,7 @@ function execCmd(cmdStr,speaker,store)
                         end
                     end
                     if #cmdHistory > 30 then table.remove(cmdHistory) end
+                    pcall(updatesaves)
 
                     lastCmds[cmdName] = v
                 end
@@ -18192,8 +18220,13 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
     end
 end)
 
