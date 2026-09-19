@@ -1,0 +1,106 @@
+diff --git a/hotfix762.luau b/hotfix762.luau
+index 4b05f48..ce100ea 100644
+--- a/hotfix762.luau
++++ b/hotfix762.luau
+@@ -4,6 +4,11 @@
+ -- Safe to run more than once. Does not replace main source.
+ 
+ pcall(function()
++	local cur = tostring(currentVersion or "")
++	local minor = tonumber(cur:match("^7%.(%d+)")) or 0
++	if minor >= 63 then
++		return
++	end
+ 	currentVersion = "7.62"
+ 	if type(applyHeaderBrand) == "function" then
+ 		applyHeaderBrand()
+diff --git a/source b/source
+index 97e1997..82b89ee 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -557,6 +557,8 @@ UI_L = {
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
++		favoritesCount = "Favorites  %d",
++		allCommandsCount = "Commands  %d",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+@@ -782,6 +784,8 @@ UI_L = {
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
++		favoritesCount = "Избранное  %d",
++		allCommandsCount = "Команды  %d",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+@@ -1180,8 +1184,12 @@ function applyUiLanguage()
+ 	if type(refreshKbCmdPicker) == "function" then
+ 		refreshKbCmdPicker()
+ 	end
+-	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+-	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if type(updateCmdListHeaders) == "function" then
++		updateCmdListHeaders()
++	else
++		if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
++		if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1759,33 @@ cmdAllHeader.ZIndex = 11
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++function updateCmdListHeaders(favN, otherN)
++	if favN == nil then
++		favN = (cmdFavHeader and tonumber(cmdFavHeader:GetAttribute("Count"))) or 0
++	end
++	if otherN == nil then
++		otherN = (cmdAllHeader and tonumber(cmdAllHeader:GetAttribute("Count"))) or 0
++	end
++	if cmdFavHeader then
++		cmdFavHeader:SetAttribute("Count", favN)
++		local fmt = T("favoritesCount")
++		if type(fmt) == "string" and string.find(fmt, "%%d", 1, true) then
++			cmdFavHeader.Text = string.format(fmt, favN)
++		else
++			cmdFavHeader.Text = T("favorites")
++		end
++	end
++	if cmdAllHeader then
++		cmdAllHeader:SetAttribute("Count", otherN)
++		local fmt = T("allCommandsCount")
++		if type(fmt) == "string" and string.find(fmt, "%%d", 1, true) then
++			cmdAllHeader.Text = string.format(fmt, otherN)
++		else
++			cmdAllHeader.Text = T("allCommands")
++		end
++	end
++end
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10881,6 +10916,9 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+         cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
+     end
++    if type(updateCmdListHeaders) == "function" then
++        updateCmdListHeaders(#favRanked, #otherRanked)
++    end
+ 
+     local function placeCmdRow(item, order)
+         indexnum += 1
