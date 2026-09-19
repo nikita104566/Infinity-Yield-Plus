@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command list rows wrap to two lines so long names and aliases stay readable instead of cutting off with an ellipsis.
+
 ## 7.62 — 2026-09-14
 
 ### Added
