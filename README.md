@@ -7,23 +7,23 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.62-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, env). You can still load individual `hotfix7xx.luau` files if you want a subset. None of them replace the main script.
+One loadstring is enough. Optional `patches.luau` / `hotfix7xx.luau` files do not replace `source`.
 
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
+- Click the Favorites header to show only starred commands; the header shows how many you pinned
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands are not stored in history
 - `showhistory` / `hist` lists recent saved commands

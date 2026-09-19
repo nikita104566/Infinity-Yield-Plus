@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command panel Favorites header always shows a count and is clickable: tap it to list only starred commands, tap again to show everything. Empty favorites keep a short hint instead of a blank top.
+
 ## 7.62 — 2026-09-14
 
 ### Added
