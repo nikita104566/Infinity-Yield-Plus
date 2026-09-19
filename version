@@ -1,4 +1,4 @@
 {
-	"Version": "7.62",
-	"Announcement": "7.62: env / device / showprefix / timezone / display + retrying patches loader"
+	"Version": "7.63",
+	"Announcement": "7.63: typing a miss in the command bar now says no commands match that query"
 }

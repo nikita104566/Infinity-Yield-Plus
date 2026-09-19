@@ -1,0 +1,80 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -555,6 +555,7 @@
+ 		keybindBrowseHint = "Type to filter or pick from the list",
+ 		keybindToggle = "Create Toggle",
+ 		keybindToggleOn = "Create Toggle",
++		cmdNoMatch = "No commands match \"%s\"",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
+ 		addFavorite = "Add to favorites",
+@@ -780,6 +781,7 @@
+ 		keybindBrowseHint = "Вводи для фильтра или выбери из списка",
+ 		keybindToggle = "Создать тоггл",
+ 		keybindToggleOn = "Создать тоггл",
++		cmdNoMatch = "Нет команд по запросу «%s»",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
+ 		addFavorite = "В избранное",
+@@ -1182,6 +1184,10 @@
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyHint and cmdEmptyHint.Visible then
++		local q = cmdEmptyHint:GetAttribute("Query") or ""
++		cmdEmptyHint.Text = string.format(T("cmdNoMatch"), tostring(q))
++	end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1757,23 @@
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmptyHint = Instance.new("TextLabel")
++cmdEmptyHint.Name = "IYR_EMPTY_HINT"
++cmdEmptyHint.Parent = CMDsF
++cmdEmptyHint.BackgroundTransparency = 1
++cmdEmptyHint.BorderSizePixel = 0
++cmdEmptyHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 36)
++cmdEmptyHint.Font = UI_FONT
++cmdEmptyHint.TextSize = 12
++cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyHint.TextColor3 = Color3.fromRGB(151, 146, 169)
++cmdEmptyHint.TextWrapped = true
++cmdEmptyHint.Text = ""
++cmdEmptyHint.ZIndex = 11
++cmdEmptyHint.Visible = false
++cmdEmptyHint.LayoutOrder = 3
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10945,6 +10968,17 @@
+     local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
+     cmdSelectionPainted = typedFilter ~= ""
+     applyCmdSelection()
++    if cmdEmptyHint then
++        if indexnum == 0 and typedFilter ~= "" then
++            cmdEmptyHint.Visible = true
++            cmdEmptyHint:SetAttribute("Query", typedFilter)
++            cmdEmptyHint.Text = string.format(T("cmdNoMatch"), typedFilter)
++        else
++            cmdEmptyHint.Visible = false
++            cmdEmptyHint.Text = ""
++            cmdEmptyHint:SetAttribute("Query", "")
++        end
++    end
+ 
+     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
+     if introPlaying or introLockMinimize then

@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Typing a query that matches no commands now shows a short hint in the command list (EN/RU) instead of a blank panel.
+
 ## 7.62 — 2026-09-14
 
 ### Added
