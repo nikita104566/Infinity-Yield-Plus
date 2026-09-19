@@ -74,7 +74,7 @@ raw = raw:gsub(
 	1
 )
 raw = raw:gsub(
-	"applyCmdSelection%(% )\n\n    frame.CanvasSize = UDim2.new%(0,0,0,cmdListLayout.AbsoluteContentSize.Y%)",
+	"applyCmdSelection%(%)\n\n    frame.CanvasSize = UDim2.new%(0,0,0,cmdListLayout.AbsoluteContentSize.Y%)",
 	table.concat({
 		"applyCmdSelection()",
 		"    if cmdEmpty then",
