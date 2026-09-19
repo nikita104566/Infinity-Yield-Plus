@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command list paints the typed letters in gold so you can see why a row matched.
+
 ## 7.62 — 2026-09-14
 
 ### Added
