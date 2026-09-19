@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Empty history: `lastcommand` shows a notice instead of crashing.
+
 ## 7.62 — 2026-09-14
 
 ### Added

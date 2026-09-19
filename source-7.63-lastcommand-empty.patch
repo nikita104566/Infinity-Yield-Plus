@@ -1,0 +1,36 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ UI_L.en
+ 		noDesc = "No description",
++		lastCmdEmptyTitle = "Last command",
++		lastCmdEmpty = "No command in history yet",
+@@ UI_L.ru
+ 		noDesc = "Нет описания",
++		lastCmdEmptyTitle = "Последняя команда",
++		lastCmdEmpty = "История команд пока пуста",
+@@ lastcommand
+-addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
+-    end
+-end)
++addcmd('lastcommand',{'lastcmd'},function(args, speaker)
++    local prev = cmdHistory[1]
++    if type(prev) ~= "string" or prev == "" then
++        notify(T("lastCmdEmptyTitle"), T("lastCmdEmpty"))
++        return
++    end
++    local low = string.lower(prev)
++    if low:sub(1,11) ~= 'lastcommand' and low:sub(1,7) ~= 'lastcmd' then
++        execCmd(prev)
++    end
++end)
