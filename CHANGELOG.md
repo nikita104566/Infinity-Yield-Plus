@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-19
+
+### Improved
+- Command panel headers now show how many rows are listed: Favorites N and Commands N. The Commands header stays visible even when nothing is starred.
+
 ## 7.62 — 2026-09-14
 
 ### Added
