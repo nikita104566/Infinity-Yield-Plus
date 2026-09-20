@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Command list rows show the primary name and arguments on the first line; aliases wrap to a second muted line so long names are no longer clipped to `goto / to / tp…`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
