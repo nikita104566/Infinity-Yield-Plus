@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Automation Studio left list wraps full event names instead of cutting them to OnCharact…
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
