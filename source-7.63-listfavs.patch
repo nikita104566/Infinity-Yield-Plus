@@ -1,0 +1,74 @@
+diff --git a/source b/source
+index 97e1997..e631ae9 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -559,6 +559,8 @@ UI_L = {
+ 		allCommands = "Commands",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
++		favListEmpty = "No favorites pinned yet",
++		favListTitle = "Favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
+ 		refTitle = "Reference",
+@@ -784,6 +786,8 @@ UI_L = {
+ 		allCommands = "Команды",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
++		favListEmpty = "Пока нет избранных команд",
++		favListTitle = "Избранное",
+ 		favHintAdd = "★  ПКМ — в избранное",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
+ 		refTitle = "Справка",
+@@ -11264,6 +11268,7 @@ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
+ CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
+ CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
+ CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
++CMDs[#CMDs + 1] = {NAME = 'listfavs / showfavs / favlist', DESC = 'Shows pinned favorite commands'}
+ CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
+ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
+ CMDs[#CMDs + 1] = {NAME = 'antivoid / voidbooster / voidboost', DESC = 'Launches you up when You\'re close to the Void'}
+@@ -12032,6 +12037,7 @@ do
+ 		killiy = 'Выгружает Infinity Yield Plus',
+ 		killiyp = 'Выгружает Infinity Yield Plus',
+ 		lastcommand = 'Описание: Executes the previous command used',
++		listfavs = 'Описание: Показывает закреплённые избранные команды',
+ 		lay = 'Меняет твой/твою character lay down',
+ 		light = 'Даёт your игрока dynamic light',
+ 		locate = 'Показать a single игрока and their status',
+@@ -18197,6 +18203,26 @@ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+     end
+ end)
+ 
++addcmd('listfavs',{'showfavs','favlist'},function(args, speaker)
++    local list = favCmds or {}
++    if type(list) ~= "table" or #list == 0 then
++        notify(T("favListTitle"), T("favListEmpty"))
++        return
++    end
++    local shown = {}
++    local n = #list
++    if n > 12 then n = 12 end
++    for i = 1, n do
++        shown[i] = tostring(list[i])
++    end
++    local extra = #list - n
++    local body = table.concat(shown, ", ")
++    if extra > 0 then
++        body = body .. " +" .. tostring(extra)
++    end
++    notify(T("favListTitle") .. " (" .. tostring(#list) .. ")", body)
++end)
++
+ addcmd('windowfocus', {}, function(args, speaker)
+     wfenabled = true
+ end)
