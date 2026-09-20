@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Command bar shows an **x** when it has text; click it to clear the query and restore the full list.
+
 ## 7.62 — 2026-09-14
 
 ### Added
