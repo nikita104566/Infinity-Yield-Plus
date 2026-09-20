@@ -1,0 +1,80 @@
+diff --git a/source b/source
+index 97e1997..bc82bf7 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -2038,12 +2038,34 @@ selectedCmdIndex = 0
+ cmdSelectionPainted = false
+ visibleCmdButtons = {}
+ playerSuggestButtons = {}
++cmdListNeedle = ""
++
++function highlightCmdNeedle(escaped)
++	local needle = cmdListNeedle
++	if type(needle) ~= "string" or needle == "" or #needle < 1 then
++		return escaped
++	end
++	if #needle > 24 then
++		needle = needle:sub(1, 24)
++	end
++	local low = escaped:lower()
++	local nlow = needle:lower()
++	local at = low:find(nlow, 1, true)
++	if not at then
++		return escaped
++	end
++	local before = escaped:sub(1, at - 1)
++	local mid = escaped:sub(at, at + #needle - 1)
++	local after = escaped:sub(at + #needle)
++	return before .. "<font color=\"#F5D76E\">" .. mid .. "</font>" .. after
++end
+ 
+ function formatCmdRich(text)
+ 	if not text or text == "" then
+ 		return ""
+ 	end
+ 	local escaped = tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
++	escaped = highlightCmdNeedle(escaped)
+ 	local argAt = escaped:find("%[")
+ 	local names = escaped
+ 	local args = ""
+@@ -10812,6 +10834,10 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+             argQuery = str:match("(%S+)$") or ""
+         end
+     end
++    cmdListNeedle = (not hasSpace and cmdQuery) or ""
++    if cmdListNeedle and #cmdListNeedle > 24 then
++        cmdListNeedle = cmdListNeedle:sub(1, 24)
++    end
+ 
+     hidePlayerSuggest()
+ 
+@@ -10880,12 +10906,20 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+     if cmdAllHeader then
+         cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+         cmdAllHeader.LayoutOrder = 500
++        local shown = #favRanked + #otherRanked
++        if cmdListNeedle ~= "" and shown > 0 then
++            cmdAllHeader.Text = T("allCommands") .. "  " .. tostring(shown)
++            cmdAllHeader.Visible = true
++        else
++            cmdAllHeader.Text = T("allCommands")
++        end
+     end
+ 
+     local function placeCmdRow(item, order)
+         indexnum += 1
+         item.btn.Visible = true
+         item.btn.LayoutOrder = order
++        applyCmdRowText(item.btn, item.btn.Text)
+         if type(applyFavoriteStyle) == "function" then
+             applyFavoriteStyle(item.btn)
+         end

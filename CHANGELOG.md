@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Command list highlights the typed query in gold and shows the match count while you filter.
+
 ## 7.62 — 2026-09-14
 
 ### Added
