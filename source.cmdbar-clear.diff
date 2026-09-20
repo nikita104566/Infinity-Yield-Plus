@@ -1,0 +1,69 @@
+--- source
++++ source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ UI_L.en
+ 		command = "Command",
++		clearBar = "Clear",
+@@ UI_L.ru
+ 		command = "Команда",
++		clearBar = "Очистить",
+@@ applyUiLanguage
+ 	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
++	if CmdbarClear then
++		CmdbarClear.Text = "x"
++	end
+@@ after Cmdbar.ClearTextOnFocus
++CmdbarClear = Instance.new("TextButton")
++CmdbarClear.Name = "Clear"
++CmdbarClear.Parent = CmdbarWrap
++CmdbarClear.BackgroundTransparency = 1
++CmdbarClear.BorderSizePixel = 0
++CmdbarClear.AnchorPoint = Vector2.new(1, 0.5)
++CmdbarClear.Position = UDim2.new(1, -4, 0.5, 0)
++CmdbarClear.Size = UDim2.new(0, 22, 0, 22)
++CmdbarClear.Font = UI_FONT_MED
++CmdbarClear.TextSize = 16
++CmdbarClear.Text = "x"
++CmdbarClear.TextColor3 = Color3.fromRGB(168, 166, 186)
++CmdbarClear.AutoButtonColor = false
++CmdbarClear.Visible = false
++CmdbarClear.ZIndex = 12
++
++function syncCmdbarClear()
++	if not CmdbarClear or not Cmdbar then return end
++	local has = (Cmdbar.Text or "") ~= ""
++	CmdbarClear.Visible = has
++	local inset = has and 34 or 20
++	Cmdbar.Size = UDim2.new(1, -inset, 1, 0)
++	if CmdGhost then
++		CmdGhost.Size = UDim2.new(1, -inset, 1, 0)
++	end
++end
++
++CmdbarClear.MouseButton1Click:Connect(function()
++	Cmdbar.Text = ""
++	if CmdGhost then CmdGhost.Text = "" end
++	pcall(function()
++		IndexContents("", true, false, true)
++	end)
++	syncCmdbarClear()
++	pcall(function()
++		Cmdbar:CaptureFocus()
++	end)
++end)
++CmdbarClear.MouseEnter:Connect(function()
++	CmdbarClear.TextColor3 = Color3.fromRGB(244, 244, 248)
++end)
++CmdbarClear.MouseLeave:Connect(function()
++	CmdbarClear.TextColor3 = Color3.fromRGB(168, 166, 186)
++end)
+@@ Cmdbar Text changed
++    if type(syncCmdbarClear) == "function" then
++        syncCmdbarClear()
++    end
+@@ FocusLost after IndexContents empty
++        if type(syncCmdbarClear) == "function" then
++            syncCmdbarClear()
++        end
