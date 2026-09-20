@@ -1,0 +1,71 @@
+diff --git a/source b/source
+index 97e1997..1cf747b 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -1182,6 +1182,7 @@ function applyUiLanguage()
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyLabel then cmdEmptyLabel.Text = T("keybindNoMatch") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1752,24 @@ cmdAllHeader.ZIndex = 11
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmptyLabel = Instance.new("TextLabel")
++cmdEmptyLabel.Name = "IYR_EMPTY"
++cmdEmptyLabel.Parent = CMDsF
++cmdEmptyLabel.BackgroundTransparency = 1
++cmdEmptyLabel.BorderSizePixel = 0
++cmdEmptyLabel.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 48)
++cmdEmptyLabel.Font = UI_FONT
++cmdEmptyLabel.TextSize = 13
++cmdEmptyLabel.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyLabel.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyLabel.TextColor3 = Color3.fromRGB(151, 146, 169)
++cmdEmptyLabel.TextWrapped = true
++cmdEmptyLabel.Text = T("keybindNoMatch")
++cmdEmptyLabel.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyLabel.ZIndex = 11
++cmdEmptyLabel.Visible = false
++cmdEmptyLabel.LayoutOrder = 900
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10946,12 +10965,23 @@ IndexContents = function(str,bool,cmdbar,Ianim)
+     cmdSelectionPainted = typedFilter ~= ""
+     applyCmdSelection()
+ 
++    if cmdEmptyLabel then
++        local showEmpty = typedFilter ~= "" and indexnum == 0
++        cmdEmptyLabel.Visible = showEmpty
++        if showEmpty then
++            cmdEmptyLabel.Text = T("keybindNoMatch")
++            cmdEmptyLabel.LayoutOrder = 900
++        end
++    end
++
+     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
+     if introPlaying or introLockMinimize then
+         -- Keep the panel open until intro autohide finishes
+     elseif not Ianim then
+         if indexnum == 0 then
+-            if not cmdbar then
++            if typedFilter ~= "" then
++                maximizeHolder()
++            elseif not cmdbar then
+                 minimizeHolder()
+             elseif cmdbar then
+                 cmdbarHolder()
