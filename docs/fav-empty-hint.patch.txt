@@ -1,0 +1,28 @@
+Apply into source (single loadstring). Do not load this file separately.
+
+1) currentVersion = '7.63'
+
+2) EN UI_L after favorites:
+	favEmpty = "Right-click a command to pin it here",
+   RU UI_L after favorites:
+	favEmpty = "ПКМ по команде — закрепить сюда",
+
+3) applyI18n next to cmdFavHeader:
+	if cmdFavEmpty then cmdFavEmpty.Text = T("favEmpty") end
+
+4) After cmdFavHeader block create TextLabel IYR_FAV_EMPTY (cmdFavEmpty), order 2, muted color 132,126,154, text T("favEmpty"), hidden by default.
+
+5) In IndexContents header visibility:
+    if cmdFavHeader then
+        cmdFavHeader.Visible = not takesPlayer
+        cmdFavHeader.LayoutOrder = 1
+    end
+    if cmdFavEmpty then
+        cmdFavEmpty.Visible = not takesPlayer and #favRanked == 0
+        cmdFavEmpty.LayoutOrder = 2
+        cmdFavEmpty.Text = T("favEmpty")
+    end
+    if cmdAllHeader then
+        cmdAllHeader.Visible = not takesPlayer and #otherRanked > 0
+        cmdAllHeader.LayoutOrder = 500
+    end
