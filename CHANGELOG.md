@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Command list rows are two lines: primary name and aliases on top, `[args]` on the line below so long signatures are no longer cut off.
+
 ## 7.62 — 2026-09-14
 
 ### Added
