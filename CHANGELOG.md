@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Double-click a command in the panel list to run it from one `source` loadstring.
+
 ## 7.62 — 2026-09-14
 
 ### Added

@@ -1,0 +1,61 @@
+diff --git a/source b/source
+index 97e1997..77b6dce 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -10730,6 +10730,27 @@ function moveCmdSelection(delta)
+     return true
+ end
+ 
++function runRowCommand(btn)
++    if not btn or btn:GetAttribute("Disabled") then return end
++    if btn:GetAttribute("SuggestKind") == "player" then
++        completeFromSuggestion(btn)
++        local typed = tostring(Cmdbar and Cmdbar.Text or "")
++        if prefix and prefix ~= "" then
++            typed = typed:gsub("^" .. prefix, "")
++        end
++        typed = typed:gsub("^%s+", ""):gsub("%s+$", "")
++        if typed ~= "" and type(execCmd) == "function" then
++            execCmd(typed, Players.LocalPlayer, true)
++        end
++        return
++    end
++    local key = cmdPrimaryKey(btn:GetAttribute("Title") or btn.Text)
++    if key == "" then return end
++    if type(execCmd) == "function" then
++        execCmd(key, Players.LocalPlayer, true)
++    end
++end
++
+ function completeFromSuggestion(btn)
+     if not btn then return end
+     Cmdbar:CaptureFocus()
+@@ -12434,6 +12455,19 @@ for i = 1, #CMDs do
+             toggleFavoriteCmd(newcmd:GetAttribute("Title") or newcmd.Text)
+         end
+     end)
++    do
++        local lastClick = 0
++        newcmd.MouseButton1Click:Connect(function()
++            if not newcmd.Visible or newcmd:GetAttribute("Disabled") then return end
++            local now = os.clock()
++            if now - lastClick <= 0.35 then
++                lastClick = 0
++                runRowCommand(newcmd)
++            else
++                lastClick = now
++            end
++        end)
++    end
+     -- Mobile has no reliable right-click; long-press the row to toggle favorites.
+     if IsOnMobile then
+         local touchDownAt = 0
