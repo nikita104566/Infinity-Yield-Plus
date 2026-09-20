@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -5095,6 +5095,8 @@ eventEditor = (function()
 		ZIndex = 40,
 	}, main)
 	uiCorner(shell, 14)
+	shell:SetAttribute("EEFlowTop", EE_FLOW_TOP)
+	shell:SetAttribute("EEFlowRest", EE_FLOW_REST)
 	uiStroke(shell, EE_BORDER, 1, 0.55)
 	table.insert(shade1, shell)
 
@@ -5367,27 +5369,33 @@ eventEditor = (function()
 	}, center)
 
 	local varBar = mk("ScrollingFrame", {
+		Name = "EEVarBar",
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 12, 0, 54),
 		Size = UDim2.new(1, -24, 0, 22),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 0,
 		ScrollingDirection = Enum.ScrollingDirection.X,
 		ClipsDescendants = true,
 		ZIndex = 42,
 	}, center)
 	mk("UIListLayout", {
+		Name = "EEVarChips",
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
+		VerticalAlignment = Enum.VerticalAlignment.Top,
 		Padding = UDim.new(0, 5),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, varBar)
+	pcall(function()
+		varBar.EEVarChips.Wraps = true
+	end)
 	uiPad(varBar, 2, 2, 2, 2)
 
 	mk("Frame", {
+		Name = "EEVarRule",
 		BackgroundColor3 = EE_BORDER,
 		BackgroundTransparency = 0.6,
 		BorderSizePixel = 0,
@@ -5461,12 +5469,13 @@ eventEditor = (function()
 	}, picker)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
 	local function setPickerVisible(visible, contentHeight)
+		local rest = tonumber(shell:GetAttribute("EEFlowRest")) or EE_FLOW_REST
 		if visible then
 			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
 			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
 			picker.Size = UDim2.new(1, -20, 0, height)
-			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
-			emptyFlow.Size = UDim2.new(1, -24, 1, -(EE_FLOW_REST + height + 4))
+			flowList.Size = UDim2.new(1, -12, 1, -(rest + height + 4))
+			emptyFlow.Size = UDim2.new(1, -24, 1, -(rest + height + 4))
 			if not picker.Visible then
 				picker.BackgroundTransparency = 1
 				picker.Visible = true
@@ -5477,8 +5486,8 @@ eventEditor = (function()
 		else
 			picker.Visible = false
 			picker.BackgroundTransparency = 0
-			flowList.Size = UDim2.new(1, -12, 1, -EE_FLOW_REST)
-			emptyFlow.Size = UDim2.new(1, -24, 1, -EE_FLOW_REST)
+			flowList.Size = UDim2.new(1, -12, 1, -rest)
+			emptyFlow.Size = UDim2.new(1, -24, 1, -rest)
 		end
 	end
 
@@ -6166,7 +6175,9 @@ eventEditor = (function()
 		for _, chip in ipairs(chips) do
 			if not seen[chip] then
 				seen[chip] = true
-				local width = math.max(42, #chip * 7 + 16)
+				local n = utf8.len(chip)
+				if type(n) ~= "number" then n = #chip end
+				local width = math.max(42, n * 7 + 16)
 				local b = mk("TextButton", {
 					BackgroundColor3 = EE_SELECTED,
 					BorderSizePixel = 0,
@@ -6195,6 +6206,57 @@ eventEditor = (function()
 				end)
 			end
 		end
+		local barW = varBar.AbsoluteSize.X
+		if barW < 40 then
+			barW = EE_W - EE_CENTER_W_OFF - 24
+		end
+		local xAcc, rows = 0, 1
+		for _, child in ipairs(varBar:GetChildren()) do
+			if child:IsA("TextButton") then
+				local w = child.Size.X.Offset
+				if xAcc > 0 and xAcc + w > barW then
+					rows += 1
+					xAcc = 0
+				end
+				xAcc += w + 5
+			end
+		end
+		if rows < 1 then rows = 1 end
+		if rows > 3 then rows = 3 end
+		local wrapOk = false
+		pcall(function()
+			if varBar.EEVarChips then
+				varBar.EEVarChips.Wraps = true
+				wrapOk = true
+			end
+		end)
+		local barH = 22
+		if wrapOk then
+			barH = rows * 18 + (rows - 1) * 5 + 4
+			varBar.ScrollingDirection = Enum.ScrollingDirection.Y
+			varBar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+			varBar.ScrollBarThickness = 0
+		else
+			varBar.ScrollingDirection = Enum.ScrollingDirection.X
+			varBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+			varBar.ScrollBarThickness = (xAcc > barW) and 4 or 0
+		end
+		if barH < 22 then barH = 22 end
+		if barH > 64 then barH = 64 end
+		varBar.Size = UDim2.new(1, -24, 0, barH)
+		varBar.ClipsDescendants = true
+		local flowTop = 54 + barH + 12
+		local rule = center:FindFirstChild("EEVarRule")
+		if rule then
+			rule.Position = UDim2.new(0, 12, 0, 54 + barH + 4)
+		end
+		shell:SetAttribute("EEFlowTop", flowTop)
+		shell:SetAttribute("EEFlowRest", flowTop + EE_ADD_RESERVE)
+		flowList.Position = UDim2.new(0, 6, 0, flowTop)
+		emptyFlow.Position = UDim2.new(0, 12, 0, flowTop)
+		local rest = flowTop + EE_ADD_RESERVE
+		flowList.Size = UDim2.new(1, -12, 1, -rest)
+		emptyFlow.Size = UDim2.new(1, -24, 1, -rest)
 		refreshFlows()
 		refreshInspector()
 		refreshEventList()

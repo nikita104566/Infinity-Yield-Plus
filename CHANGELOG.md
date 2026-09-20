@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Automation Studio `$var` chips wrap inside the center column instead of overflowing into the inspector.
+
 ## 7.62 — 2026-09-14
 
 ### Added
