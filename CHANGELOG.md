@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Improved
+- Searching for a command that does not exist keeps the panel open and shows **No matching commands** (RU: **Нет подходящих команд**) instead of collapsing the list.
+
 ## 7.62 — 2026-09-14
 
 ### Added

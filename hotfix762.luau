@@ -4,6 +4,12 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local cur = tostring(currentVersion or "")
+	local major = tonumber((cur:match("^(%d+)") or "0")) or 0
+	local minor = tonumber((cur:match("^%d+%.(%d+)") or "0")) or 0
+	if major > 7 or (major == 7 and minor >= 63) then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
