@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Added
+- `copyurl` (`placeurl`, `gameurl`) — copies `https://www.roblox.com/games/<PlaceId>` and shows the same link in a notify (works even without clipboard).
+
 ## 7.62 — 2026-09-14
 
 ### Added
