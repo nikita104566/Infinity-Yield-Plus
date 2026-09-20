@@ -1,0 +1,45 @@
+--- a/source
++++ b/source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ applyCmdSelection
+     if selectedCmdButton then
+         topCommand = selectedCmdButton.Text
+         if cmdSelectionPainted then
++            if type(showHelper) == "function" and selectedCmdButton:GetAttribute("Title") then
++                showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
++            end
+             local absY = selectedCmdButton.AbsolutePosition.Y
+@@ applyCmdSelection else
+     else
+         topCommand = nil
++        if type(hideHelper) == "function" then
++            hideHelper()
++        end
+     end
+     updateHintAndGhost()
+ end
+@@ checkTT outside list
+     if mx < listPos.X or mx > listPos.X + listSize.X
+         or my < listPos.Y or my > listPos.Y + listSize.Y then
+-        hideHelper()
++        if cmdSelectionPainted and selectedCmdButton and selectedCmdButton:GetAttribute("Title") then
++            showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
++        else
++            hideHelper()
++        end
+         return
+     end
+@@ checkTT no hover
+     if hovered then
+         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
+         return
+     end
+-    hideHelper()
++    if cmdSelectionPainted and selectedCmdButton and selectedCmdButton:GetAttribute("Title") then
++        showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
++        return
++    end
++    hideHelper()
+ end
