@@ -1,0 +1,36 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ -2051,13 +2051,10 @@
+-\tlocal primary, aliases = names:match("^([^/]+)%s*(.*)$")
+-\tprimary = (primary or names):gsub("%s+$", "")
+-\taliases = aliases or ""
++\tlocal primary = names:match("^([^/]+)") or names
++\tprimary = primary:gsub("%s+$", "")
++\t-- List rows stay readable: aliases live in the hover helper, not the 300px row.
+ \tlocal html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+-\tif aliases ~= "" then
+-\t	html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+-\tend
+@@ -10621,12 +10618,21 @@
+-    local shortTitle = title:match("^[^%[]+") or title
+-    shortTitle = shortTitle:gsub("%s+$", "")
+-    if #shortTitle > 44 then
+-        shortTitle = shortTitle:sub(1, 42) .. "…"
++    local namesOnly = title:match("^[^%[]+") or title
++    namesOnly = namesOnly:gsub("%s+$", "")
++    local primaryName = namesOnly:match("^([^/]+)") or namesOnly
++    primaryName = primaryName:gsub("%s+$", "")
++    local aliasPart = namesOnly:sub(#primaryName + 1):gsub("^%s+", "")
++    local shortTitle = primaryName
++    if utf8 and utf8.len(shortTitle) and utf8.len(shortTitle) > 44 then
++        shortTitle = string.sub(shortTitle, 1, 42) .. "..."
++    elseif #shortTitle > 44 then
++        shortTitle = shortTitle:sub(1, 42) .. "..."
+     end
+     Title_3.Text = shortTitle
++    if aliasPart ~= "" then
++        desc = aliasPart .. "\\n" .. desc
++    end
