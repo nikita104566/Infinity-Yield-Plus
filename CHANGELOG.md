@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Favorites in the command list now keep a gold `*` and gold primary name. RichText no longer hides the favorite color.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
