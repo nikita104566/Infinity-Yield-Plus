@@ -1,0 +1,35 @@
+--- a/source
++++ b/source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ EEEventCard
+-					Size = UDim2.new(1, -4, 0, 52),
++					Size = UDim2.new(1, -4, 0, 64),
+@@ event name label
+-					Position = UDim2.new(0, 14, 0, 8),
+-					Size = UDim2.new(1, -108, 0, 18),
+-					Font = UI_FONT_MED,
+-					TextSize = 13,
+-					TextXAlignment = Enum.TextXAlignment.Left,
+-					TextColor3 = nameColor,
+-					Text = name,
+-					TextTruncate = Enum.TextTruncate.AtEnd,
++					Position = UDim2.new(0, 14, 0, 6),
++					Size = UDim2.new(1, -88, 0, 30),
++					Font = UI_FONT_MED,
++					TextSize = 12,
++					TextWrapped = true,
++					TextXAlignment = Enum.TextXAlignment.Left,
++					TextYAlignment = Enum.TextYAlignment.Top,
++					TextColor3 = nameColor,
++					Text = name,
++					TextTruncate = Enum.TextTruncate.None,
+@@ category label
+-					Position = UDim2.new(0, 14, 0, 30),
+-					Size = UDim2.new(1, -108, 0, 14),
++					Position = UDim2.new(0, 14, 0, 38),
++					Size = UDim2.new(1, -88, 0, 16),
+@@ row spacing
+-				y += 59
++				y += 71
