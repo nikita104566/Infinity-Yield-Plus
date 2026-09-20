@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Changed
+- Studio left event list: full event names wrap instead of cutting to `OnCharact…`; column is a bit wider so switch and count stay readable.
+
 ## 7.62 — 2026-09-14
 
 ### Added
