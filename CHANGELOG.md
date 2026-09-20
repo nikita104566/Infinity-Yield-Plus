@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Command panel keeps the list open and shows "No commands match" when search finds nothing.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
