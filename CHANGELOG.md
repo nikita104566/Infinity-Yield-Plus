@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Improved
+- Automation Studio command picker: typing a query with no hits keeps the picker open with **No matching commands** / **Нет подходящих команд**; at most 10 rows; empty query no longer dumps the full command list.
+
 ## 7.62 — 2026-09-14
 
 ### Added
