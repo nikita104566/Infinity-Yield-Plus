@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Added
+- `showhistory` (`hist`, `cmdhistory`) — notify with the last saved commands; empty history says so instead of failing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
