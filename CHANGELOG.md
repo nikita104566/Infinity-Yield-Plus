@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.63 — 2026-09-20
+
+### Changed
+- Command history is stored in `IY_FE.iy`, so ↑/↓ and `lastcommand` survive reload and rejoin. Empty history shows a notice instead of erroring.
+
+### Notes
+- One loadstring of `source`. Leftover `hotfix762` does not overwrite a newer version badge.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added

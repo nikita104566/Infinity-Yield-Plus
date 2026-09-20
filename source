@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -556,6 +556,8 @@ UI_L = {
 		keybindToggle = "Create Toggle",
 		keybindToggleOn = "Create Toggle",
 		favorites = "Favorites",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
 		allCommands = "Commands",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
@@ -781,6 +783,8 @@ UI_L = {
 		keybindToggle = "Создать тоггл",
 		keybindToggleOn = "Создать тоггл",
 		favorites = "Избранное",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
 		allCommands = "Команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
@@ -8614,6 +8618,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8641,6 +8646,7 @@ useFactorySettings = function()
 	WayPoints = {}
 	PluginsTable = {}
 	favCmds = {}
+	cmdHistory = {}
 end
 
 themeCustomColors = themeCustomColors or {}
@@ -8751,6 +8757,21 @@ function saves()
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
+                    if vtype(json.cmdHistory, "table") then
+                        local hist = {}
+                        for _, entry in ipairs(json.cmdHistory) do
+                            if type(entry) == "string" and entry ~= "" then
+                                local low = string.lower(entry)
+                                if string.sub(low, 1, 11) ~= "lastcommand" and string.sub(low, 1, 7) ~= "lastcmd" then
+                                    hist[#hist + 1] = entry
+                                    if #hist >= 30 then break end
+                                end
+                            end
+                        end
+                        cmdHistory = hist
+                    else
+                        cmdHistory = cmdHistory or {}
+                    end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -8838,6 +8859,21 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = (function()
+                local hist = {}
+                if type(cmdHistory) == "table" then
+                    for _, entry in ipairs(cmdHistory) do
+                        if type(entry) == "string" and entry ~= "" then
+                            local low = string.lower(entry)
+                            if string.sub(low, 1, 11) ~= "lastcommand" and string.sub(low, 1, 7) ~= "lastcmd" then
+                                hist[#hist + 1] = entry
+                                if #hist >= 30 then break end
+                            end
+                        end
+                    end
+                end
+                return hist
+            end)();
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -12735,7 +12771,9 @@ function splitString(str,delim)
     return broken
 end
 
+if type(cmdHistory) ~= "table" then
 cmdHistory = {}
+end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12797,6 +12835,9 @@ function execCmd(cmdStr,speaker,store)
                     if speaker == Players.LocalPlayer then
                         if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
                             table.insert(cmdHistory,1,rawCmdStr)
+                            if type(updatesaves) == "function" then
+                                pcall(updatesaves)
+                            end
                         end
                     end
                     if #cmdHistory > 30 then table.remove(cmdHistory) end
@@ -18192,8 +18233,13 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
     end
 end)
 
