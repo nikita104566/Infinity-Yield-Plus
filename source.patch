@@ -1,0 +1,62 @@
+diff --git a/source b/source
+index 97e1997..10d1ea4 100644
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -594,6 +594,7 @@ UI_L = {
+ 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
+ 		eeEmptyCommand = "Type a command first",
+ 		eeNoEventsMatch = "No events match this filter.",
++		eeNoCmdsMatch = "No matching commands",
+ 		eeAdd = "+ Add",
+ 		eeInspector = "Inspector",
+ 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
+@@ -819,6 +820,7 @@ UI_L = {
+ 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
+ 		eeEmptyCommand = "Сначала введи команду",
+ 		eeNoEventsMatch = "Нет событий по этому фильтру.",
++		eeNoCmdsMatch = "Нет таких команд",
+ 		eeAdd = "+ Доб.",
+ 		eeInspector = "Инспектор",
+ 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
+@@ -7801,12 +7803,31 @@ eventEditor = (function()
+ 			end)
+ 			y += 29
+ 		end
++		if #suggestionRows == 0 and q ~= "" then
++			local emptyRow = mk("TextButton", {
++				BackgroundColor3 = EE_SURFACE,
++				BorderSizePixel = 0,
++				Size = UDim2.new(1, 0, 0, 26),
++				Text = T("eeNoCmdsMatch"),
++				TextXAlignment = Enum.TextXAlignment.Left,
++				TextTruncate = Enum.TextTruncate.AtEnd,
++				Font = UI_FONT,
++				TextSize = 11,
++				TextColor3 = EE_MUTED,
++				AutoButtonColor = false,
++				Active = false,
++				ZIndex = 51,
++			}, pickerHolder)
++			uiCorner(emptyRow, 6)
++			uiPad(emptyRow, 8, 0, 8, 0)
++			y = 26
++		end
+ 		if y > 0 then y -= 3 end
+ 		suggestionIndex = #suggestionRows > 0 and 1 or 0
+ 		styleSuggestions()
+ 		picker.CanvasPosition = Vector2.new(0, 0)
+ 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
+-		setPickerVisible(#suggestionRows > 0, y)
++		setPickerVisible(#suggestionRows > 0 or q ~= "", y)
+ 	end
+ 	local suggestDebounceTok = 0
+ 	local function scheduleSuggestions()
