@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Added
+- `serverfriends` (`sfriends`, `friendson`) — lists friends who are in the current server; empty server shows a short notice.
+
+### Notes
+- One loadstring of `source` is enough. EN/RU strings via T().
+
 ## 7.62 — 2026-09-14
 
 ### Added
