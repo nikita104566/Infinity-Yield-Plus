@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Improved
+- Command list rows are shorter and keep the primary command name visible; long alias chains no longer clip the name off the right edge (full line still in the hover helper).
+
 ## 7.62 — 2026-09-14
 
 ### Added
