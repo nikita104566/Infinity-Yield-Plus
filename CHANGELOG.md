@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Click Favorites in the command panel to show only pinned commands; click Show all commands or run `favonly` to turn it off.
+
 ## 7.62 — 2026-09-14
 
 ### Added

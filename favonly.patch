@@ -1,0 +1,8 @@
+--- source
++++ source
+@@ currentVersion @+
+-currentVersion = '7.50'
++currentVersion = '7.63'
+
+See PR 210 for full hunks: Favorites header click filters the command list;
+favonly / onlyfavs / favs toggles the same filter; EN+RU strings included.
