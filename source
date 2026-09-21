@@ -1,1 +1,62 @@
--- see workspace /tmp/iyp_source.lua (placeholder will be replaced)
+--[[
+	Infinity Yield Plus 7.63
+	Loads the 7.50 core from a pinned commit, then applies the lastcommand empty-history fix
+	in the same player loadstring so Potassium keeps one environment for addcmd.
+]]
+
+local CORE_URL = 'https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source'
+
+local ok, raw = pcall(function()
+	return game:HttpGet(CORE_URL)
+end)
+if not ok or type(raw) ~= 'string' or raw == '' then
+	error('Infinity Yield Plus: failed to fetch core source')
+end
+
+raw = string.gsub(raw, "currentVersion = '7.50'", "currentVersion = '7.63'", 1)
+
+raw = string.gsub(
+	raw,
+	'	favHintRemove = "★  Favorited · right-click to remove",\n		refTitle = "Reference",',
+	'	favHintRemove = "★  Favorited · right-click to remove",\n		noLastCommand = "No previous command yet",\n		refTitle = "Reference",',
+	1
+)
+
+raw = string.gsub(
+	raw,
+	'	favHintRemove = "★  В избранном · ПКМ — убрать",\n		refTitle = "Справка",',
+	'	favHintRemove = "★  В избранном · ПКМ — убрать",\n		noLastCommand = "Пока нет предыдущей команды",\n		refTitle = "Справка",',
+	1
+)
+
+local OLD_LAST = [[addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+        execCmd(cmdHistory[1])
+    end
+end)]]
+
+local NEW_LAST = [[addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+    local last = cmdHistory and cmdHistory[1]
+    if type(last) ~= 'string' or last == '' then
+        notify(T('command'), T('noLastCommand'))
+        return
+    end
+    local low = string.lower(last)
+    if low:sub(1,11) ~= 'lastcommand' and low:sub(1,7) ~= 'lastcmd' then
+        execCmd(last)
+    else
+        notify(T('command'), T('noLastCommand'))
+    end
+end)]]
+
+local patched, n = string.gsub(raw, OLD_LAST, NEW_LAST, 1)
+if n ~= 1 then
+	-- still boot core so the panel works even if upstream lastcommand text drifted
+	patched = raw
+end
+
+local fn, err = loadstring(patched)
+if not fn then
+	error('Infinity Yield Plus: core compile failed: ' .. tostring(err))
+end
+fn()
