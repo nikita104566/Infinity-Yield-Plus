@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Improved
+- Favorites in the command list show a gold star and name (RichText no longer hides the favorite color).
+- Typing a filter with no hits keeps the panel open and shows “No matching commands” / «Нет таких команд».
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
