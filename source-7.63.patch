@@ -1,0 +1,79 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -1714,7 +1714,7 @@
+ uiPad(CMDsF, 0, 2, math.max(2, SCROLL_GUTTER - 10), 4)
+ 
+ cmdListLayout.Parent = CMDsF
+-cmdListLayout.Padding = UDim.new(0, 3)
++cmdListLayout.Padding = UDim.new(0, 2)
+ cmdListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ 
+ cmdFavHeader = Instance.new("TextLabel")
+@@ -2020,7 +2020,7 @@
+ Example.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ Example.BackgroundTransparency = 1
+ Example.BorderSizePixel = 0
+-Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
++Example.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 24)
+ Example.Visible = false
+ Example.Font = UI_FONT
+ Example.TextSize = 13
+@@ -2054,13 +2054,20 @@
+ 	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
+ 	primary = (primary or names):gsub("%s+$", "")
+ 	aliases = aliases or ""
++	-- List row: primary + args only so long alias chains do not clip the name.
+ 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+-	if aliases ~= "" then
+-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+-	end
+ 	if args ~= "" then
+ 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
+ 	end
++	if aliases ~= "" then
++		local n = 0
++		for _ in aliases:gmatch("/") do
++			n = n + 1
++		end
++		if n > 0 then
++			html = html .. "<font color=\"#6E6B80\"> +" .. tostring(n) .. "</font>"
++		end
++	end
+ 	return html
+ end
+ 
+@@ -10623,9 +10630,23 @@
+     helperShownKey = key
+     local shortTitle = title:match("^[^%[]+") or title
+     shortTitle = shortTitle:gsub("%s+$", "")
+-    if #shortTitle > 44 then
+-        shortTitle = shortTitle:sub(1, 42) .. "…"
++    local function utfLen(str)
++        local ok, n = pcall(utf8.len, str)
++        if ok and type(n) == "number" then return n end
++        return #str
++    end
++    local function utfCut(str, maxChars)
++        if utfLen(str) <= maxChars then return str end
++        local acc = ""
++        for _, cp in utf8.codes(str) do
++            acc = acc .. utf8.char(cp)
++            if utfLen(acc) >= maxChars then
++                break
++            end
++        end
++        return acc .. "..."
+     end
++    shortTitle = utfCut(shortTitle, 44)
+     Title_3.Text = shortTitle
+     Description.Text = desc
+     Tooltip:SetAttribute("CmdTitle", title)
