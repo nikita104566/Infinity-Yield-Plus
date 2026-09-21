@@ -1,0 +1,21 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ currentVersion bump + i18n + CMDs + addcmd
++		placeversion = "Place version",   -- UI_L.en
++		placeversion = "Версия места", -- UI_L.ru
++CMDs[#CMDs + 1] = {NAME = 'placeversion / pver / placever', DESC = 'Shows this place publish version (PlaceVersion)'}
++		placeversion = "Показать версию публикации места", -- CMD_DESC_RU
++
++addcmd("placeversion", {"pver", "placever"}, function(args, speaker)
++    local ver = tostring(game.PlaceVersion)
++    notify(T("placeversion") or "PlaceVersion", ver)
++end)
