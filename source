@@ -1,5 +1,5 @@
 -- Infinity Yield Plus 7.63
--- Single loadstring: fetch the 7.50 core by commit SHA, then apply the empty-history lastcommand fix.
+-- One loadstring: fetch pinned core, apply empty-history lastcommand, run it.
 local sha = "e30e0ec732e718618e723f06a2aedda820ed9e5a"
 local url = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/" .. sha .. "/source"
 local ok, src = pcall(function()
@@ -10,17 +10,32 @@ if not ok or type(src) ~= "string" or #src < 1000 then
 end
 src = src:gsub("currentVersion = '7.50'", "currentVersion = '7.63'", 1)
 src = src:gsub(
-	'\t\tallCommands = "Commands",\n',
-	'\t\tallCommands = "Commands",\n\t\thistEmpty = "No command history",\n\t\thistEmptyHint = "Run a command first, then try lastcommand",\n',
+	'allCommands = "Commands",',
+	'allCommands = "Commands", histEmpty = "No command history", histEmptyHint = "Run a command first, then try lastcommand",',
 	1
 )
 src = src:gsub(
-	'\t\tallCommands = "Команды",\n',
-	'\t\tallCommands = "Команды",\n\t\thistEmpty = "История команд пуста",\n\t\thistEmptyHint = "Сначала выполни команду, потом lastcommand",\n',
+	'allCommands = "Команды",',
+	'allCommands = "Команды", histEmpty = "История команд пуста", histEmptyHint = "Сначала выполни команду, потом lastcommand",',
 	1
 )
-local oldCmd = "addcmd('lastcommand',{'lastcmd'},function(args, speaker)\n    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then\n        execCmd(cmdHistory[1])\n    end\nend)"
-local newCmd = "addcmd('lastcommand',{'lastcmd'},function(args, speaker)\n    local last = cmdHistory and cmdHistory[1]\n    if type(last) ~= \"string\" or last == \"\" then\n        notify(T(\"histEmpty\"), T(\"histEmptyHint\"))\n        return\n    end\n    local head = string.lower(last)\n    if head:sub(1,11) == \"lastcommand\" or head:sub(1,7) == \"lastcmd\" then\n        return\n    end\n    execCmd(last)\nend)"
+local oldCmd = [[addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+        execCmd(cmdHistory[1])
+    end
+end)]]
+local newCmd = [[addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+    local last = cmdHistory and cmdHistory[1]
+    if type(last) ~= "string" or last == "" then
+        notify(T("histEmpty"), T("histEmptyHint"))
+        return
+    end
+    local head = string.lower(last)
+    if head:sub(1,11) == "lastcommand" or head:sub(1,7) == "lastcmd" then
+        return
+    end
+    execCmd(last)
+end)]]
 local patched, n = src:gsub(oldCmd, newCmd, 1)
 if n ~= 1 then
 	error("IYP: lastcommand patch did not apply")
