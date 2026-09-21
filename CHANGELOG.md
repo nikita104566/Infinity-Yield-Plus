@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Added
+- `placeversion` (`pver`, `placever`) — shows this place's publish version from the command panel.
+
 ## 7.62 — 2026-09-14
 
 ### Added
