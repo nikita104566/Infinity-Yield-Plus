@@ -1,0 +1,136 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -561,6 +561,7 @@
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
++		noMatches = "No matching commands",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+ 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
+@@ -786,6 +787,7 @@
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
++		noMatches = "Нет таких команд",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+ 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
+@@ -1182,6 +1184,7 @@
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyHint then cmdEmptyHint.Text = T("noMatches") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1754,23 @@
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmptyHint = Instance.new("TextLabel")
++cmdEmptyHint.Name = "IYR_EMPTY"
++cmdEmptyHint.Parent = CMDsF
++cmdEmptyHint.BackgroundTransparency = 1
++cmdEmptyHint.BorderSizePixel = 0
++cmdEmptyHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
++cmdEmptyHint.Font = UI_FONT
++cmdEmptyHint.TextSize = 13
++cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Center
++cmdEmptyHint.TextColor3 = Color3.fromRGB(154, 148, 176)
++cmdEmptyHint.Text = T("noMatches")
++cmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyHint.ZIndex = 11
++cmdEmptyHint.Visible = false
++cmdEmptyHint.LayoutOrder = 3
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -2039,7 +2059,7 @@
+ visibleCmdButtons = {}
+ playerSuggestButtons = {}
+ 
+-function formatCmdRich(text)
++function formatCmdRich(text, isFav)
+ 	if not text or text == "" then
+ 		return ""
+ 	end
+@@ -2054,7 +2074,9 @@
+ 	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
+ 	primary = (primary or names):gsub("%s+$", "")
+ 	aliases = aliases or ""
+-	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
++	local mark = isFav and "<font color=\"#FFD666\">★</font> " or "<font color=\"#B8B4CC\">·</font> "
++	local pcol = isFav and "#FFD666" or "#F4F4F8"
++	local html = mark .. "<font color=\"" .. pcol .. "\">" .. primary .. "</font>"
+ 	if aliases ~= "" then
+ 		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+ 	end
+@@ -2072,7 +2094,12 @@
+ 		if btn:GetAttribute("SuggestKind") == "player" then
+ 			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
+ 		else
+-			label.Text = formatCmdRich(text)
++			local fav = false
++			if type(isFavoriteCmd) == "function" then
++				local ok, v = pcall(isFavoriteCmd, btn:GetAttribute("Title") or text)
++				fav = ok and v and true or false
++			end
++			label.Text = formatCmdRich(text, fav)
+ 		end
+ 	end
+ end
+@@ -10937,6 +10964,15 @@
+         end
+     end
+ 
++    if cmdEmptyHint then
++        local typed = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
++        cmdEmptyHint.Text = T("noMatches")
++        cmdEmptyHint.Visible = typed ~= "" and indexnum == 0 and not takesPlayer
++        if cmdEmptyHint.Visible then
++            cmdEmptyHint.LayoutOrder = 3
++        end
++    end
++
+     if not selectedCmdIndex or selectedCmdIndex < 1 or not visibleCmdButtons[selectedCmdIndex] then
+         selectedCmdIndex = (#visibleCmdButtons > 0) and 1 or 0
+     end
+@@ -10951,7 +10987,10 @@
+         -- Keep the panel open until intro autohide finishes
+     elseif not Ianim then
+         if indexnum == 0 then
+-            if not cmdbar then
++            local typedEmpty = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
++            if cmdbar and typedEmpty ~= "" then
++                maximizeHolder()
++            elseif not cmdbar then
+                 minimizeHolder()
+             elseif cmdbar then
+                 cmdbarHolder()
+@@ -12261,12 +12300,8 @@
+ 	return false, nil
+ end
+ function FavCmds.apply(btn)
+-	local title = tostring(btn:GetAttribute("Title") or btn.Text)
+-	local fav = FavCmds.is(title)
+-	local label = btn:FindFirstChild("Label")
+-	if label then
+-		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
+-	end
++	if not btn then return end
++	applyCmdRowText(btn, btn:GetAttribute("Title") or btn.Text)
+ end
+ function FavCmds.find(key)
+ 	if not CMDsF then return nil end
