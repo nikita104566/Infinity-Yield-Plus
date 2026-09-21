@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Command list rows show the primary name plus a compact +N alias hint instead of dumping every alias and `[arg]` into a truncated line. Full name and args stay in the hover helper.
+
 ## 7.62 — 2026-09-14
 
 ### Added
