@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Improved
+- Searching the command list for something that does not exist now shows a short empty state instead of a blank panel.
+
+### Notes
+- One loadstring on `source`. Version badge 7.63.
+
 ## 7.62 — 2026-09-14
 
 ### Added
