@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-21
+
+### Improved
+- Empty Favorites in the command panel shows a short hint instead of hiding the section.
+
+### Notes
+- One loadstring of `source` is enough. EN/RU via T().
+
 ## 7.62 — 2026-09-14
 
 ### Added
