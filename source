@@ -21,16 +21,29 @@ end
 blob = once(blob, "currentVersion = '7.50'", "currentVersion = '7.63'")
 
 blob = once(blob,
-	'\t\tfavorites = "Favorites",\n\t\tallCommands = "Commands",\n',
-	'\t\tfavorites = "Favorites",\n\t\tfavEmpty = "Right-click a command to pin it here",\n\t\tallCommands = "Commands",\n')
+	[[		favorites = "Favorites",
+		allCommands = "Commands",
+]],
+	[[		favorites = "Favorites",
+		favEmpty = "Right-click a command to pin it here",
+		allCommands = "Commands",
+]])
 
 blob = once(blob,
-	'\t\tfavorites = "Избранное",\n\t\tallCommands = "Команды",\n',
-	'\t\tfavorites = "Избранное",\n\t\tfavEmpty = "ПКМ по команде — закрепить здесь",\n\t\tallCommands = "Команды",\n')
+	[[		favorites = "Избранное",
+		allCommands = "Команды",
+]],
+	[[		favorites = "Избранное",
+		favEmpty = "ПКМ по команде — закрепить здесь",
+		allCommands = "Команды",
+]])
 
 blob = once(blob,
-	'\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n',
-	'\tif cmdFavHeader then cmdFavHeader.Text = T("favorites") end\n\tif cmdFavEmpty then cmdFavEmpty.Text = T("favEmpty") end\n')
+	[[	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+]],
+	[[	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+	if cmdFavEmpty then cmdFavEmpty.Text = T("favEmpty") end
+]])
 
 blob = once(blob,
 	[[cmdFavHeader.Visible = false
