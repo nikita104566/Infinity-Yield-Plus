@@ -1,0 +1,57 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -7369,7 +7369,7 @@
+ 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
+ 					BackgroundTransparency = selectedRow and 0.08 or 0.76,
+ 					BorderSizePixel = 0,
+-					Size = UDim2.new(1, -4, 0, 52),
++					Size = UDim2.new(1, -4, 0, 58),
+ 					LayoutOrder = order,
+ 					ClipsDescendants = true,
+ 					ZIndex = 43,
+@@ -7385,20 +7385,21 @@
+ 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+-					Position = UDim2.new(0, 14, 0, 8),
+-					Size = UDim2.new(1, -108, 0, 18),
++					Position = UDim2.new(0, 14, 0, 6),
++					Size = UDim2.new(1, -96, 0, 24),
+ 					Font = UI_FONT_MED,
+-					TextSize = 13,
++					TextSize = 12,
++					TextWrapped = true,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
++					TextYAlignment = Enum.TextYAlignment.Top,
+ 					TextColor3 = nameColor,
+ 					Text = name,
+-					TextTruncate = Enum.TextTruncate.AtEnd,
+ 					ZIndex = 44,
+ 				}, row)
+ 				mk("TextLabel", {
+ 					BackgroundTransparency = 1,
+-					Position = UDim2.new(0, 14, 0, 30),
+-					Size = UDim2.new(1, -108, 0, 14),
++					Position = UDim2.new(0, 14, 0, 32),
++					Size = UDim2.new(1, -96, 0, 14),
+ 					Font = UI_FONT,
+ 					TextSize = 10,
+ 					TextXAlignment = Enum.TextXAlignment.Left,
+@@ -7477,7 +7478,7 @@
+ 					}, row)
+ 					uiCorner(badge, 8)
+ 				end
+-				y += 59
++				y += 65
+ 			end
+ 		end
+ 		if #visible == 0 then
