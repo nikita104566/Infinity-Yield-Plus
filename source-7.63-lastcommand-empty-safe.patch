@@ -1,0 +1,59 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -561,6 +561,8 @@
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+ 		favHintRemove = "★  Favorited · right-click to remove",
++		lastCmdTitle = "Last command",
++		lastCmdEmpty = "No previous command to run",
+ 		refTitle = "Reference",
+ 		refSpecialHeader = "Special Player Cases",
+ 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
+@@ -786,6 +788,8 @@
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+ 		favHintRemove = "★  В избранном · ПКМ — убрать",
++		lastCmdTitle = "Последняя команда",
++		lastCmdEmpty = "Нет предыдущей команды для запуска",
+ 		refTitle = "Справка",
+ 		refSpecialHeader = "Особые цели игроков",
+ 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
+@@ -11266,7 +11270,7 @@
+ CMDs[#CMDs + 1] = {NAME = 'volume / vol [0-10]', DESC = 'Adjusts your game volume on a scale of 0 to 10'}
+ CMDs[#CMDs + 1] = {NAME = 'antilag / boostfps / lowgraphics', DESC = 'Lowers game quality to boost FPS'}
+ CMDs[#CMDs + 1] = {NAME = 'record / rec', DESC = 'Starts Roblox recorder'}
+ CMDs[#CMDs + 1] = {NAME = 'screenshot / scrnshot', DESC = 'Takes a screenshot'}
+ CMDs[#CMDs + 1] = {NAME = 'togglefullscreen / togglefs', DESC = 'Toggles fullscreen'}
+ CMDs[#CMDs + 1] = {NAME = 'notify [text]', DESC = 'Sends you a notification with the provided text'}
+-CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Executes the previous command used'}
++CMDs[#CMDs + 1] = {NAME = 'lastcommand / lastcmd', DESC = 'Runs the previous command; safe if history is empty'}
+ CMDs[#CMDs + 1] = {NAME = 'exit', DESC = 'Kills Roblox process (or go back to main menu)'}
+@@ -18194,9 +18198,18 @@
+ addcmd('notify',{},function(args, speaker)
+     notify(getstring(1, args))
+ end)
+ 
+ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
++    local prev = cmdHistory and cmdHistory[1]
++    if type(prev) ~= "string" or prev == "" then
++        notify(T("lastCmdTitle"), T("lastCmdEmpty"))
++        return
+     end
++    local low = string.lower(prev)
++    if low:sub(1,11) == "lastcommand" or low:sub(1,7) == "lastcmd" then
++        notify(T("lastCmdTitle"), T("lastCmdEmpty"))
++        return
++    end
++    execCmd(prev)
+ end)
