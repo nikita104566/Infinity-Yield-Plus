@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-23
+
+### Improved
+- Automation Studio left list shows full event names (`OnCharacterRemoving`) without clipping; the row wraps instead of cutting to `OnCharact…`.
+
 ## 7.62 — 2026-09-14
 
 ### Added
