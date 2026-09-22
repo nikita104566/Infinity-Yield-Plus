@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Automation Studio command picker stays above the add bar, no longer leaves empty rows, and shows “No matching commands” / «Нет таких команд» when the typed query matches nothing.
+
 ## 7.62 — 2026-09-14
 
 ### Added

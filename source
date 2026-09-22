@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -594,6 +594,7 @@ UI_L = {
 		eeAddPlaceholder = "Command  ·  Tab  ·  \\ or / chain",
 		eeEmptyCommand = "Type a command first",
 		eeNoEventsMatch = "No events match this filter.",
+		eeNoPickerMatch = "No matching commands",
 		eeAdd = "+ Add",
 		eeInspector = "Inspector",
 		eeInspHint = "Select a workflow card to edit its command, conditions and execution rules.",
@@ -819,6 +820,7 @@ UI_L = {
 		eeAddPlaceholder = "Команда  ·  Tab  ·  \\ или / цепочка",
 		eeEmptyCommand = "Сначала введи команду",
 		eeNoEventsMatch = "Нет событий по этому фильтру.",
+		eeNoPickerMatch = "Нет таких команд",
 		eeAdd = "+ Доб.",
 		eeInspector = "Инспектор",
 		eeInspHint = "Выбери карточку workflow, чтобы править команду, условия и правила запуска.",
@@ -5443,10 +5445,12 @@ eventEditor = (function()
 		Position = UDim2.new(0, 10, 1, -178),
 		Size = UDim2.new(1, -20, 0, 130),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
 		ScrollBarThickness = 5,
 		ScrollBarImageColor3 = Color3.fromRGB(112, 104, 150),
 		ScrollBarImageTransparency = 0.3,
+		ClipsDescendants = true,
 		Visible = false,
 		ZIndex = 50,
 	}, center)
@@ -5455,15 +5459,20 @@ eventEditor = (function()
 	uiPad(picker, 4, 4, 4, 4)
 	local pickerHolder = mk("Frame", {
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		Size = UDim2.new(1, -8, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.None,
 		ZIndex = 50,
 	}, picker)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
 	local function setPickerVisible(visible, contentHeight)
 		if visible then
-			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
-			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
+			local addReserve = 54
+			local maxH = 200
+			if center.AbsoluteSize.Y > 0 then
+				maxH = math.max(36, math.min(200, math.floor(center.AbsoluteSize.Y - addReserve - EE_FLOW_TOP)))
+			end
+			local height = math.min(maxH, math.max(36, (contentHeight or 24) + 8))
+			picker.Position = UDim2.new(0, 10, 1, -(addReserve + height))
 			picker.Size = UDim2.new(1, -20, 0, height)
 			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
 			emptyFlow.Size = UDim2.new(1, -24, 1, -(EE_FLOW_REST + height + 4))
@@ -7717,11 +7726,6 @@ eventEditor = (function()
 		end)
 	end
 	local function refreshSuggestions()
-		for _, c in ipairs(pickerHolder:GetChildren()) do
-			if c:IsA("TextButton") then c:Destroy() end
-		end
-		suggestionRows = {}
-		suggestionIndex = 0
 		local raw = addBox.Text or ""
 		local normalized = raw:gsub("://", "\1"):gsub("/", "\\"):gsub("\1", "://")
 		if normalized ~= raw then
@@ -7730,6 +7734,11 @@ eventEditor = (function()
 			addBox.CursorPosition = cursor
 			return
 		end
+		for _, c in ipairs(pickerHolder:GetChildren()) do
+			if c:IsA("GuiObject") then c:Destroy() end
+		end
+		suggestionRows = {}
+		suggestionIndex = 0
 		local q, _, _, chained = activeCommandToken(normalized)
 		q = q:lower()
 		if not CMDs or (q == "" and not chained) then
@@ -7771,13 +7780,14 @@ eventEditor = (function()
 			return a.score < b.score
 		end)
 		local y = 0
+		local rowW = math.max(80, math.floor(((center.AbsoluteSize.X > 0 and center.AbsoluteSize.X or 468) - 40)))
 		for index = 1, #matches do
 			local match = matches[index]
 			local primary = match.primary
 			local row = mk("TextButton", {
 				BackgroundColor3 = EE_SURFACE,
 				BorderSizePixel = 0,
-				Size = UDim2.new(1, 0, 0, 26),
+				Size = UDim2.new(0, rowW, 0, 26),
 				Text = primary,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
@@ -7801,12 +7811,30 @@ eventEditor = (function()
 			end)
 			y += 29
 		end
-		if y > 0 then y -= 3 end
+		if #suggestionRows == 0 then
+			mk("TextLabel", {
+				Name = "EEPickerEmpty",
+				BackgroundTransparency = 1,
+				Size = UDim2.new(0, rowW, 0, 28),
+				Font = UI_FONT,
+				TextSize = 12,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				TextWrapped = true,
+				TextColor3 = EE_MUTED,
+				Text = T("eeNoPickerMatch"),
+				ZIndex = 51,
+			}, pickerHolder)
+			y = 28
+		elseif y > 0 then
+			y -= 3
+		end
 		suggestionIndex = #suggestionRows > 0 and 1 or 0
 		styleSuggestions()
 		picker.CanvasPosition = Vector2.new(0, 0)
-		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
-		setPickerVisible(#suggestionRows > 0, y)
+		picker.CanvasSize = UDim2.new(0, 0, 0, y)
+		pickerHolder.Size = UDim2.new(0, rowW, 0, y)
+		setPickerVisible(true, y)
 	end
 	local suggestDebounceTok = 0
 	local function scheduleSuggestions()
@@ -8262,6 +8290,12 @@ eventEditor = (function()
 		addBtn.Text = T("eeAdd")
 		createGroupBtn.Text = T("eeCreateGroup")
 		addBox.PlaceholderText = T("eeAddPlaceholder")
+		if picker.Visible then
+			local emptyHint = pickerHolder:FindFirstChild("EEPickerEmpty")
+			if emptyHint and emptyHint:IsA("TextLabel") then
+				emptyHint.Text = T("eeNoPickerMatch")
+			end
+		end
 		inspTitle.Text = T("eeInspector")
 		testEventBtn.Text = "▶  " .. T("eeTestEvent")
 		clearBtn.Text = T("eeClear")
