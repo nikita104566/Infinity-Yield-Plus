@@ -1,0 +1,82 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -557,6 +557,7 @@
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
+ 		allCommands = "Commands",
++		cmdNoMatch = "No commands match that. Clear the bar or try a shorter name.",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+ 		favHintAdd = "★  Right-click to favorite",
+@@ -782,6 +783,7 @@
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
+ 		allCommands = "Команды",
++		cmdNoMatch = "Нет таких команд. Стори строку или укороти имя.",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+ 		favHintAdd = "★  ПКМ — в избранное",
+@@ -1182,6 +1184,7 @@
+ 	end
+ 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+ 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
++	if cmdEmptyHint then cmdEmptyHint.Text = T("cmdNoMatch") end
+ 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
+ 	if Directions then Directions.Text = T("keybindHint") end
+ 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
+@@ -1751,6 +1754,24 @@
+ cmdAllHeader.Visible = false
+ cmdAllHeader.LayoutOrder = 500
+ 
++cmdEmptyHint = Instance.new("TextLabel")
++cmdEmptyHint.Name = "IYR_CMD_EMPTY"
++cmdEmptyHint.Parent = CMDsF
++cmdEmptyHint.BackgroundTransparency = 1
++cmdEmptyHint.BorderSizePixel = 0
++cmdEmptyHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 36)
++cmdEmptyHint.Font = UI_FONT
++cmdEmptyHint.TextSize = 13
++cmdEmptyHint.TextXAlignment = Enum.TextXAlignment.Left
++cmdEmptyHint.TextYAlignment = Enum.TextYAlignment.Top
++cmdEmptyHint.TextColor3 = Color3.fromRGB(154, 148, 176)
++cmdEmptyHint.TextWrapped = true
++cmdEmptyHint.Text = T("cmdNoMatch")
++cmdEmptyHint.TextTruncate = Enum.TextTruncate.AtEnd
++cmdEmptyHint.ZIndex = 11
++cmdEmptyHint.Visible = false
++cmdEmptyHint.LayoutOrder = 0
++
+ SettingsButton.Name = "SettingsButton"
+ SettingsButton.Parent = Holder
+ SettingsButton.BackgroundTransparency = 1
+@@ -10946,11 +10967,20 @@
+     cmdSelectionPainted = typedFilter ~= ""
+     applyCmdSelection()
+ 
++    local showEmpty = typedFilter ~= "" and #visibleCmdButtons == 0
++    if cmdEmptyHint then
++        cmdEmptyHint.Text = T("cmdNoMatch")
++        cmdEmptyHint.Visible = showEmpty
++        cmdEmptyHint.LayoutOrder = 0
++    end
++
+     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
+     if introPlaying or introLockMinimize then
+         -- Keep the panel open until intro autohide finishes
+     elseif not Ianim then
+-        if indexnum == 0 then
++        if showEmpty then
++            maximizeHolder()
++        elseif indexnum == 0 then
+             if not cmdbar then
+                 minimizeHolder()
+             elseif cmdbar then

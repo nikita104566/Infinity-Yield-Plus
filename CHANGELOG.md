@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Command panel stays open on a typed search with no hits and shows an EN/RU empty hint instead of collapsing to the bar.
+
 ## 7.62 — 2026-09-14
 
 ### Added
