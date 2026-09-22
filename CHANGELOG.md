@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Added
+- `listkeybinds` (`listbinds`, `showbinds`, `bindlist`) — notify of saved keybinds from the command panel; empty list points to Settings > Edit Keybinds.
+
 ## 7.62 — 2026-09-14
 
 ### Added

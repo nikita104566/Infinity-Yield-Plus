@@ -1,0 +1,95 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -741,6 +741,8 @@
+ 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
+ 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
+ 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
++		listKeybindsTitle = "Keybinds",
++		listKeybindsEmpty = "No keybinds yet. Settings > Edit Keybinds to add one.",
+ 	},
+ 	ru = {
+ 		command = "Команда",
+@@ -966,6 +968,8 @@
+ 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
+ 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
+ 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
++		listKeybindsTitle = "Клавиши",
++		listKeybindsEmpty = "Пока нет биндов. Настройки > Клавиши — добавить.",
+ 	},
+ }
+ 
+@@ -11620,6 +11624,7 @@
+ CMDs[#CMDs + 1] = {NAME = 'addalias [cmd] [alias]', DESC = 'Adds an alias to a command'}
+ CMDs[#CMDs + 1] = {NAME = 'removealias [alias]', DESC = 'Removes a custom alias'}
+ CMDs[#CMDs + 1] = {NAME = 'clraliases', DESC = 'Removes all custom aliases'}
++CMDs[#CMDs + 1] = {NAME = 'listkeybinds / listbinds / showbinds', DESC = 'Shows saved keybinds'}
+ CMDs[#CMDs + 1] = {NAME = '', DESC = ''}
+ CMDs[#CMDs + 1] = {NAME = 'addplugin / plugin [name]', DESC = 'Add a plugin via command'}
+ CMDs[#CMDs + 1] = {NAME = 'removeplugin / deleteplugin [name]', DESC = 'Remove a plugin via command'}
+@@ -11952,6 +11957,7 @@
+ 		clientantiteleport = 'Описание: Prevents localscripts from teleporting you',
+ 		climb = 'Меняет твой/твою character climb a clientsided truss (no its still visible in client replication, skid)',
+ 		clraliases = 'Убирает all custom aliases',
++		listkeybinds = 'Показывает сохранённые бинды',
+ 		copyanimation = 'Копирует someone elses animation',
+ 		copyanimationid = 'Копирует your animation id or someone elses to твой буфер обмена',
+ 		copyappearanceid = 'Копирует a игроков appearance ID to твой буфер обмена',
+@@ -15049,6 +15055,48 @@
+     refreshaliases()
+ end)
+ 
++addcmd('listkeybinds',{'listbinds','showbinds','bindlist'},function(args, speaker)
++    local rows = {}
++    if type(binds) == "table" then
++        for i = 1, #binds do
++            local row = binds[i]
++            if type(row) == "table" then
++                local input = tostring(row.KEY or "")
++                local key
++                if input == "RightClick" or input == "LeftClick" then
++                    key = input
++                elseif string.sub(input, 1, 13) == "Enum.KeyCode." then
++                    key = string.sub(input, 14)
++                else
++                    key = input
++                end
++                local cmd = tostring(row.COMMAND or "")
++                if key ~= "" and cmd ~= "" then
++                    local line = key .. " -> " .. cmd
++                    if row.TOGGLE then
++                        line = line .. " / " .. tostring(row.TOGGLE)
++                    elseif row.ISKEYUP then
++                        line = line .. " (keyup)"
++                    end
++                    rows[#rows + 1] = line
++                end
++            end
++        end
++    end
++    if #rows == 0 then
++        notify(T("listKeybindsTitle"), T("listKeybindsEmpty"))
++        return
++    end
++    local maxn = 12
++    local shown = {}
++    for i = 1, math.min(#rows, maxn) do
++        shown[#shown + 1] = rows[i]
++    end
++    if #rows > maxn then
++        shown[#shown + 1] = "+" .. tostring(#rows - maxn)
++    end
++    notify(T("listKeybindsTitle") .. " (" .. tostring(#rows) .. ")", table.concat(shown, "\n"))
++end)
++
+ addcmd('keepiyp', {"keepiy", "keepiyr"}, function(args, speaker)
+     if queueteleport then
+         KeepInfYield = true
