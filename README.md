@@ -21,6 +21,7 @@ Open the panel with your prefix (default `;`).
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section at the top of the list
+- Empty Favorites shows how to pin a command with the star on the row
 - Primary command names stay fully readable; aliases and `[args]` clip at the end of the row
 - Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
 - Command history is saved across reload and rejoin (`lastcommand`, ↑ / ↓)
