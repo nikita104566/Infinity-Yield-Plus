@@ -1,1 +1,117 @@
--- see local /tmp/iyp_source.lua placeholder
+-- Infinity Yield Plus 7.63
+-- Single loadstring: pinned 7.50 core + command-row alias collapse.
+currentVersion = "7.63"
+
+local pinned = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/e30e0ec732e718618e723f06a2aedda820ed9e5a/source"
+local raw
+if type(game) == "table" and game.HttpGet then
+	raw = game:HttpGet(pinned)
+else
+	error("IYP: HttpGet is required to load source")
+end
+assert(type(raw) == "string" and #raw > 1000, "IYP: core source failed to download")
+local chunk, err = loadstring(raw)
+assert(chunk, err or "IYP: core source failed to compile")
+chunk()
+
+currentVersion = "7.63"
+if type(VersionLabel) == "userdata" then
+	pcall(function()
+		VersionLabel.Text = "· " .. currentVersion
+	end)
+end
+if type(SubLabel) == "userdata" then
+	pcall(function()
+		SubLabel.Text = currentVersion
+	end)
+end
+
+cmdListFilter = ""
+
+function formatCmdRich(text)
+	if not text or text == "" then
+		return ""
+	end
+	local escaped = tostring(text):gsub("&", "&"):gsub("<", "<"):gsub(">", ">")
+	local argAt = escaped:find("%[")
+	local names = escaped
+	local args = ""
+	if argAt then
+		names = escaped:sub(1, argAt - 1):gsub("%s+$", "")
+		args = escaped:sub(argAt)
+	end
+	local primary, rest = names:match("^([^/]+)%s*(.*)$")
+	primary = (primary or names):gsub("%s+$", "")
+	rest = rest or ""
+	local aliasList = {}
+	for part in string.gmatch(rest, "[^/]+") do
+		part = part:gsub("^%s+", ""):gsub("%s+$", "")
+		if part ~= "" then
+			aliasList[#aliasList + 1] = part
+		end
+	end
+	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+	local prefer = tostring(cmdListFilter or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()
+	if prefer:find("%s") then
+		prefer = prefer:match("^(%S+)") or prefer
+	end
+	local shown = nil
+	if prefer ~= "" and prefer ~= string.lower(primary) then
+		for i = 1, #aliasList do
+			local a = aliasList[i]
+			local al = string.lower(a)
+			if al == prefer or string.sub(al, 1, #prefer) == prefer then
+				shown = a
+				break
+			end
+		end
+	end
+	if shown then
+		html = html .. "<font color=\"#A78BFA\"> / " .. shown .. "</font>"
+	end
+	local extra = #aliasList
+	if shown then
+		extra = extra - 1
+	end
+	if extra > 0 then
+		html = html .. "<font color=\"#7A778C\"> +" .. tostring(extra) .. "</font>"
+	end
+	if args ~= "" then
+		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
+	end
+	return html
+end
+
+local function restyleVisible()
+	local list = visibleCmdButtons
+	if type(list) ~= "table" then
+		return
+	end
+	for i = 1, #list do
+		local btn = list[i]
+		if btn and btn.Name ~= "IYR_SUGGEST" and type(applyCmdRowText) == "function" then
+			applyCmdRowText(btn, btn.Text)
+		end
+	end
+end
+
+if type(IndexContents) == "function" then
+	local innerIndex = IndexContents
+	IndexContents = function(str, bool, cmdbar, Ianim)
+		cmdListFilter = str or ""
+		innerIndex(str, bool, cmdbar, Ianim)
+		restyleVisible()
+	end
+end
+
+if type(cmdButtonsList) == "function" and type(applyCmdRowText) == "function" then
+	local ok, list = pcall(cmdButtonsList)
+	if ok and type(list) == "table" then
+		for i = 1, #list do
+			local btn = list[i]
+			if btn then
+				applyCmdRowText(btn, btn.Text)
+			end
+		end
+	end
+end
