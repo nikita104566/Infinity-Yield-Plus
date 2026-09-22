@@ -1,0 +1,45 @@
+--- source
++++ source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+
+@@ UI_L.en (after managePlugins)
++		listPluginsTitle = "Plugins",
++		listPluginsEmpty = "No plugins loaded yet",
+
+@@ UI_L.ru (after managePlugins)
++		listPluginsTitle = "Плагины",
++		listPluginsEmpty = "Плагины ещё не загружены",
+
+@@ CMDs (after addallplugins)
++CMDs[#CMDs + 1] = {NAME = 'listplugins / showplugins / pluginlist', DESC = 'Lists loaded plugin files'}
+
+@@ after addallplugins addcmd
++addcmd('listplugins', {'showplugins', 'pluginlist'}, function(args, speaker)
++    local names = {}
++    if type(PluginsTable) == "table" then
++        for i = 1, #PluginsTable do
++            local n = PluginsTable[i]
++            if type(n) == "string" and n ~= "" then
++                names[#names + 1] = n
++            end
++        end
++    end
++    if #names == 0 then
++        notify(T("listPluginsTitle"), T("listPluginsEmpty"))
++        return
++    end
++    local cap = 12
++    local shown = {}
++    for i = 1, math.min(#names, cap) do
++        shown[i] = tostring(i) .. ". " .. names[i]
++    end
++    if #names > cap then
++        shown[#shown + 1] = "+" .. tostring(#names - cap)
++    end
++    notify(T("listPluginsTitle"), table.concat(shown, "\n"))
++end)
++registerRuDesc("listplugins", "Показывает загруженные файлы плагинов")
++registerRuDesc("showplugins", "Показывает загруженные файлы плагинов")
++registerRuDesc("pluginlist", "Показывает загруженные файлы плагинов")
