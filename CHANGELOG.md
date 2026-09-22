@@ -3,6 +3,7 @@
 ## 7.63 — 2026-09-22
 
 ### Improved
+- Empty Favorites in the command panel now shows how to pin a command (star on the row).
 - Command list keeps the primary name fully visible; aliases and arguments clip at the end of the row.
 
 ## 7.62 — 2026-09-14
