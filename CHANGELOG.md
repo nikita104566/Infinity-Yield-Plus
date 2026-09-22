@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Command Palette (Ctrl+K): EN/RU title, search hint, section and empty state; an x clears the query and keeps focus.
+
 ## 7.62 — 2026-09-14
 
 ### Added
