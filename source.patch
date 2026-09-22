@@ -1,0 +1,49 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -556,6 +556,8 @@
+ 		keybindToggle = "Create Toggle",
+ 		keybindToggleOn = "Create Toggle",
+ 		favorites = "Favorites",
++		lastCmdTitle = "Last command",
++		lastCmdEmpty = "No previous command yet",
+ 		allCommands = "Commands",
+ 		addFavorite = "Add to favorites",
+ 		removeFavorite = "Remove from favorites",
+@@ -781,6 +783,8 @@
+ 		keybindToggle = "Создать тоггл",
+ 		keybindToggleOn = "Создать тоггл",
+ 		favorites = "Избранное",
++		lastCmdTitle = "Прошлая команда",
++		lastCmdEmpty = "Пока нет прошлой команды",
+ 		allCommands = "Команды",
+ 		addFavorite = "В избранное",
+ 		removeFavorite = "Убрать из избранного",
+@@ -18192,8 +18196,17 @@
+ end)
+ 
+ addcmd('lastcommand',{'lastcmd'},function(args, speaker)
+-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
+-        execCmd(cmdHistory[1])
++    local prev = cmdHistory and cmdHistory[1]
++    if type(prev) ~= "string" or prev == "" then
++        notify(T("lastCmdTitle"), T("lastCmdEmpty"))
++        return
++    end
++    local head = prev:sub(1,11)
++    local short = prev:sub(1,7)
++    if head ~= 'lastcommand' and short ~= 'lastcmd' then
++        execCmd(prev)
++    else
++        notify(T("lastCmdTitle"), T("lastCmdEmpty"))
+     end
+ end)
+ 
