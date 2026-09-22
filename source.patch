@@ -1,0 +1,28 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+-currentVersion = '7.50'
++currentVersion = '7.63'
+@@ -13321,16 +13321,18 @@
+             if input.KeyCode == Enum.KeyCode.Up then
+-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
++                local wantHist = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
++                if not wantHist and #visibleCmdButtons > 0 then
+                     moveCmdSelection(-1)
+                 else
+                 historyCount += 1
+                 if historyCount > #cmdHistory then historyCount = #cmdHistory end
+                 Cmdbar.Text = cmdHistory[historyCount] or ""
+                 Cmdbar.CursorPosition = 1020
+                 end
+             elseif input.KeyCode == Enum.KeyCode.Down then
+-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
++                local wantHist = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
++                if not wantHist and #visibleCmdButtons > 0 then
+                     moveCmdSelection(1)
+                 else
+                 historyCount = historyCount - 1
+                 if historyCount < 0 then historyCount = 0 end
+                 Cmdbar.Text = cmdHistory[historyCount] or ""
+                 Cmdbar.CursorPosition = 1020
+                 end
