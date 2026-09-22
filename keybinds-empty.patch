@@ -1,0 +1,62 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -716,6 +716,7 @@
+ 		keybindKeyDown = "KeyDown",
+ 		keybindKeyUp = "KeyUp",
+ 		keybindAdd = "Add",
++		keybindsEmpty = "No keybinds yet. Click Add after you pick a key and a command.",
+ 		eeYes = "yes",
+ 		eeNo = "no",
+ 		refCase_all = "- includes everyone",
+@@ -941,6 +942,7 @@
+ 		keybindKeyDown = "KeyDown",
+ 		keybindKeyUp = "KeyUp",
+ 		keybindAdd = "Доб.",
++		keybindsEmpty = "Биндов нет. Выбери клавишу и команду, затем нажми Доб.",
+ 		eeYes = "да",
+ 		eeNo = "нет",
+ 		refCase_all = "— все игроки",
+@@ -1190,6 +1192,9 @@
+ 	if type(updateKbToggleLabel) == "function" then updateKbToggleLabel() end
+ 	if TriggerLabel then TriggerLabel.Text = T("keybindTrigger") end
+ 	if Add then Add.Text = T("keybindAdd") end
++	if type(refreshbinds) == "function" then
++		pcall(refreshbinds)
++	end
+ 	if BindTo then
+ 		local idleEn = UI_L.en and UI_L.en.keybindClickToBind
+ 		local idleRu = UI_L.ru and UI_L.ru.keybindClickToBind
+@@ -14141,6 +14146,24 @@
+     if Holder_2 then
+         Holder_2:ClearAllChildren()
+         Holder_2.CanvasSize = UDim2.new(0, 0, 0, 10)
++        if #binds == 0 then
++            local empty = Instance.new("TextLabel")
++            empty.Name = "KeybindsEmpty"
++            empty.Parent = Holder_2
++            empty.BackgroundTransparency = 1
++            empty.BorderSizePixel = 0
++            empty.Position = UDim2.new(0, 16, 0, 16)
++            empty.Size = UDim2.new(1, -32, 0, 56)
++            empty.Font = Enum.Font.SourceSansItalic
++            empty.TextSize = 16
++            empty.Text = T("keybindsEmpty")
++            empty.TextColor3 = Color3.new(1, 1, 1)
++            empty.TextWrapped = true
++            empty.TextXAlignment = Enum.TextXAlignment.Left
++            empty.TextYAlignment = Enum.TextYAlignment.Top
++            empty.ZIndex = 10
++            table.insert(text1, empty)
++        end
+         for i = 1, #binds do
+             local YSize = 25
+             local Position = ((i * YSize) - YSize)
