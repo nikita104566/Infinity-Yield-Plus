@@ -1,0 +1,32 @@
+--- source
++++ source
+@@ currentVersion
+-currentVersion = '7.50'
++currentVersion = '7.63'
+
+@@ splitCmdDisplay / formatCmdRich / applyCmdRowText / styleCmdRow Label+Rest
++function splitCmdDisplay(text)
++	if not text or text == "" then
++		return "", ""
++	end
++	local escaped = tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
++	local argAt = escaped:find("%[")
++	local names = escaped
++	local args = ""
++	if argAt then
++		names = escaped:sub(1, argAt - 1):gsub("%s+$", "")
++		args = escaped:sub(argAt)
++	end
++	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
++	primary = (primary or names):gsub("%s+$", "")
++	aliases = aliases or ""
++	local rest = aliases
++	if args ~= "" then
++		if rest ~= "" then
++			rest = rest .. " " .. args
++		else
++			rest = args
++		end
++	end
++	return primary, rest
++end
