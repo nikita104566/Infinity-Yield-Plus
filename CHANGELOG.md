@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Added
+- `listbinds` (`showbinds`, `keybindlist`) — notify lists saved keybinds; empty state explains Settings > Edit Keybinds.
+
 ## 7.62 — 2026-09-14
 
 ### Added
