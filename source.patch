@@ -1,0 +1,59 @@
+--- a/source
++++ b/source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -526,6 +526,7 @@
+ 		editKeybinds = "Edit Keybinds",
+ 		editAliases = "Edit Aliases",
+ 		editWaypoints = "Edit/Goto Waypoints",
++		waypointEmptyHint = "No waypoints yet. Run ;swp name at your character to add one. Part teleports are not saved.",
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Manage Plugins",
+ 		noDesc = "No description",
+@@ -751,6 +752,7 @@
+ 		editKeybinds = "Клавиши",
+ 		editAliases = "Алиасы",
+ 		editWaypoints = "Точки / телепорт",
++		waypointEmptyHint = "Пока нет точек. Встань персонажем и выполни ;swp имя. Телепорты по частям не сохраняются.",
+ 		editEvents = "Automation Studio",
+ 		managePlugins = "Плагины",
+ 		noDesc = "Нет описания",
+@@ -1159,6 +1161,9 @@
+ 	if Positions and Positions:FindFirstChild("ButtonLabel") then
+ 		Positions.ButtonLabel.Text = T("editWaypoints") .. " (x" .. #(WayPoints or {}) .. ")"
+ 	end
++	if PositionsHint then
++		PositionsHint.Text = T("waypointEmptyHint")
++	end
+ 	if EventBind and EventBind:FindFirstChild("ButtonLabel") then
+ 		local tot = 0
+ 		if eventEditor and type(eventEditor.GetCounts) == "function" then
+@@ -3444,7 +3449,7 @@
+ PositionsHint.Size = UDim2.new(0, 200, 0, 70)
+ PositionsHint.Font = Enum.Font.SourceSansItalic
+ PositionsHint.TextSize = 16
+-PositionsHint.Text = "Use the 'swp' or 'setwaypoint' command to add a position using your character (NOTE: Part teleports will not save)"
++PositionsHint.Text = T("waypointEmptyHint")
+ PositionsHint.TextColor3 = Color3.new(1, 1, 1)
+ PositionsHint.TextStrokeColor3 = Color3.new(1, 1, 1)
+ PositionsHint.TextWrapped = true
+@@ -14203,8 +14208,10 @@
+ end)
+ 
+ function refreshwaypoints()
+-    if #WayPoints > 0 or #pWayPoints > 0 then
+-        PositionsHint:Destroy()
++    if PositionsHint then
++        local empty = (#WayPoints == 0 and #pWayPoints == 0)
++        PositionsHint.Visible = empty
++        PositionsHint.Text = T("waypointEmptyHint")
+     end
+     if Holder_4 then
+         Holder_4:ClearAllChildren()
