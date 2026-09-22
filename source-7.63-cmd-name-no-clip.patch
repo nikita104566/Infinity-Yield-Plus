@@ -1,0 +1,147 @@
+--- source
++++ source
+@@ -485,7 +485,7 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -2039,9 +2039,9 @@
+ visibleCmdButtons = {}
+ playerSuggestButtons = {}
+ 
+-function formatCmdRich(text)
++function splitCmdDisplay(text)
+ 	if not text or text == "" then
+-		return ""
++		return "", ""
+ 	end
+ 	local escaped = tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+ 	local argAt = escaped:find("%[")
+@@ -2054,12 +2054,25 @@
+ 	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
+ 	primary = (primary or names):gsub("%s+$", "")
+ 	aliases = aliases or ""
+-	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
+-	if aliases ~= "" then
+-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+-	end
++	local rest = aliases
+ 	if args ~= "" then
+-		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
++		if rest ~= "" then
++			rest = rest .. " " .. args
++		else
++			rest = args
++		end
++	end
++	return primary, rest
++end
++
++function formatCmdRich(text)
++	local primary, rest = splitCmdDisplay(text)
++	if primary == "" then
++		return ""
++	end
++	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
++	if rest ~= "" then
++		html = html .. " <font color=\"#7A778C\">" .. rest .. "</font>"
+ 	end
+ 	return html
+ end
+@@ -2068,12 +2081,39 @@
+ 	if not btn then return end
+ 	btn.Text = text
+ 	local label = btn:FindFirstChild("Label")
+-	if label then
+-		if btn:GetAttribute("SuggestKind") == "player" then
+-			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
++	local restL = btn:FindFirstChild("Rest")
++	if not label then
++		return
++	end
++	if btn:GetAttribute("SuggestKind") == "player" then
++		label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
++		label.Size = UDim2.new(1, 0, 1, 0)
++		label.AutomaticSize = Enum.AutomaticSize.None
++		label.TextTruncate = Enum.TextTruncate.AtEnd
++		if restL then
++			restL.Visible = false
++			restL.Text = ""
++		end
++		return
++	end
++	local primary, rest = splitCmdDisplay(text)
++	label.Text = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
++	label.AutomaticSize = Enum.AutomaticSize.X
++	label.Size = UDim2.new(0, 0, 1, 0)
++	label.TextTruncate = Enum.TextTruncate.None
++	if restL then
++		if rest ~= "" then
++			restL.Visible = true
++			restL.Text = "<font color=\"#7A778C\">" .. rest .. "</font>"
+ 		else
+-			label.Text = formatCmdRich(text)
++			restL.Visible = false
++			restL.Text = ""
+ 		end
++	else
++		label.Text = formatCmdRich(text)
++		label.Size = UDim2.new(1, 0, 1, 0)
++		label.AutomaticSize = Enum.AutomaticSize.None
++		label.TextTruncate = Enum.TextTruncate.AtEnd
+ 	end
+ end
+ 
+@@ -2108,18 +2148,46 @@
+ 	if not btn:FindFirstChildOfClass("UICorner") then
+ 		uiCorner(btn, 6)
+ 	end
++	if not btn:FindFirstChildOfClass("UIListLayout") then
++		local rowLay = Instance.new("UIListLayout")
++		rowLay.FillDirection = Enum.FillDirection.Horizontal
++		rowLay.SortOrder = Enum.SortOrder.LayoutOrder
++		rowLay.Padding = UDim.new(0, 6)
++		rowLay.VerticalAlignment = Enum.VerticalAlignment.Center
++		rowLay.Parent = btn
++	end
+ 	local label = Instance.new("TextLabel")
+ 	label.Name = "Label"
+ 	label.BackgroundTransparency = 1
+-	label.Size = UDim2.new(1, 0, 1, 0)
++	label.AutomaticSize = Enum.AutomaticSize.X
++	label.Size = UDim2.new(0, 0, 1, 0)
+ 	label.Font = UI_FONT
+ 	label.TextSize = 13
+ 	label.TextXAlignment = Enum.TextXAlignment.Left
+ 	label.TextColor3 = Color3.fromRGB(244, 244, 248)
+ 	label.RichText = true
+-	label.TextTruncate = Enum.TextTruncate.AtEnd
++	label.TextTruncate = Enum.TextTruncate.None
++	label.LayoutOrder = 1
+ 	label.ZIndex = 11
+ 	label.Parent = btn
++	local rest = Instance.new("TextLabel")
++	rest.Name = "Rest"
++	rest.BackgroundTransparency = 1
++	rest.Size = UDim2.new(1, 0, 1, 0)
++	rest.Font = UI_FONT
++	rest.TextSize = 13
++	rest.TextXAlignment = Enum.TextXAlignment.Left
++	rest.TextColor3 = Color3.fromRGB(122, 119, 140)
++	rest.RichText = true
++	rest.TextTruncate = Enum.TextTruncate.AtEnd
++	rest.LayoutOrder = 2
++	rest.ZIndex = 11
++	rest.Parent = btn
++	pcall(function()
++		local flex = Instance.new("UIFlexItem")
++		flex.FlexMode = Enum.UIFlexMode.Fill
++		flex.Parent = rest
++	end)
+ 	applyCmdRowText(btn, btn.Text)
+ 	local marker = Instance.new("Frame")
+ 	marker.Name = "Sel"
