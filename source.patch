@@ -1,0 +1,68 @@
+--- source
++++ source
+@@ -485,7 +485,11 @@
+     end)
+ end
+ 
+-currentVersion = '7.50'
++currentVersion = '7.63'
++pcall(function()
++	local g = (getgenv and getgenv()) or _G
++	g.__IYP_SOURCE_VER = currentVersion
++end)
+ BRAND_NAME = 'Infinity Yield Plus'
+ 
+ PANEL_W = 300
+@@ -519,6 +523,7 @@
+ UI_L = {
+ 	en = {
+ 		command = "Command",
++		appverTitle = "Version",
+ 		prefix = "Prefix",
+ 		keepOpen = "Keep Menu Open",
+ 		language = "Language",
+@@ -744,6 +749,7 @@
+ 	},
+ 	ru = {
+ 		command = "Команда",
++		appverTitle = "Версия",
+ 		prefix = "Префикс",
+ 		keepOpen = "Держать меню открытым",
+ 		language = "Язык",
+@@ -11219,6 +11225,7 @@
+ CMDs[#CMDs + 1] = {NAME = 'audiologger / alogger', DESC = 'Opens audio logger'}
+ CMDs[#CMDs + 1] = {NAME = 'serverinfo / info', DESC = 'Gives you info about the server'}
+ CMDs[#CMDs + 1] = {NAME = 'jobid', DESC = 'Copies the games JobId to your clipboard'}
++CMDs[#CMDs + 1] = {NAME = 'appver / iypver / showver', DESC = 'Shows the Infinity Yield Plus version from this load of source'}
+ CMDs[#CMDs + 1] = {NAME = 'notifyjobid', DESC = 'Notifies you the games JobId'}
+ CMDs[#CMDs + 1] = {NAME = 'rejoin / rj', DESC = 'Makes you rejoin the game'}
+ CMDs[#CMDs + 1] = {NAME = 'autorejoin / autorj', DESC = 'Automatically rejoins the server if you get kicked/disconnected'}
+@@ -11902,6 +11909,9 @@
+ 		feflip = "FE backflip (Zeezy)",
+ 		alignmentkeys = "Клавиши выравнивания (запятая/точка)",
+ 		unalignmentkeys = "Выключить клавиши выравнивания",
++		appver = "Показать версию Infinity Yield Plus из этого source",
++		iypver = "Показать версию Infinity Yield Plus из этого source",
++		showver = "Показать версию Infinity Yield Plus из этого source",
+ 		reloadplugin = "Перезагрузить плагин",
+ 		reload = "Перезагрузить админку без rejoin",
+ 		iyreload = "Перезагрузить админку без rejoin",
+@@ -15426,6 +15436,18 @@
+     toClipboard("roblox://placeId=" .. PlaceId .. "&gameInstanceId=" .. JobId)
+ end)
+ 
++addcmd("appver", {"iypver", "showver"}, function(args, speaker)
++	local g = (getgenv and getgenv()) or _G
++	local pinned = nil
++	pcall(function()
++		pinned = g.__IYP_SOURCE_VER
++	end)
++	local ver = tostring(pinned or currentVersion or "?")
++	notify(T("appverTitle"), ver)
++end)
++registerRuDesc("appver", "Показать версию Infinity Yield Plus из этого source")
++addcmdtext("appver / iypver / showver", "appver", "Shows the Infinity Yield Plus version from this load of source")
++
+ addcmd('notifyjobid',{},function(args, speaker)
+ 	notify('JobId / PlaceId',JobId..' / '..PlaceId)
+ end)
