@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- With the command panel open, Up/Down highlights rows in the list even if the bar is empty. Shift+Up/Down still walks saved history.
+
 ## 7.62 — 2026-09-14
 
 ### Added
