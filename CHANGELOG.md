@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Added
+- `listaliases` (`listalias`, `showaliases`, `aliaslist`) — notify of saved custom aliases from the command panel; empty list points to `addalias` / Settings.
+
 ## 7.62 — 2026-09-14
 
 ### Added

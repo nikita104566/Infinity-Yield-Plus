@@ -7,18 +7,16 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.62-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
 
 ```lua
 loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 ```
 
 Open the panel with your prefix (default `;`).
-`patches.luau` loads 756–762 in order (history, update check, diagnostics, whoami, info dump, env). You can still load individual `hotfix7xx.luau` files if you want a subset. None of them replace the main script.
 
 ## Features
 
@@ -31,6 +29,7 @@ Open the panel with your prefix (default `;`).
 - `copyhistory` / `copycmd` copies the last command (`copyhistory all` for the full list)
 - `starlast` / `favlast` pins the last command to favorites
 - `repeatlast` / `again` re-runs the last real command
+- `listaliases` / `listalias` / `showaliases` — saved custom aliases (empty state tells you to use `addalias`)
 - `ping` / `fps` / `cmdcount` — quick diagnostics
 - `placeinfo` / `copyplace` / `players` / `session` / `hotfixes` — place, roster, and loaded patches
 - `whoami` / `copyuserid` / `copyjob` / `serverage` / `memory` — local player, job, uptime, RAM
