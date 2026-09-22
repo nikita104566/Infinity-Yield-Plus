@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Command history is stored in `IY_FE.iy` and comes back after `;reload` or a rejoin.
+- `;lastcommand` on an empty list shows a notice instead of erroring.
+
 ## 7.62 — 2026-09-14
 
 ### Added
