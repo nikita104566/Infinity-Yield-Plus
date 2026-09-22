@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-22
+
+### Improved
+- Command list rows now show a star on the right: click it to pin or unpin favorites without a right-click.
+
 ## 7.62 — 2026-09-14
 
 ### Added
