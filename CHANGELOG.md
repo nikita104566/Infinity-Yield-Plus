@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.63 — 2026-09-26
+
+### Fixed
+- `;lastcommand` on a fresh install notifies (EN/RU) instead of erroring on empty history.
+- Command history is stored in `IY_FE.iy` and restored after reload / rejoin.
+- Leftover `hotfix762` / `patches.luau` no longer overwrite a newer version badge.
+
+### Notes
+- One `source` loadstring is enough. No new hotfix file.
+
 ## 7.62 — 2026-09-14
 
 ### Added

@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +741,8 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +968,8 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
 	},
 }
 
@@ -8614,6 +8618,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8751,6 +8756,18 @@ function saves()
                     if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
                     if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
                     if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
+                    if vtype(json.cmdHistory, "table") then
+                        local hist = {}
+                        for _, entry in ipairs(json.cmdHistory) do
+                            if type(entry) == "string" and entry ~= "" then
+                                hist[#hist + 1] = entry
+                                if #hist >= 30 then
+                                    break
+                                end
+                            end
+                        end
+                        IYP_LOADED_CMD_HISTORY = hist
+                    end
                     if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
                     if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
                     if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
@@ -8838,6 +8855,26 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
+            cmdHistory = (function()
+                local srcHist = nil
+                if type(cmdHistory) == "table" then
+                    srcHist = cmdHistory
+                elseif type(IYP_LOADED_CMD_HISTORY) == "table" then
+                    srcHist = IYP_LOADED_CMD_HISTORY
+                end
+                local hist = {}
+                if type(srcHist) == "table" then
+                    for _, entry in ipairs(srcHist) do
+                        if type(entry) == "string" and entry ~= "" then
+                            hist[#hist + 1] = entry
+                            if #hist >= 30 then
+                                break
+                            end
+                        end
+                    end
+                end
+                return hist
+            end)();
             currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
             currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
             currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -12736,6 +12773,23 @@ function splitString(str,delim)
 end
 
 cmdHistory = {}
+IYP_HIST_SAVE_TOKEN = 0
+;(function()
+    local loaded = IYP_LOADED_CMD_HISTORY
+    if type(loaded) ~= "table" then
+        return
+    end
+    for i = 1, #loaded do
+        local entry = loaded[i]
+        if type(entry) == "string" and entry ~= "" then
+            cmdHistory[#cmdHistory + 1] = entry
+            if #cmdHistory >= 30 then
+                break
+            end
+        end
+    end
+    IYP_LOADED_CMD_HISTORY = nil
+end)()
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12800,6 +12854,13 @@ function execCmd(cmdStr,speaker,store)
                         end
                     end
                     if #cmdHistory > 30 then table.remove(cmdHistory) end
+                    IYP_HIST_SAVE_TOKEN += 1
+                    local histTok = IYP_HIST_SAVE_TOKEN
+                    task.delay(0.35, function()
+                        if histTok == IYP_HIST_SAVE_TOKEN and type(updatesaves) == "function" then
+                            pcall(updatesaves)
+                        end
+                    end)
 
                     lastCmds[cmdName] = v
                 end
@@ -18192,8 +18253,13 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = (type(cmdHistory) == "table" and cmdHistory[1]) or nil
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
     end
 end)
 
@@ -25700,4 +25766,31 @@ task.defer(function()
     if PlaceId == 574746640 then
         notify("4nn1's Place", "Game Detected! Some commands were added/changed/removed")
     end
+end)
+
+-- Keep leftover hotfix7xx from painting an older badge over this source.
+task.defer(function()
+	local pinned = "7.63"
+	local function verNum(v)
+		return tonumber((tostring(v or ""):match("%d+%.%d+") or "0")) or 0
+	end
+	local function restore()
+		if verNum(currentVersion) >= verNum(pinned) then
+			return
+		end
+		currentVersion = pinned
+		pcall(function()
+			if type(setBrandTitle) == "function" then
+				setBrandTitle(BRAND_NAME)
+			elseif VersionLabel then
+				VersionLabel.Text = "· " .. pinned
+			end
+			if SubLabel then
+				SubLabel.Text = pinned
+			end
+		end)
+	end
+	restore()
+	task.delay(0.5, restore)
+	task.delay(2, restore)
 end)

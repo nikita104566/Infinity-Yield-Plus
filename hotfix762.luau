@@ -4,6 +4,13 @@
 -- Safe to run more than once. Does not replace main source.
 
 pcall(function()
+	local function verNum(v)
+		return tonumber((tostring(v or ""):match("%d+%.%d+") or "0")) or 0
+	end
+	-- Leftover 762 must not paint 7.62 over a newer source badge.
+	if verNum(currentVersion) > 7.62 then
+		return
+	end
 	currentVersion = "7.62"
 	if type(applyHeaderBrand) == "function" then
 		applyHeaderBrand()
