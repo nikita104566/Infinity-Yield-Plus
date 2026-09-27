@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-27
+
+### Improved
+- Automation Studio: `$place`, `$job`, and `$event` are clickable chips next to `$me` / `$time`. The chip row wraps instead of clipping into the inspector.
+
+### Notes
+- One loadstring of `source`. Leftover `hotfix762` no longer overwrites a 7.63+ badge.
+
 ## 7.62 — 2026-09-14
 
 ### Added
