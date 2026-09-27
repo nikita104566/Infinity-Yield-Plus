@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.63 — 2026-09-27
+
+### Fixed
+- `lastcommand` on a fresh session notifies instead of erroring; command history is written to `IY_FE.iy` and restored after reload.
+
+### Notes
+- One loadstring of `source` is enough. Leftover `hotfix762` no longer overwrites a newer badge.
+
 ## 7.62 — 2026-09-14
 
 ### Added
