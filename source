@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -557,6 +557,7 @@ UI_L = {
 		keybindToggleOn = "Create Toggle",
 		favorites = "Favorites",
 		allCommands = "Commands",
+		cmdNoMatch = "No matching commands\nClear the bar to see the full list",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
 		favHintAdd = "★  Right-click to favorite",
@@ -782,6 +783,7 @@ UI_L = {
 		keybindToggleOn = "Создать тоггл",
 		favorites = "Избранное",
 		allCommands = "Команды",
+		cmdNoMatch = "Нет таких команд\nОчисти поле — снова весь список",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
 		favHintAdd = "★  ПКМ — в избранное",
@@ -1182,6 +1184,7 @@ function applyUiLanguage()
 	end
 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+	if cmdNoMatchHint then cmdNoMatchHint.Text = T("cmdNoMatch") end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
@@ -1750,6 +1753,24 @@ cmdAllHeader.TextTruncate = Enum.TextTruncate.AtEnd
 cmdAllHeader.ZIndex = 11
 cmdAllHeader.Visible = false
 cmdAllHeader.LayoutOrder = 500
+
+cmdNoMatchHint = Instance.new("TextLabel")
+cmdNoMatchHint.Name = "IYR_NOMATCH"
+cmdNoMatchHint.Parent = CMDsF
+cmdNoMatchHint.BackgroundTransparency = 1
+cmdNoMatchHint.BorderSizePixel = 0
+cmdNoMatchHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 40)
+cmdNoMatchHint.Font = UI_FONT
+cmdNoMatchHint.TextSize = 13
+cmdNoMatchHint.TextXAlignment = Enum.TextXAlignment.Left
+cmdNoMatchHint.TextYAlignment = Enum.TextYAlignment.Top
+cmdNoMatchHint.TextColor3 = Color3.fromRGB(154, 148, 176)
+cmdNoMatchHint.Text = T("cmdNoMatch")
+cmdNoMatchHint.TextWrapped = true
+cmdNoMatchHint.TextTruncate = Enum.TextTruncate.AtEnd
+cmdNoMatchHint.ZIndex = 11
+cmdNoMatchHint.Visible = false
+cmdNoMatchHint.LayoutOrder = 0
 
 SettingsButton.Name = "SettingsButton"
 SettingsButton.Parent = Holder
@@ -10944,13 +10965,25 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     -- Paint selection only when typing a filter, or after keyboard navigation
     local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
     cmdSelectionPainted = typedFilter ~= ""
+    local noMatch = typedFilter ~= "" and indexnum == 0
+    if cmdNoMatchHint then
+        cmdNoMatchHint.Visible = noMatch
+        if noMatch then
+            cmdNoMatchHint.Text = T("cmdNoMatch")
+            cmdNoMatchHint.LayoutOrder = 0
+            if cmdFavHeader then cmdFavHeader.Visible = false end
+            if cmdAllHeader then cmdAllHeader.Visible = false end
+        end
+    end
     applyCmdSelection()
 
     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
     if introPlaying or introLockMinimize then
         -- Keep the panel open until intro autohide finishes
     elseif not Ianim then
-        if indexnum == 0 then
+        if noMatch then
+            maximizeHolder()
+        elseif indexnum == 0 then
             if not cmdbar then
                 minimizeHolder()
             elseif cmdbar then

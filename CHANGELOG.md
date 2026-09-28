@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-28
+
+### Improved
+- Typing a query with no matches keeps the command list open and shows a clear empty hint (EN/RU) instead of snapping the panel shut.
+
 ## 7.62 — 2026-09-14
 
 ### Added
