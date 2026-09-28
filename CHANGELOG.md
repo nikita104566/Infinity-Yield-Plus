@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-28
+
+### Improved
+- `;reload` now tears down the old panel and Tab/theme connections, so a second copy of the UI does not stay behind.
+
 ## 7.62 — 2026-09-14
 
 ### Added
