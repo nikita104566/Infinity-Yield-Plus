@@ -260,6 +260,33 @@ function IYR_CLEANUP()
 		pcall(function() AntiFlingConn:Disconnect() end)
 		AntiFlingConn = nil
 	end
+
+	pcall(function()
+		local seen = {}
+		local function wipe(inst)
+			if typeof(inst) == "Instance" and not seen[inst] then
+				seen[inst] = true
+				pcall(function() inst:Destroy() end)
+			end
+		end
+		wipe(genv.IYR_MAIN)
+		wipe(IYR_MAIN)
+		wipe(PARENT)
+		local function scan(root)
+			if typeof(root) ~= "Instance" then return end
+			for _, v in pairs(root:GetChildren()) do
+				if v.Name == "IYR_MAIN" then
+					wipe(v)
+				end
+			end
+		end
+		scan(COREGUI or game:GetService("CoreGui"))
+		pcall(function()
+			local hidden = get_hidden_gui or gethui
+			if hidden then scan(hidden()) end
+		end)
+		genv.IYR_MAIN = nil
+	end)
 end
 pcall(function()
 	local genv = (getgenv and getgenv()) or _G
@@ -485,7 +512,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -9355,6 +9382,9 @@ local BASIC_THEME_COLORS = {
 local function themeTrack(conn)
 	if conn then
 		themeEditorConns[#themeEditorConns + 1] = conn
+		if type(IYR_TRACK) == "function" then
+			IYR_TRACK(conn)
+		end
 	end
 	return conn
 end
@@ -9951,6 +9981,14 @@ end
 
 ColorsButton.MouseButton1Click:Connect(function()
 	openThemeEditor()
+end)
+
+pcall(function()
+	if type(IYR_ADD_RESET_HOOK) == "function" then
+		IYR_ADD_RESET_HOOK(function()
+			closeThemeEditor(false)
+		end)
+	end
 end)
 end)()
 
@@ -13427,7 +13465,7 @@ IYR_TRACK(Cmdbar.Focused:Connect(function()
     if SettingsOpen == true then
         closeSettingsPanel(false)
     end
-    tabComplete = UserInputService.InputBegan:Connect(function(input,gameProcessed)
+    tabComplete = IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
         if Cmdbar:IsFocused() then
             if tabAllowed == true and input.KeyCode == Enum.KeyCode.Tab then
                 flushIndexContents()
@@ -14709,7 +14747,7 @@ local function hookKbTabComplete(box)
 		pcall(function() kbTabConn:Disconnect() end)
 		kbTabConn = nil
 	end
-	kbTabConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	kbTabConn = IYR_TRACK(UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if not box:IsFocused() then
 			if kbTabConn then kbTabConn:Disconnect() kbTabConn = nil end
 			return
@@ -24345,7 +24383,7 @@ addcmd('unstareat',{'unstare','nostare','nostareat'},function(args, speaker)
 end)
 
 RolewatchData = {Group = 0, Role = "", Leave = false}
-RolewatchConnection = Players.PlayerAdded:Connect(function(player)
+RolewatchConnection = IYR_TRACK(Players.PlayerAdded:Connect(function(player)
     if RolewatchData.Group == 0 then return end
     if player:IsInGroup(RolewatchData.Group) then
         if tostring(player:GetRoleInGroup(RolewatchData.Group)):lower() == RolewatchData.Role:lower() then
@@ -24880,9 +24918,28 @@ addcmd('reload', {'iypreload', 'iyreload', 'reiy', 'refreshiy'}, function(args, 
         if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
     end)
     pcall(function()
+        if typeof(PARENT) == "Instance" then PARENT:Destroy() end
         if typeof(IYR_MAIN) == "Instance" then IYR_MAIN:Destroy() end
         local genv = (getgenv and getgenv()) or _G
         if typeof(genv.IYR_MAIN) == "Instance" then genv.IYR_MAIN:Destroy() end
+        genv.IYR_MAIN = nil
+        local hidden = get_hidden_gui or gethui
+        local roots = { COREGUI, game:GetService("CoreGui") }
+        if hidden then
+            pcall(function()
+                roots[#roots + 1] = hidden()
+            end)
+        end
+        for r = 1, #roots do
+            local root = roots[r]
+            if typeof(root) == "Instance" then
+                for _, v in pairs(root:GetChildren()) do
+                    if v.Name == "IYR_MAIN" then
+                        pcall(function() v:Destroy() end)
+                    end
+                end
+            end
+        end
     end)
     local src
     pcall(function()
