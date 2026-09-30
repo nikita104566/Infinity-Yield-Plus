@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-30
+
+### Improved
+- Command list shows the primary name plus `+N` extra aliases instead of a truncated slash pile; typing an alias shows that alias next to the name.
+
 ## 7.62 — 2026-09-14
 
 ### Added
