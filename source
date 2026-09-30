@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2039,7 +2039,7 @@ cmdSelectionPainted = false
 visibleCmdButtons = {}
 playerSuggestButtons = {}
 
-function formatCmdRich(text)
+function formatCmdRich(text, query)
 	if not text or text == "" then
 		return ""
 	end
@@ -2051,12 +2051,35 @@ function formatCmdRich(text)
 		names = escaped:sub(1, argAt - 1):gsub("%s+$", "")
 		args = escaped:sub(argAt)
 	end
-	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
+	local primary, rest = names:match("^([^/]+)%s*(.*)$")
 	primary = (primary or names):gsub("%s+$", "")
-	aliases = aliases or ""
+	rest = rest or ""
+	local extra = {}
+	for part in rest:gmatch("[^/]+") do
+		part = part:gsub("^%s+", ""):gsub("%s+$", "")
+		if part ~= "" then
+			extra[#extra + 1] = part
+		end
+	end
 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
-	if aliases ~= "" then
-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+	local q = tostring(query or ""):lower()
+	local shown = nil
+	if q ~= "" then
+		local pLow = primary:lower()
+		if pLow:sub(1, #q) ~= q then
+			for i = 1, #extra do
+				local aLow = extra[i]:lower()
+				if aLow == q or aLow:sub(1, #q) == q then
+					shown = extra[i]
+					break
+				end
+			end
+		end
+	end
+	if shown then
+		html = html .. "<font color=\"#C4B5FD\"> " .. shown .. "</font>"
+	elseif #extra > 0 then
+		html = html .. "<font color=\"#7A778C\"> +" .. tostring(#extra) .. "</font>"
 	end
 	if args ~= "" then
 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
@@ -2072,7 +2095,12 @@ function applyCmdRowText(btn, text)
 		if btn:GetAttribute("SuggestKind") == "player" then
 			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
 		else
-			label.Text = formatCmdRich(text)
+			local q = ""
+			if Cmdbar then
+				q = tostring(Cmdbar.Text or "")
+				q = q:match("^(%S+)") or ""
+			end
+			label.Text = formatCmdRich(text, q)
 		end
 	end
 end
@@ -10886,6 +10914,9 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         indexnum += 1
         item.btn.Visible = true
         item.btn.LayoutOrder = order
+        if type(applyCmdRowText) == "function" then
+            applyCmdRowText(item.btn, item.btn.Text)
+        end
         if type(applyFavoriteStyle) == "function" then
             applyFavoriteStyle(item.btn)
         end
