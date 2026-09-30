@@ -485,7 +485,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -519,6 +519,7 @@ uiLang = "en"
 UI_L = {
 	en = {
 		command = "Command",
+		cmdBarHint = "Command  ·  ↓ list  Tab",
 		prefix = "Prefix",
 		keepOpen = "Keep Menu Open",
 		language = "Language",
@@ -744,6 +745,7 @@ UI_L = {
 	},
 	ru = {
 		command = "Команда",
+		cmdBarHint = "Команда  ·  ↓ список  Tab",
 		prefix = "Префикс",
 		keepOpen = "Держать меню открытым",
 		language = "Язык",
@@ -1141,7 +1143,7 @@ function getLocalizedDesc(title, desc)
 end
 
 function applyUiLanguage()
-	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
+	if Cmdbar then Cmdbar.PlaceholderText = T("cmdBarHint") end
 	if Prefix then Prefix.Text = T("prefix") end
 	local stayOpenRow = SettingsHolder and SettingsHolder:FindFirstChild("StayOpen")
 	if stayOpenRow and stayOpenRow:IsA("TextLabel") then
@@ -1660,7 +1662,7 @@ Cmdbar.TextXAlignment = Enum.TextXAlignment.Left
 Cmdbar.TextColor3 = Color3.fromRGB(245, 245, 247)
 Cmdbar.Text = ""
 Cmdbar.ZIndex = 11
-Cmdbar.PlaceholderText = T("command")
+Cmdbar.PlaceholderText = T("cmdBarHint")
 Cmdbar.ClearTextOnFocus = false
 
 HintBar = Instance.new("TextLabel")
@@ -10323,7 +10325,7 @@ end)
 
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
     prefix = PrefixBox.Text
-    Cmdbar.PlaceholderText = T("command")
+    Cmdbar.PlaceholderText = T("cmdBarHint")
     updatesaves()
 end)
 
@@ -13322,8 +13324,17 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
     if gameProcessed then
         if Cmdbar and Cmdbar:IsFocused() then
             if input.KeyCode == Enum.KeyCode.Up then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(-1)
+                if cmdSelectionPainted and #visibleCmdButtons > 0 then
+                    if selectedCmdIndex <= 1 then
+                        cmdSelectionPainted = false
+                        applyCmdSelection()
+                        historyCount += 1
+                        if historyCount > #cmdHistory then historyCount = #cmdHistory end
+                        Cmdbar.Text = cmdHistory[historyCount] or ""
+                        Cmdbar.CursorPosition = 1020
+                    else
+                        moveCmdSelection(-1)
+                    end
                 else
                 historyCount += 1
                 if historyCount > #cmdHistory then historyCount = #cmdHistory end
@@ -13331,8 +13342,15 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
                 Cmdbar.CursorPosition = 1020
                 end
             elseif input.KeyCode == Enum.KeyCode.Down then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(1)
+                if #visibleCmdButtons > 0 then
+                    if not cmdSelectionPainted then
+                        cmdSelectionPainted = true
+                        selectedCmdIndex = 1
+                        selectedCmdButton = visibleCmdButtons[1]
+                        applyCmdSelection()
+                    else
+                        moveCmdSelection(1)
+                    end
                 else
                 historyCount = historyCount - 1
                 if historyCount < 0 then historyCount = 0 end
@@ -13355,7 +13373,7 @@ IYR_TRACK(Players.LocalPlayer.Chatted:Connect(function()
     end
 end))
 
-Cmdbar.PlaceholderText = T("command")
+Cmdbar.PlaceholderText = T("cmdBarHint")
 IYR_TRACK(Cmdbar:GetPropertyChangedSignal("Text"):Connect(function()
     if Cmdbar:IsFocused() then
         scheduleIndexContents(Cmdbar.Text,true,true)

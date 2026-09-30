@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.63 — 2026-09-30
+
+### Improved
+- Empty command bar: Down highlights the first list row instead of inserting history; Up from the first row still walks history. Placeholder shows ↓ / Tab.
+
+
 ## 7.62 — 2026-09-14
 
 ### Added
