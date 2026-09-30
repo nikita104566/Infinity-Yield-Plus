@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-09-30
+
+### Improved
+- Automation Studio command picker stays inside the middle column without empty rows; a miss shows a hint instead of vanishing.
+
 ## 7.62 — 2026-09-14
 
 ### Added
