@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-10-04
+
+### Fixed
+- `lastcommand` on a fresh session notifies instead of erroring; command history is written to `IY_FE.iy` and restored after reload.
+
 ## 7.62 — 2026-09-14
 
 ### Added
