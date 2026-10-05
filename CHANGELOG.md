@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-10-05
+
+### Improved
+- Automation Studio left list wraps long event names so `OnCharacterRemoving` stays readable instead of `OnCharact…`; short names keep a compact row.
+
 ## 7.62 — 2026-09-14
 
 ### Added
