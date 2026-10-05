@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.63 — 2026-10-05
+
+### Improved
+- Empty Favorites stays at the top of the command list with a pin hint (right-click on desktop, long-press on mobile).
+
 ## 7.62 — 2026-09-14
 
 ### Added
