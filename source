@@ -8236,6 +8236,8 @@ eventEditor = (function()
 				rowScale.Scale = 1
 				rowScale.Parent = row
 				local cardRightSpace = (tot > 0) and 90 or 46
+				local nameColor = selectedRow and Color3.fromRGB(255, 255, 255) or ((ev.enabled == false) and Color3.fromRGB(150, 145, 170) or Color3.fromRGB(245, 245, 247))
+				local catColor = selectedRow and Color3.fromRGB(195, 185, 230) or Color3.fromRGB(145, 140, 170)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 6),
@@ -8257,7 +8259,7 @@ eventEditor = (function()
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextColor3 = EE_MUTED,
+					TextColor3 = catColor,
 					Text = categoryText(cat),
 					ZIndex = 44,
 				}, row)
