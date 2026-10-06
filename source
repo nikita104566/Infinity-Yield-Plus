@@ -30,6 +30,8 @@ end)() and not (_G.IY_DEBUG == true) then
 		(getgenv and getgenv() or _G).IYR_MAIN,
 		IYR_MAIN,
 		coreGui:FindFirstChild("IYR_MAIN"),
+		(getgenv and getgenv() or _G).__IYP_CROSSHAIR_GUI,
+		coreGui:FindFirstChild("IYP_CrosshairGui"),
 	}) do
 		if typeof(ref) == "Instance" then
 			pcall(function() ref:Destroy() end)
@@ -40,6 +42,8 @@ end)() and not (_G.IY_DEBUG == true) then
 		if hidden then
 			local old = hidden():FindFirstChild("IYR_MAIN")
 			if old then old:Destroy() end
+			local oldCh = hidden():FindFirstChild("IYP_CrosshairGui")
+			if oldCh then oldCh:Destroy() end
 		end
 	end)
 end
@@ -291,10 +295,11 @@ function IYR_CLEANUP()
 		wipe(genv.IYR_MAIN)
 		wipe(IYR_MAIN)
 		wipe(PARENT)
+		wipe(genv.__IYP_CROSSHAIR_GUI)
 		local function scan(root)
 			if typeof(root) ~= "Instance" then return end
 			for _, v in pairs(root:GetChildren()) do
-				if v.Name == "IYR_MAIN" then
+				if v.Name == "IYR_MAIN" or v.Name == "IYP_CrosshairGui" then
 					wipe(v)
 				end
 			end
@@ -305,6 +310,7 @@ function IYR_CLEANUP()
 			if hidden then scan(hidden()) end
 		end)
 		genv.IYR_MAIN = nil
+		genv.__IYP_CROSSHAIR_GUI = nil
 	end)
 end
 pcall(function()
@@ -27327,12 +27333,24 @@ end))
 	end)
 
 	-- 4. Crosshair
+	local crosshairGui = nil
 	local crosshairFrame = nil
 	local function removeCrosshair()
+		if crosshairGui and crosshairGui.Parent then
+			crosshairGui:Destroy()
+		end
+		crosshairGui = nil
 		if crosshairFrame and crosshairFrame.Parent then
 			crosshairFrame:Destroy()
 		end
 		crosshairFrame = nil
+		pcall(function()
+			local genv = (getgenv and getgenv()) or _G
+			if genv.__IYP_CROSSHAIR_GUI and typeof(genv.__IYP_CROSSHAIR_GUI) == "Instance" then
+				genv.__IYP_CROSSHAIR_GUI:Destroy()
+			end
+			genv.__IYP_CROSSHAIR_GUI = nil
+		end)
 	end
 
 	local function parseColor(val)
@@ -27375,6 +27393,24 @@ end))
 		thickness = tonumber(thickness) or 2
 		if hasDot == nil then hasDot = true end
 
+		local targetParent = (PARENT and PARENT.Parent) or (gethui and gethui()) or COREGUI
+		local cGui = Instance.new("ScreenGui")
+		cGui.Name = "IYP_CrosshairGui"
+		cGui.ResetOnSpawn = false
+		cGui.IgnoreGuiInset = true
+		cGui.DisplayOrder = 2147483647
+		pcall(function()
+			if syn and syn.protect_gui and (not is_sirhurt_closure) then
+				syn.protect_gui(cGui)
+			end
+		end)
+		cGui.Parent = targetParent
+		crosshairGui = cGui
+		pcall(function()
+			local genv = (getgenv and getgenv()) or _G
+			genv.__IYP_CROSSHAIR_GUI = cGui
+		end)
+
 		local holder = Instance.new("Frame")
 		holder.Name = "IYP_Crosshair"
 		holder.BackgroundTransparency = 1
@@ -27415,7 +27451,7 @@ end))
 		mkBar("Left", UDim2.new(0.5, -(gap + size / 2), 0.5, 0), UDim2.new(0, size, 0, thickness))
 		mkBar("Right", UDim2.new(0.5, gap + size / 2, 0.5, 0), UDim2.new(0, size, 0, thickness))
 
-		holder.Parent = PARENT
+		holder.Parent = cGui
 		crosshairFrame = holder
 	end
 
