@@ -3,6 +3,10 @@
 -- Adds placeinfo, copyplace, players, session, hotfixes.
 -- Safe to run more than once. Does not replace main source.
 
+if _G.__IYP_759_CMDS or _G.__IYP_763_CMDS or (type(currentVersion) == "string" and currentVersion >= "7.63") then
+	return
+end
+
 pcall(function()
 	currentVersion = "7.59"
 	if type(applyHeaderBrand) == "function" then

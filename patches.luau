@@ -4,6 +4,10 @@
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/source'))()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/patches.luau'))()
 
+if _G.__IYP_763_CMDS or (type(currentVersion) == "string" and currentVersion >= "7.63") then
+	return
+end
+
 local BASE = "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/"
 local files = {
 	"hotfix756.luau",
