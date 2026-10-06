@@ -1,4 +1,6 @@
 .cursor/
+.workbuddy-ai/
+outputs/
 voice-dictation/
 *.bak
 *.tmp

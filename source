@@ -77,7 +77,10 @@ function IYP_SAFE_WRITEFILE(file, data)
     if type(waxwritefile) ~= "function" then
         return false, "writefile is unavailable"
     end
-    return pcall(waxwritefile, file, data)
+    local ok, result = pcall(waxwritefile, file, data)
+    if not ok then return false, result end
+    if result == false then return false, "native writefile returned false" end
+    return true
 end
 
 function IYP_SAFE_READFILE(file)
@@ -85,6 +88,14 @@ function IYP_SAFE_READFILE(file)
         return false, "readfile is unavailable"
     end
     return pcall(waxreadfile, file)
+end
+
+-- Capture the executor's genuine native isfile ONCE (never the readfile-derived
+-- fallback below). The fallback reports permission errors as "missing", which
+-- must never be treated as proof of absence.
+if IYP_FILE_ENV.IYP_NATIVE_ISFILE_CHECKED ~= true then
+    IYP_FILE_ENV.IYP_NATIVE_ISFILE_CHECKED = true
+    IYP_FILE_ENV.IYP_NATIVE_ISFILE = (type(isfile) == "function") and isfile or nil
 end
 
 isfile = missing("function", isfile, readfile and function(file)
@@ -166,6 +177,14 @@ function IYR_TRACK(conn)
 	return conn
 end
 function IYR_CLEANUP()
+	-- Stop the debounce worker before disconnecting UI; retain failed writes for reload.
+	pcall(function()
+		if type(writefileState) == "table" and type(writefileState.stop) == "function" then
+			writefileState.stop()
+		elseif type(writefileState) == "table" and type(writefileState.flush) == "function" then
+			writefileState.flush()
+		end
+	end)
 	IYR_GEN = (tonumber(IYR_GEN) or 0) + 1
 	local list = IYR_CONNS
 	IYR_CONNS = {}
@@ -260,6 +279,33 @@ function IYR_CLEANUP()
 		pcall(function() AntiFlingConn:Disconnect() end)
 		AntiFlingConn = nil
 	end
+
+	pcall(function()
+		local seen = {}
+		local function wipe(inst)
+			if typeof(inst) == "Instance" and not seen[inst] then
+				seen[inst] = true
+				pcall(function() inst:Destroy() end)
+			end
+		end
+		wipe(genv.IYR_MAIN)
+		wipe(IYR_MAIN)
+		wipe(PARENT)
+		local function scan(root)
+			if typeof(root) ~= "Instance" then return end
+			for _, v in pairs(root:GetChildren()) do
+				if v.Name == "IYR_MAIN" then
+					wipe(v)
+				end
+			end
+		end
+		scan(COREGUI or game:GetService("CoreGui"))
+		pcall(function()
+			local hidden = get_hidden_gui or gethui
+			if hidden then scan(hidden()) end
+		end)
+		genv.IYR_MAIN = nil
+	end)
 end
 pcall(function()
 	local genv = (getgenv and getgenv()) or _G
@@ -485,7 +531,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.50'
+currentVersion = '7.63'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -741,6 +787,66 @@ UI_L = {
 		refLoopExamples = ";5^btools - gives you 5 sets of btools\n;10^3^drophats - drops your hats every 3 seconds 10 times\n;inf^0.1^animspeed 100 - infinitely loops your animation speed to 100",
 		refMultiExamples = ";drophats\\respawn - drops your hats and respawns you\n;enable inventory\\enable playerlist\\refresh - enables those coregui items and refreshes you",
 		refOpsExcludeEx = ";locate %blue-friends (gets players in blue team who aren't your friends)",
+		cmdBarHint = "Command",
+		favEmptyHint = "Right-click a command to pin it here",
+		favEmptyHintMobile = "Long-press a command to pin it here",
+		cmdNoMatch = "No matching commands\nClear the bar to see the full list",
+		eeNoCmdMatch = "No matching commands",
+		lastCmdEmpty = "History",
+		lastCmdEmptyText = "No previous command yet",
+		listPluginsTitle = "Plugins",
+		listPluginsEmpty = "No plugins loaded yet",
+		listAliasesTitle = "Aliases",
+		listAliasesEmpty = "No aliases yet. Use addalias [cmd] [alias] or Settings > Edit Aliases.",
+		listKeybindsTitle = "Keybinds",
+		listKeybindsEmpty = "No keybinds yet. Settings > Edit Keybinds to add one.",
+		clrHistTitle = "History",
+		clrHistOk = "Command history cleared",
+		histTitle = "Command History",
+		histEmpty = "History is empty",
+		starTitle = "Favorites",
+		starOk = "Last command added to favorites",
+		starFail = "Favorites API not found",
+		repTitle = "Repeat",
+		repEmpty = "Nothing to repeat",
+		repOk = "Re-running last command",
+		pingTitle = "Network",
+		fpsTitle = "Performance",
+		cntTitle = "Commands",
+		updTitle = "Updates",
+		updFail = "Could not check for updates",
+		updNewer = "A newer version is available",
+		updLatest = "You are on the latest version",
+		placeTitle = "Place",
+		placeCopied = "Copied place id",
+		clipFail = "Could not copy",
+		plrTitle = "Players",
+		sesTitle = "Session",
+		hfTitle = "Hotfixes",
+		whoTitle = "You",
+		uidCopied = "Copied user id",
+		jobCopied = "Copied job id",
+		ageTitle = "Server age",
+		memTitle = "Memory",
+		infoTitle = "Info",
+		joinCopied = "Copied join line",
+		creatorTitle = "Creator",
+		clockTitle = "Clock",
+		slotsTitle = "Slots",
+		noClipboard = "No clipboard",
+		envTitle = "Env",
+		deviceTitle = "Device",
+		prefixTitle = "Prefix",
+		tzTitle = "Timezone",
+		displayTitle = "Display",
+		copyTitle = "History",
+		copyOk = "Copied to clipboard",
+		copyFail = "Clipboard is not available",
+		copyEmpty = "Nothing to copy",
+		starEmpty = "No command to favorite",
+		histCleared = "History",
+		histClearedText = "Command history cleared",
+		eeNoCmdMatchHint = "Clear the box or type another name.",
 	},
 	ru = {
 		command = "Команда",
@@ -966,6 +1072,66 @@ UI_L = {
 		refLoopExamples = ";5^btools — выдать 5 наборов btools\n;10^3^drophats — сбрасывать шляпы каждые 3 сек, 10 раз\n;inf^0.1^animspeed 100 — бесконечно ставить скорость анимации 100",
 		refMultiExamples = ";drophats\\respawn — сбросить шляпы и респавн\n;enable inventory\\enable playerlist\\refresh — включить эти элементы CoreGui и обновить персонажа",
 		refOpsExcludeEx = ";locate %blue-friends (игроки синей команды, которые не друзья)",
+		cmdBarHint = "Команда",
+		favEmptyHint = "ПКМ по команде — закрепить здесь",
+		favEmptyHintMobile = "Удерживайте команду, чтобы закрепить",
+		cmdNoMatch = "Нет таких команд\nОчисти поле — снова весь список",
+		eeNoCmdMatch = "Нет таких команд",
+		lastCmdEmpty = "История",
+		lastCmdEmptyText = "Пока нет предыдущей команды",
+		listPluginsTitle = "Плагины",
+		listPluginsEmpty = "Плагины ещё не загружены",
+		listAliasesTitle = "Алиасы",
+		listAliasesEmpty = "Пока нет алиасов. addalias [команда] [алиас] или Настройки > Алиасы.",
+		listKeybindsTitle = "Клавиши",
+		listKeybindsEmpty = "Пока нет биндов. Настройки > Клавиши — добавить.",
+		clrHistTitle = "История",
+		clrHistOk = "История команд очищена",
+		histTitle = "История команд",
+		histEmpty = "История пуста",
+		starTitle = "Избранное",
+		starOk = "Последняя команда добавлена в избранное",
+		starFail = "API избранного недоступен",
+		repTitle = "Повтор",
+		repEmpty = "Нечего повторять",
+		repOk = "Повтор последней команды",
+		pingTitle = "Сеть",
+		fpsTitle = "Производительность",
+		cntTitle = "Команды",
+		updTitle = "Обновления",
+		updFail = "Не удалось проверить обновления",
+		updNewer = "Доступна новая версия",
+		updLatest = "У вас последняя версия",
+		placeTitle = "Плейс",
+		placeCopied = "ID плейса скопирован",
+		clipFail = "Не удалось скопировать",
+		plrTitle = "Игроки",
+		sesTitle = "Сессия",
+		hfTitle = "Хотфиксы",
+		whoTitle = "Ты",
+		uidCopied = "UserId скопирован",
+		jobCopied = "JobId скопирован",
+		ageTitle = "Возраст сервера",
+		memTitle = "Память",
+		infoTitle = "Инфо",
+		joinCopied = "Строка входа скопирована",
+		creatorTitle = "Создатель",
+		clockTitle = "Часы",
+		slotsTitle = "Слоты",
+		noClipboard = "Нет буфера",
+		envTitle = "Среда",
+		deviceTitle = "Устройство",
+		prefixTitle = "Префикс",
+		tzTitle = "Пояс",
+		displayTitle = "Экран",
+		copyTitle = "История",
+		copyOk = "Скопировано в буфер",
+		copyFail = "Буфер обмена недоступен",
+		copyEmpty = "Нечего копировать",
+		starEmpty = "Нет команды для избранного",
+		histCleared = "История",
+		histClearedText = "История команд очищена",
+		eeNoCmdMatchHint = "Очисти поле или введи другое имя.",
 	},
 }
 
@@ -1141,7 +1307,10 @@ function getLocalizedDesc(title, desc)
 end
 
 function applyUiLanguage()
-	if Cmdbar then Cmdbar.PlaceholderText = T("command") end
+	if writefileState and type(writefileState.refreshPanel) == "function" then
+		writefileState.refreshPanel()
+	end
+	if Cmdbar then Cmdbar.PlaceholderText = T("cmdBarHint") end
 	if Prefix then Prefix.Text = T("prefix") end
 	local stayOpenRow = SettingsHolder and SettingsHolder:FindFirstChild("StayOpen")
 	if stayOpenRow and stayOpenRow:IsA("TextLabel") then
@@ -1181,7 +1350,11 @@ function applyUiLanguage()
 		refreshKbCmdPicker()
 	end
 	if cmdFavHeader then cmdFavHeader.Text = T("favorites") end
+	if cmdFavEmpty then
+		cmdFavEmpty.Text = (IsOnMobile and T("favEmptyHintMobile")) or T("favEmptyHint")
+	end
 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
+	if cmdNoMatchHint then cmdNoMatchHint.Text = T("cmdNoMatch") end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
@@ -1660,7 +1833,7 @@ Cmdbar.TextXAlignment = Enum.TextXAlignment.Left
 Cmdbar.TextColor3 = Color3.fromRGB(245, 245, 247)
 Cmdbar.Text = ""
 Cmdbar.ZIndex = 11
-Cmdbar.PlaceholderText = T("command")
+Cmdbar.PlaceholderText = T("cmdBarHint")
 Cmdbar.ClearTextOnFocus = false
 
 HintBar = Instance.new("TextLabel")
@@ -1734,6 +1907,24 @@ cmdFavHeader.ZIndex = 11
 cmdFavHeader.Visible = false
 cmdFavHeader.LayoutOrder = 1
 
+cmdFavEmpty = Instance.new("TextLabel")
+cmdFavEmpty.Name = "IYR_FAV_EMPTY"
+cmdFavEmpty.Parent = CMDsF
+cmdFavEmpty.BackgroundTransparency = 1
+cmdFavEmpty.BorderSizePixel = 0
+cmdFavEmpty.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 28)
+cmdFavEmpty.Font = UI_FONT
+cmdFavEmpty.TextSize = 11
+cmdFavEmpty.TextXAlignment = Enum.TextXAlignment.Left
+cmdFavEmpty.TextYAlignment = Enum.TextYAlignment.Top
+cmdFavEmpty.TextColor3 = Color3.fromRGB(154, 148, 176)
+cmdFavEmpty.Text = (IsOnMobile and T("favEmptyHintMobile")) or T("favEmptyHint")
+cmdFavEmpty.TextWrapped = true
+cmdFavEmpty.TextTruncate = Enum.TextTruncate.AtEnd
+cmdFavEmpty.ZIndex = 11
+cmdFavEmpty.Visible = false
+cmdFavEmpty.LayoutOrder = 2
+
 cmdAllHeader = Instance.new("TextLabel")
 cmdAllHeader.Name = "IYR_ALL_HDR"
 cmdAllHeader.Parent = CMDsF
@@ -1750,6 +1941,24 @@ cmdAllHeader.TextTruncate = Enum.TextTruncate.AtEnd
 cmdAllHeader.ZIndex = 11
 cmdAllHeader.Visible = false
 cmdAllHeader.LayoutOrder = 500
+
+cmdNoMatchHint = Instance.new("TextLabel")
+cmdNoMatchHint.Name = "IYR_NOMATCH"
+cmdNoMatchHint.Parent = CMDsF
+cmdNoMatchHint.BackgroundTransparency = 1
+cmdNoMatchHint.BorderSizePixel = 0
+cmdNoMatchHint.Size = UDim2.new(1, -(SCROLL_GUTTER + 2), 0, 40)
+cmdNoMatchHint.Font = UI_FONT
+cmdNoMatchHint.TextSize = 13
+cmdNoMatchHint.TextXAlignment = Enum.TextXAlignment.Left
+cmdNoMatchHint.TextYAlignment = Enum.TextYAlignment.Top
+cmdNoMatchHint.TextColor3 = Color3.fromRGB(154, 148, 176)
+cmdNoMatchHint.Text = T("cmdNoMatch")
+cmdNoMatchHint.TextWrapped = true
+cmdNoMatchHint.TextTruncate = Enum.TextTruncate.AtEnd
+cmdNoMatchHint.ZIndex = 11
+cmdNoMatchHint.Visible = false
+cmdNoMatchHint.LayoutOrder = 0
 
 SettingsButton.Name = "SettingsButton"
 SettingsButton.Parent = Holder
@@ -2039,7 +2248,7 @@ cmdSelectionPainted = false
 visibleCmdButtons = {}
 playerSuggestButtons = {}
 
-function formatCmdRich(text)
+function formatCmdRich(text, query)
 	if not text or text == "" then
 		return ""
 	end
@@ -2051,12 +2260,33 @@ function formatCmdRich(text)
 		names = escaped:sub(1, argAt - 1):gsub("%s+$", "")
 		args = escaped:sub(argAt)
 	end
-	local primary, aliases = names:match("^([^/]+)%s*(.*)$")
+	local primary, rest = names:match("^([^/]+)%s*(.*)$")
 	primary = (primary or names):gsub("%s+$", "")
-	aliases = aliases or ""
+	rest = rest or ""
+	local extra = {}
+	for part in rest:gmatch("[^/]+") do
+		part = part:gsub("^%s+", ""):gsub("%s+$", "")
+		if part ~= "" then
+			extra[#extra + 1] = part
+		end
+	end
 	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
-	if aliases ~= "" then
-		html = html .. "<font color=\"#7A778C\"> " .. aliases .. "</font>"
+	local q = tostring(query or ""):lower()
+	local shown = nil
+	if q ~= "" then
+		local pLow = primary:lower()
+		if pLow:sub(1, #q) ~= q then
+			for i = 1, #extra do
+				local aLow = extra[i]:lower()
+				if aLow == q or aLow:sub(1, #q) == q then
+					shown = extra[i]
+					break
+				end
+			end
+		end
+	end
+	if shown then
+		html = html .. "<font color=\"#C4B5FD\"> (" .. shown .. ")</font>"
 	end
 	if args ~= "" then
 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
@@ -2072,7 +2302,12 @@ function applyCmdRowText(btn, text)
 		if btn:GetAttribute("SuggestKind") == "player" then
 			label.Text = "<font color=\"#EDE9FE\">" .. tostring(text):gsub("&", "&amp;"):gsub("<", "&lt;") .. "</font>"
 		else
-			label.Text = formatCmdRich(text)
+			local q = ""
+			if Cmdbar then
+				q = tostring(Cmdbar.Text or "")
+				q = q:match("^(%S+)") or ""
+			end
+			label.Text = formatCmdRich(text, q)
 		end
 	end
 end
@@ -4056,35 +4291,478 @@ end
 
 AllWaypoints = {}
 
--- Coalesce rapid updatesaves into one trailing write (no 3s queue pile-up).
--- Global table: avoids a top-level local at the 200-register limit.
-writefileState = { pending = {}, scheduled = false }
-function writefileCooldown(name,data)
-    writefileState.pending[name] = data
-    if writefileState.scheduled then return end
-    writefileState.scheduled = true
-    task.spawn(function()
-        task.wait(0.25)
-        while true do
-            local batch = writefileState.pending
-            writefileState.pending = {}
-            for n, d in pairs(batch) do
-                if type(waxwritefile) == "function" then
-                    local ok, err = IYP_SAFE_WRITEFILE(n, d)
-                    if ok == false then
-                        warn("[IY+] writefile failed for " .. tostring(n) .. ": " .. tostring(err))
-                    end
-                end
-            end
-            if next(writefileState.pending) then
-                task.wait(0.15)
-            else
-                break
+-- IYP SETTINGS WRITER BEGIN
+-- One queue and one IO lock survive reload. Never detach a batch from the queue:
+-- a yielding native writer must not erase a newer payload or lose unvisited files.
+do
+    local state = IYP_FILE_ENV.IYP_SETTINGS_WRITER or writefileState
+    if type(state) ~= "table" or type(state.pending) ~= "table" then
+        state = { pending = {}, seq = 0, status = "session" }
+    end
+    writefileState = state
+    IYP_FILE_ENV.IYP_SETTINGS_WRITER = state
+    state.onStatusChanged = nil
+    state.workerToken = nil
+    state.scheduled = false
+    state.maxAttempts = 3
+    state.debounce = 0.25
+    state.retryDelay = 0.15
+    state.MAX_SETTINGS_BYTES = 2 * 1024 * 1024
+
+    function state._setStatus(status, err)
+        state.status = status
+        state.lastError = err -- a successful retry clears stale errors
+        if status == "session" then state.loadError = err end
+        if type(state.onStatusChanged) == "function" then
+            pcall(state.onStatusChanged, status, err)
+        end
+    end
+
+    function state.refreshStatus()
+        if nosaves == true then
+            state._setStatus("session", state.loadError)
+            return
+        end
+        if state.encodeError then
+            state._setStatus("error", state.encodeError)
+            return
+        end
+        local pending = false
+        for _, entry in pairs(state.pending) do
+            pending = true
+            if entry.exhausted then
+                state._setStatus("error", entry.error or "write failed")
+                return
             end
         end
-        writefileState.scheduled = false
-    end)
+        state._setStatus(pending and "pending" or "saved")
+    end
+
+    local function writeEntry(name, entry)
+        if state.pending[name] ~= entry then return true end
+        state.writing = true
+        local called, ok, err = pcall(IYP_SAFE_WRITEFILE, name, entry.data)
+        state.writing = false
+        if not called then err, ok = ok, false end
+        -- Native IO can yield. Remove only the exact payload that was written.
+        if state.pending[name] == entry then
+            if ok then
+                state.pending[name] = nil
+            else
+                entry.attempts = (entry.attempts or 0) + 1
+                entry.error = tostring(err or "write failed")
+                entry.exhausted = entry.attempts >= state.maxAttempts
+            end
+        end
+        return ok == true, err
+    end
+
+    function state.flush()
+        if state.writing then return false, "write already in progress" end
+        local batch = {}
+        for name, entry in pairs(state.pending) do batch[name] = entry end
+        local allOk, lastErr = true, nil
+        for name, entry in pairs(batch) do
+            local ok, err = writeEntry(name, entry)
+            if not ok then
+                allOk, lastErr = false, err
+                if state.pending[name] == entry then entry.exhausted = true end
+            end
+        end
+        state.refreshStatus()
+        return allOk and next(state.pending) == nil, lastErr
+    end
+
+    function state.start()
+        if state.scheduled then return end
+        local token, gen = {}, IYR_GEN
+        state.workerToken = token
+        state.scheduled = true
+        task.spawn(function()
+            task.wait(state.debounce)
+            while state.workerToken == token and IYR_GEN == gen do
+                local name, entry
+                if not state.writing then
+                    for n, candidate in pairs(state.pending) do
+                        if not candidate.exhausted then name, entry = n, candidate break end
+                    end
+                    if not entry then break end
+                    writeEntry(name, entry)
+                    if state.workerToken ~= token or IYR_GEN ~= gen then break end
+                    state.refreshStatus()
+                end
+                task.wait(state.retryDelay)
+            end
+            if state.workerToken == token then
+                state.scheduled = false
+                state.workerToken = nil
+                state.refreshStatus()
+            end
+        end)
+    end
+
+    function state.stop()
+        state.workerToken = nil
+        state.scheduled = false
+        state.onStatusChanged = nil
+        return state.flush()
+    end
+
+    function writefileCooldown(name, data)
+        if type(name) ~= "string" or name == "" or type(data) ~= "string" then
+            return false, "filename and payload must be non-empty name/string data"
+        end
+        if name == "IY_FE.iy" and #data > state.MAX_SETTINGS_BYTES then
+            state.encodeError = "settings exceed 2 MiB limit"
+            state.refreshStatus()
+            return false, state.encodeError
+        end
+        state.seq = (state.seq or 0) + 1
+        state.pending[name] = { data = data, seq = state.seq, attempts = 0 }
+        state.refreshStatus()
+        state.start()
+        return true
+    end
 end
+-- IYP SETTINGS WRITER END
+
+-- IYP SETTINGS NORMALIZATION BEGIN
+-- Pure, side-effect-free settings normalization (no game/file IO).
+-- writefileState.normalizeSettings(data, defaults) -> normalizedTable, repairedCount
+--   or (nil, 0, errorMessage) when data is not a decodable table.
+writefileState.MAX_SETTINGS_LIST = 5000
+writefileState.normalizeSettings = function(data, defaults)
+    if type(data) ~= "table" then
+        return nil, 0, "settings payload is not a table"
+    end
+    if type(defaults) ~= "table" then defaults = {} end
+
+    local okCall, result, count = pcall(function()
+        local MAX_LIST = tonumber(writefileState.MAX_SETTINGS_LIST) or 5000
+        local repaired = 0
+        for _, key in ipairs({"aliases", "binds", "favCmds", "PluginsTable", "WayPoints", "spawnCmds"}) do
+            if type(data[key]) == "table" then
+                repaired = repaired + math.max(0, #data[key] - MAX_LIST)
+            end
+        end
+        local function loadBool(key, fallback)
+            local value = data[key]
+            if type(value) == "boolean" then return value end
+            if value ~= nil then repaired = repaired + 1 end
+            if type(defaults[key]) == "boolean" then return defaults[key] end
+            return fallback
+        end
+
+        local function isFiniteNum(v)
+            return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge
+        end
+        -- Accepts finite numbers and numeric strings: legacy waypoints stored
+        -- string coords (the `waypointpos` command passes raw string args).
+        local function toNum(v)
+            if isFiniteNum(v) then return v end
+            if type(v) == "string" then
+                local n = tonumber(v)
+                if isFiniteNum(n) then return n end
+            end
+            return nil
+        end
+        local function clamp(v, lo, hi)
+            if v < lo then return lo end
+            if v > hi then return hi end
+            return v
+        end
+        local function toStr(v)
+            if type(v) == "string" then return v end
+            if type(v) == "number" then return tostring(v) end
+            return nil
+        end
+        local function trim(s)
+            return (s:match("^%s*(.-)%s*$")) or s
+        end
+        local function validColor(v)
+            if type(v) ~= "table" then return false end
+            if toNum(v[1]) and toNum(v[2]) and toNum(v[3]) then return true end
+            return (toNum(v.R) and toNum(v.G) and toNum(v.B)) and true or false
+        end
+        local function colorTriple(v, fallback)
+            local r, g, b
+            if type(v) == "table" then
+                r, g, b = toNum(v[1]), toNum(v[2]), toNum(v[3])
+                if not (r and g and b) then
+                    r, g, b = toNum(v.R), toNum(v.G), toNum(v.B)
+                end
+            end
+            if not (r and g and b) and type(fallback) == "table" then
+                r, g, b = toNum(fallback[1]), toNum(fallback[2]), toNum(fallback[3])
+            end
+            if not (r and g and b) then
+                return { 1, 1, 1 }
+            end
+            return { clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1) }
+        end
+        local function loadColor(key)
+            local v = data[key]
+            if validColor(v) then
+                return colorTriple(v, nil)
+            end
+            if v ~= nil then repaired = repaired + 1 end
+            return colorTriple(nil, defaults[key])
+        end
+
+        local out = {}
+
+        -- Scalars: each field is independent, a bad one never discards the rest.
+        if data.prefix ~= nil and type(data.prefix) ~= "string" then repaired = repaired + 1 end
+        out.prefix = toStr(data.prefix) or toStr(defaults.prefix) or ";"
+
+        out.StayOpen = loadBool("StayOpen", false)
+
+        if data.uiLang ~= "en" and data.uiLang ~= "ru" then
+            if data.uiLang ~= nil then repaired = repaired + 1 end
+            out.uiLang = (defaults.uiLang == "ru") and "ru" or "en"
+        else
+            out.uiLang = data.uiLang
+        end
+
+        local gs = toNum(data.guiScale)
+        if gs then
+            out.guiScale = clamp(gs, 0.4, 2)
+            if gs ~= data.guiScale or out.guiScale ~= gs then repaired = repaired + 1 end
+        else
+            if data.guiScale ~= nil then repaired = repaired + 1 end
+            local dgs = toNum(defaults.guiScale)
+            out.guiScale = dgs and clamp(dgs, 0.4, 2) or 1
+        end
+
+        out.keepIY = loadBool("keepIY", true)
+
+        local et = toNum(data.espTransparency)
+        if et then
+            out.espTransparency = clamp(et, 0, 1)
+            if et ~= data.espTransparency or out.espTransparency ~= et then repaired = repaired + 1 end
+        else
+            if data.espTransparency ~= nil then repaired = repaired + 1 end
+            local det = toNum(defaults.espTransparency)
+            out.espTransparency = det and clamp(det, 0, 1) or 0.3
+        end
+
+        out.logsEnabled = loadBool("logsEnabled", false)
+        out.jLogsEnabled = loadBool("jLogsEnabled", false)
+
+        if data.logsWebhook ~= nil and type(data.logsWebhook) ~= "string" then repaired = repaired + 1 end
+        out.logsWebhook = type(data.logsWebhook) == "string" and data.logsWebhook or nil
+
+        -- Aliases: array of { CMD, ALIAS } strings (readers use .CMD/.ALIAS).
+        local aliases = {}
+        if type(data.aliases) == "table" then
+            for i = 1, math.min(#data.aliases, MAX_LIST) do
+                local v = data.aliases[i]
+                local cmd = type(v) == "table" and toStr(v.CMD) or nil
+                local alias = type(v) == "table" and toStr(v.ALIAS) or nil
+                if cmd and alias and cmd ~= "" and alias ~= "" then
+                    aliases[#aliases + 1] = { CMD = cmd, ALIAS = alias }
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.aliases ~= nil then
+            repaired = repaired + 1
+        end
+        out.aliases = aliases
+
+        -- Binds: array of { COMMAND, KEY, ISKEYUP, TOGGLE? } (readers use those keys).
+        local binds = {}
+        if type(data.binds) == "table" then
+            for i = 1, math.min(#data.binds, MAX_LIST) do
+                local v = data.binds[i]
+                local cmd = type(v) == "table" and toStr(v.COMMAND) or nil
+                local key = type(v) == "table" and toStr(v.KEY) or nil
+                if cmd and key and cmd ~= "" and key ~= "" then
+                    local rec = { COMMAND = cmd, KEY = key, ISKEYUP = v.ISKEYUP == true }
+                    local toggle = toStr(v.TOGGLE)
+                    if toggle and toggle ~= "" then rec.TOGGLE = toggle end
+                    binds[#binds + 1] = rec
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.binds ~= nil then
+            repaired = repaired + 1
+        end
+        out.binds = binds
+
+        -- Favourites: unique lower-case command names.
+        local favs = {}
+        local seenFav = {}
+        if type(data.favCmds) == "table" then
+            for i = 1, math.min(#data.favCmds, MAX_LIST) do
+                local s = toStr(data.favCmds[i])
+                if s then s = trim(s):lower() end
+                if s and s ~= "" then
+                    if not seenFav[s] then
+                        seenFav[s] = true
+                        favs[#favs + 1] = s
+                    else
+                        repaired = repaired + 1
+                    end
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.favCmds ~= nil then
+            repaired = repaired + 1
+        end
+        out.favCmds = favs
+
+        -- Command history: list of strings (capped at 30).
+        local hist = {}
+        if type(data.cmdHistory) == "table" then
+            for i = 1, math.min(#data.cmdHistory, 30) do
+                local s = toStr(data.cmdHistory[i])
+                if s and s ~= "" then
+                    hist[#hist + 1] = s
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.cmdHistory ~= nil then
+            repaired = repaired + 1
+        end
+        out.cmdHistory = hist
+
+        -- Plugin filenames: unique non-empty strings.
+        local plugins = {}
+        local seenPlugin = {}
+        if type(data.PluginsTable) == "table" then
+            for i = 1, math.min(#data.PluginsTable, MAX_LIST) do
+                local s = toStr(data.PluginsTable[i])
+                if s then s = trim(s) end
+                if s and s ~= "" then
+                    if not seenPlugin[s] then
+                        seenPlugin[s] = true
+                        plugins[#plugins + 1] = s
+                    else
+                        repaired = repaired + 1
+                    end
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.PluginsTable ~= nil then
+            repaired = repaired + 1
+        end
+        out.PluginsTable = plugins
+
+        -- Waypoints: array of { NAME, COORD = { x, y, z }, GAME? }.
+        local waypoints = {}
+        if type(data.WayPoints) == "table" then
+            for i = 1, math.min(#data.WayPoints, MAX_LIST) do
+                local v = data.WayPoints[i]
+                local name = type(v) == "table" and toStr(v.NAME) or nil
+                local coord = type(v) == "table" and v.COORD or nil
+                local x, y, z
+                if type(coord) == "table" then
+                    x, y, z = toNum(coord[1]), toNum(coord[2]), toNum(coord[3])
+                end
+                if name and name ~= "" and x and y and z then
+                    if type(coord[1]) ~= "number" or type(coord[2]) ~= "number" or type(coord[3]) ~= "number" then
+                        repaired = repaired + 1
+                    end
+                    local gameId = nil
+                    if type(v.GAME) == "number" or type(v.GAME) == "string" then gameId = v.GAME end
+                    waypoints[#waypoints + 1] = { NAME = name, COORD = { x, y, z }, GAME = gameId }
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.WayPoints ~= nil then
+            repaired = repaired + 1
+        end
+        out.WayPoints = waypoints
+
+        -- Spawn commands: array of { COMMAND, DELAY }.
+        local spawnCmds = {}
+        if type(data.spawnCmds) == "table" then
+            for i = 1, math.min(#data.spawnCmds, MAX_LIST) do
+                local v = data.spawnCmds[i]
+                local cmd = type(v) == "table" and toStr(v.COMMAND) or nil
+                if cmd and cmd ~= "" then
+                    spawnCmds[#spawnCmds + 1] = { COMMAND = cmd, DELAY = toNum(v.DELAY) or 0 }
+                else
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.spawnCmds ~= nil then
+            repaired = repaired + 1
+        end
+        out.spawnCmds = spawnCmds
+
+        -- Theme colours, clamped 0..1. A bad colour never discards other fields.
+        out.currentShade1 = loadColor("currentShade1")
+        out.currentShade2 = loadColor("currentShade2")
+        out.currentShade3 = loadColor("currentShade3")
+        out.currentText1 = loadColor("currentText1")
+        out.currentText2 = loadColor("currentText2")
+        out.currentScroll = loadColor("currentScroll")
+
+        local theme = {}
+        if type(data.themeCustomColors) == "table" then
+            for i = 1, 12 do
+                local v = data.themeCustomColors[i]
+                if v == nil then v = data.themeCustomColors[tostring(i)] end
+                if validColor(v) then
+                    theme[i] = colorTriple(v, nil)
+                elseif v ~= nil then
+                    repaired = repaired + 1
+                end
+            end
+        elseif data.themeCustomColors ~= nil then
+            repaired = repaired + 1
+        end
+        out.themeCustomColors = theme
+
+        -- Event editor payload (opaque string).
+        if type(data.eventBinds) == "string" then
+            out.eventBinds = data.eventBinds
+        else
+            if data.eventBinds ~= nil then repaired = repaired + 1 end
+            out.eventBinds = type(defaults.eventBinds) == "string" and defaults.eventBinds or nil
+        end
+
+        return out, repaired
+    end)
+
+    if not okCall then
+        return nil, 0, tostring(result)
+    end
+    return result, count
+end
+-- IYP SETTINGS NORMALIZATION END
+
+-- IYP SETTINGS SEARCH BEGIN
+-- Pure helpers shared by the panel and offline regression tests.
+function writefileState.foldSearch(value)
+    local text = tostring(value or "")
+    local ok, result = pcall(function()
+        local chars = {}
+        for _, code in utf8.codes(text) do
+            if code >= 0x410 and code <= 0x42F then code = code + 32 end
+            if code == 0x401 then code = 0x451 end
+            chars[#chars + 1] = utf8.char(code)
+        end
+        return table.concat(chars):lower()
+    end)
+    return ok and result or text:lower()
+end
+
+function writefileState.matchesSearch(haystack, query)
+    local normalized = writefileState.foldSearch(haystack)
+    for token in writefileState.foldSearch(query):gmatch("%S+") do
+        if not normalized:find(token, 1, true) then return false end
+    end
+    return true
+end
+-- IYP SETTINGS SEARCH END
 
 function dragGUI(gui)
     task.spawn(function()
@@ -5095,6 +5773,8 @@ eventEditor = (function()
 		ZIndex = 40,
 	}, main)
 	uiCorner(shell, 14)
+	shell:SetAttribute("EEFlowTop", EE_FLOW_TOP)
+	shell:SetAttribute("EEFlowRest", EE_FLOW_REST)
 	uiStroke(shell, EE_BORDER, 1, 0.55)
 	table.insert(shade1, shell)
 
@@ -5367,27 +6047,33 @@ eventEditor = (function()
 	}, center)
 
 	local varBar = mk("ScrollingFrame", {
+		Name = "EEVarBar",
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Position = UDim2.new(0, 12, 0, 54),
 		Size = UDim2.new(1, -24, 0, 22),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.None,
 		ScrollBarThickness = 0,
 		ScrollingDirection = Enum.ScrollingDirection.X,
 		ClipsDescendants = true,
 		ZIndex = 42,
 	}, center)
 	mk("UIListLayout", {
+		Name = "EEVarChips",
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
+		VerticalAlignment = Enum.VerticalAlignment.Top,
 		Padding = UDim.new(0, 5),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, varBar)
+	pcall(function()
+		varBar.EEVarChips.Wraps = true
+	end)
 	uiPad(varBar, 2, 2, 2, 2)
 
 	mk("Frame", {
+		Name = "EEVarRule",
 		BackgroundColor3 = EE_BORDER,
 		BackgroundTransparency = 0.6,
 		BorderSizePixel = 0,
@@ -5461,12 +6147,13 @@ eventEditor = (function()
 	}, picker)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, pickerHolder)
 	local function setPickerVisible(visible, contentHeight)
+		local rest = tonumber(shell:GetAttribute("EEFlowRest")) or EE_FLOW_REST
 		if visible then
 			local height = math.min(200, math.max(32, (contentHeight or 24) + 8))
 			picker.Position = UDim2.new(0, 10, 1, -(54 + height))
 			picker.Size = UDim2.new(1, -20, 0, height)
-			flowList.Size = UDim2.new(1, -12, 1, -(EE_FLOW_REST + height + 4))
-			emptyFlow.Size = UDim2.new(1, -24, 1, -(EE_FLOW_REST + height + 4))
+			flowList.Size = UDim2.new(1, -12, 1, -(rest + height + 4))
+			emptyFlow.Size = UDim2.new(1, -24, 1, -(rest + height + 4))
 			if not picker.Visible then
 				picker.BackgroundTransparency = 1
 				picker.Visible = true
@@ -5477,8 +6164,8 @@ eventEditor = (function()
 		else
 			picker.Visible = false
 			picker.BackgroundTransparency = 0
-			flowList.Size = UDim2.new(1, -12, 1, -EE_FLOW_REST)
-			emptyFlow.Size = UDim2.new(1, -24, 1, -EE_FLOW_REST)
+			flowList.Size = UDim2.new(1, -12, 1, -rest)
+			emptyFlow.Size = UDim2.new(1, -24, 1, -rest)
 		end
 	end
 
@@ -5808,11 +6495,7 @@ eventEditor = (function()
 	}, historyFrame)
 	local histHolder = mk("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), ZIndex = 56 }, histList)
 	mk("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 3) }, histHolder)
-	local histClearBtn = btn(historyFrame, T("eeClearLog"), UDim2.new(0, 96, 0, 22), UDim2.new(0, 8, 1, -30), function()
-		table.clear(history)
-		lastFireTrace = nil
-		refreshHistory()
-	end)
+	local histClearBtn = btn(historyFrame, T("eeClearLog"), UDim2.new(0, 96, 0, 22), UDim2.new(0, 8, 1, -30))
 
 	local confirmFrame = mk("Frame", {
 		BackgroundColor3 = Color3.fromRGB(22, 22, 32),
@@ -6132,6 +6815,11 @@ eventEditor = (function()
 		end
 		histList.CanvasSize = UDim2.new(0, 0, 0, y)
 	end
+	histClearBtn.MouseButton1Click:Connect(function()
+		table.clear(history)
+		lastFireTrace = nil
+		refreshHistory()
+	end)
 
 	local refreshFlows
 	local refreshInspector
@@ -6160,13 +6848,18 @@ eventEditor = (function()
 			chips[#chips + 1] = hint
 		end
 		chips[#chips + 1] = "$me"
+		chips[#chips + 1] = "$place"
+		chips[#chips + 1] = "$job"
 		chips[#chips + 1] = "$time"
+		chips[#chips + 1] = "$event"
 		local seen = {}
 		local chipTw = TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		for _, chip in ipairs(chips) do
 			if not seen[chip] then
 				seen[chip] = true
-				local width = math.max(42, #chip * 7 + 16)
+				local n = utf8.len(chip)
+				if type(n) ~= "number" then n = #chip end
+				local width = math.max(42, n * 7 + 16)
 				local b = mk("TextButton", {
 					BackgroundColor3 = EE_SELECTED,
 					BorderSizePixel = 0,
@@ -6195,6 +6888,61 @@ eventEditor = (function()
 				end)
 			end
 		end
+		local barW = varBar.AbsoluteSize.X
+		if barW < 40 then
+			barW = EE_W - EE_CENTER_W_OFF - 24
+		end
+		local xAcc, rows = 0, 1
+		for _, child in ipairs(varBar:GetChildren()) do
+			if child:IsA("TextButton") then
+				local w = child.Size.X.Offset
+				if xAcc > 0 and xAcc + w > barW then
+					rows += 1
+					xAcc = 0
+				end
+				xAcc += w + 5
+			end
+		end
+		if rows < 1 then rows = 1 end
+		if rows > 3 then rows = 3 end
+		local wrapOk = false
+		pcall(function()
+			if varBar.EEVarChips then
+				varBar.EEVarChips.Wraps = true
+				wrapOk = true
+			end
+		end)
+		local barH = 22
+		if wrapOk then
+			barH = rows * 18 + (rows - 1) * 5 + 4
+			varBar.ScrollingDirection = Enum.ScrollingDirection.Y
+			varBar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+			varBar.ScrollBarThickness = 0
+		else
+			varBar.ScrollingDirection = Enum.ScrollingDirection.X
+			varBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+			varBar.ScrollBarThickness = (xAcc > barW) and 4 or 0
+		end
+		if barH < 22 then barH = 22 end
+		if barH > 64 then barH = 64 end
+		varBar.Size = UDim2.new(1, -24, 0, barH)
+		varBar.ClipsDescendants = true
+		local flowTop = 54 + barH + 12
+		local rule = center:FindFirstChild("EEVarRule")
+		if rule then
+			rule.Position = UDim2.new(0, 12, 0, 54 + barH + 4)
+		end
+		shell:SetAttribute("EEFlowTop", flowTop)
+		shell:SetAttribute("EEFlowRest", flowTop + EE_ADD_RESERVE)
+		flowList.Position = UDim2.new(0, 6, 0, flowTop)
+		emptyFlow.Position = UDim2.new(0, 12, 0, flowTop)
+		local rest = flowTop + EE_ADD_RESERVE
+		local pickH = 0
+		if picker.Visible then
+			pickH = picker.AbsoluteSize.Y + 4
+		end
+		flowList.Size = UDim2.new(1, -12, 1, -(rest + pickH))
+		emptyFlow.Size = UDim2.new(1, -24, 1, -(rest + pickH))
 		refreshFlows()
 		refreshInspector()
 		refreshEventList()
@@ -7369,7 +8117,7 @@ eventEditor = (function()
 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
 					BackgroundTransparency = selectedRow and 0.08 or 0.76,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -4, 0, 52),
+					Size = UDim2.new(1, -4, 0, 58),
 					LayoutOrder = order,
 					ClipsDescendants = true,
 					ZIndex = 43,
@@ -7385,20 +8133,21 @@ eventEditor = (function()
 				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 8),
-					Size = UDim2.new(1, -108, 0, 18),
+					Position = UDim2.new(0, 14, 0, 6),
+					Size = UDim2.new(1, -96, 0, 24),
 					Font = UI_FONT_MED,
-					TextSize = 13,
+					TextSize = 12,
+					TextWrapped = true,
 					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = nameColor,
 					Text = name,
-					TextTruncate = Enum.TextTruncate.AtEnd,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 30),
-					Size = UDim2.new(1, -108, 0, 14),
+					Position = UDim2.new(0, 14, 0, 32),
+					Size = UDim2.new(1, -96, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
@@ -7477,7 +8226,7 @@ eventEditor = (function()
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 59
+				y += 65
 			end
 		end
 		if #visible == 0 then
@@ -7718,7 +8467,9 @@ eventEditor = (function()
 	end
 	local function refreshSuggestions()
 		for _, c in ipairs(pickerHolder:GetChildren()) do
-			if c:IsA("TextButton") then c:Destroy() end
+			if c:IsA("GuiObject") and not c:IsA("UIListLayout") and not c:IsA("UIPadding") then
+				c:Destroy()
+			end
 		end
 		suggestionRows = {}
 		suggestionIndex = 0
@@ -7802,11 +8553,27 @@ eventEditor = (function()
 			y += 29
 		end
 		if y > 0 then y -= 3 end
+		if #suggestionRows == 0 and q ~= "" then
+			local emptyHint = mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 0, 40),
+				Text = T("eeNoCmdMatch") .. "\n" .. T("eeNoCmdMatchHint"),
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+				Font = UI_FONT,
+				TextSize = 11,
+				TextColor3 = EE_MUTED,
+				ZIndex = 51,
+			}, pickerHolder)
+			uiPad(emptyHint, 8, 4, 8, 4)
+			y = 40
+		end
 		suggestionIndex = #suggestionRows > 0 and 1 or 0
 		styleSuggestions()
 		picker.CanvasPosition = Vector2.new(0, 0)
 		picker.CanvasSize = UDim2.new(0, math.max(1, picker.AbsoluteWindowSize.X), 0, y)
-		setPickerVisible(#suggestionRows > 0, y)
+		setPickerVisible(#suggestionRows > 0 or (q ~= "" and y > 0), y)
 	end
 	local suggestDebounceTok = 0
 	local function scheduleSuggestions()
@@ -8023,16 +8790,6 @@ eventEditor = (function()
 		notify(T("autoStudio"), T("eePresetsAdded"))
 	end)
 
-	exportBtn.MouseButton1Click:Connect(function()
-		local json = saveData()
-		if everyClipboard then
-			pcall(everyClipboard, json)
-			notify(T("autoStudio"), T("eeExported"))
-		else
-			notify(T("autoStudio"), T("eeNoClip"))
-		end
-	end)
-
 	undoBtn.MouseButton1Click:Connect(function()
 		local snap = undoHistory[#undoHistory]
 		if not snap then
@@ -8074,15 +8831,6 @@ eventEditor = (function()
 		notify(T("autoStudio"), T("eeUndoOk"))
 	end))
 
-	importBtn.MouseButton1Click:Connect(function()
-		importTitle.Text = T("eeImportTitle")
-		importCancelBtn.Text = T("eeCancel")
-		importApplyBtn.Text = T("eeApply")
-		if setModalDimmer then setModalDimmer(true) end
-		importFrame.Visible = true
-		importBox.Text = ""
-		importBox:CaptureFocus()
-	end)
 	local importCancelBtn = btn(importFrame, T("eeCancel"), UDim2.new(0, 88, 0, 28), UDim2.new(1, -196, 1, -42), function()
 		importFrame.Visible = false
 		if setModalDimmer then setModalDimmer(false) end
@@ -8119,12 +8867,24 @@ eventEditor = (function()
 		if setModalDimmer then setModalDimmer(false) end
 		markEdited()
 		updateCountLabel()
-		refreshList()
+		refreshEventList()
+		if selectedEventName and events[selectedEventName] then
+			selectEvent(selectedEventName)
+		end
 		notify(T("autoStudio"), T("eeImported"))
 	end)
 	importApplyBtn:SetAttribute("EEActive", true)
 	importApplyBtn:SetAttribute("EEActiveColor", EE_PRIMARY)
 	importApplyBtn.BackgroundColor3 = EE_PRIMARY
+	importBtn.MouseButton1Click:Connect(function()
+		importTitle.Text = T("eeImportTitle")
+		importCancelBtn.Text = T("eeCancel")
+		importApplyBtn.Text = T("eeApply")
+		if setModalDimmer then setModalDimmer(true) end
+		importFrame.Visible = true
+		importBox.Text = ""
+		importBox:CaptureFocus()
+	end)
 
 	local function saveData()
 		local result = {}
@@ -8163,6 +8923,15 @@ eventEditor = (function()
 		result.__studio = studio
 		return HttpService:JSONEncode(result)
 	end
+	exportBtn.MouseButton1Click:Connect(function()
+		local json = saveData()
+		if everyClipboard then
+			pcall(everyClipboard, json)
+			notify(T("autoStudio"), T("eeExported"))
+		else
+			notify(T("autoStudio"), T("eeNoClip"))
+		end
+	end)
 
 	loadData = function(input)
 		local data = input
@@ -8614,6 +9383,7 @@ defaultsettings = {
     WayPoints = {};
     PluginsTable = {};
     favCmds = {};
+    cmdHistory = {};
     currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
     currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
     currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
@@ -8726,89 +9496,129 @@ createPopup = function(text)
 end
 
 local loadedEventData = nil
-local jsonAttempts = 0
+local loadedCmdHistory = nil
 function saves()
-    if writefileExploit() and type(waxreadfile) == "function" and jsonAttempts < 10 then
-        -- Read once. The old code called readfile three times and the middle call
-        -- was unguarded, so a file removed mid-read threw instead of recovering.
-        local readOk, raw = IYP_SAFE_READFILE("IY_FE.iy")
-        if readOk then
-            if raw ~= nil and tostring(raw):gsub("%s", "") ~= "" then
-                local success, response = pcall(function()
-                    local json = HttpService:JSONDecode(raw)
-                    if vtype(json.prefix, "string") then prefix = json.prefix else prefix = ';' end
-                    if vtype(json.StayOpen, "boolean") then StayOpen = json.StayOpen else StayOpen = false end
-                    if vtype(json.uiLang, "string") and (json.uiLang == "en" or json.uiLang == "ru") then uiLang = json.uiLang else uiLang = "en" end
-                    if vtype(json.guiScale, "number") then guiScale = json.guiScale else guiScale = defaultGuiScale end
-                    if vtype(json.keepIY, "boolean") then KeepInfYield = json.keepIY else KeepInfYield = true end
-                    if vtype(json.espTransparency, "number") then espTransparency = json.espTransparency else espTransparency = 0.3 end
-                    if vtype(json.logsEnabled, "boolean") then logsEnabled = json.logsEnabled else logsEnabled = false end
-                    if vtype(json.jLogsEnabled, "boolean") then jLogsEnabled = json.jLogsEnabled else jLogsEnabled = false end
-                    if vtype(json.logsWebhook, "string") then logsWebhook = json.logsWebhook else logsWebhook = nil end
-                    if vtype(json.aliases, "table") then aliases = json.aliases else aliases = {} end
-                    if vtype(json.binds, "table") then binds = json.binds else binds = {} end
-                    if vtype(json.spawnCmds, "table") then spawnCmds = json.spawnCmds end
-                    if vtype(json.WayPoints, "table") then AllWaypoints = json.WayPoints else WayPoints = {} AllWaypoints = {} end
-                    if vtype(json.PluginsTable, "table") then PluginsTable = json.PluginsTable else PluginsTable = {} end
-                    if vtype(json.favCmds, "table") then favCmds = json.favCmds else favCmds = {} end
-                    if vtype(json.currentShade1, "table") then currentShade1 = Color3.new(json.currentShade1[1],json.currentShade1[2],json.currentShade1[3]) end
-                    if vtype(json.currentShade2, "table") then currentShade2 = Color3.new(json.currentShade2[1],json.currentShade2[2],json.currentShade2[3]) end
-                    if vtype(json.currentShade3, "table") then currentShade3 = Color3.new(json.currentShade3[1],json.currentShade3[2],json.currentShade3[3]) end
-                    if vtype(json.currentText1, "table") then currentText1 = Color3.new(json.currentText1[1],json.currentText1[2],json.currentText1[3]) end
-                    if vtype(json.currentText2, "table") then currentText2 = Color3.new(json.currentText2[1],json.currentText2[2],json.currentText2[3]) end
-                    if vtype(json.currentScroll, "table") then currentScroll = Color3.new(json.currentScroll[1],json.currentScroll[2],json.currentScroll[3]) end
-                    themeCustomColors = {}
-                    if vtype(json.themeCustomColors, "table") then
-                        for i = 1, 12 do
-                            local c = json.themeCustomColors[i] or json.themeCustomColors[tostring(i)]
-                            if vtype(c, "table") and c[1] ~= nil then
-                                themeCustomColors[i] = Color3.new(c[1], c[2], c[3])
-                            end
-                        end
-                    end
-                    if vtype(json.eventBinds, "string") then loadedEventData = json.eventBinds end
-                end)
-                if not success then
-                    jsonAttempts = jsonAttempts + 1
-                    warn("Save Json Error:", response)
-                    warn("Overwriting Save File")
-                    IYP_SAFE_WRITEFILE("IY_FE.iy", defaults)
-                    wait()
-                    saves()
-                end
-            else
-                IYP_SAFE_WRITEFILE("IY_FE.iy", defaults)
-                wait()
-                local dReadSuccess, dOut = IYP_SAFE_READFILE("IY_FE.iy")
-                if dReadSuccess and dOut ~= nil and tostring(dOut):gsub("%s", "") ~= "" then
-                    saves()
-                else
-                    nosaves = true
-                    useFactorySettings()
-                    createPopup("There was a problem writing a save file to your PC.\n\nPlease contact the developer/support team for your exploit and tell them writefile/readfile is not working.\n\nYour settings, keybinds, waypoints, and aliases will not save if you continue.\n\nThings to try:\n> Make sure a 'workspace' folder is located in the same folder as your exploit\n> If your exploit is inside of a zip/rar file, extract it.\n> Rejoin the game and try again or restart your PC and try again.")
-                end
-            end
-        else
-            IYP_SAFE_WRITEFILE("IY_FE.iy", defaults)
-            wait()
-            local dReadSuccess, dOut = IYP_SAFE_READFILE("IY_FE.iy")
-            if dReadSuccess and dOut ~= nil and tostring(dOut):gsub("%s", "") ~= "" then
-                saves()
-            else
-                nosaves = true
-                useFactorySettings()
-                createPopup("There was a problem writing a save file to your PC.\n\nPlease contact the developer/support team for your exploit and tell them writefile/readfile is not working.\n\nYour settings, keybinds, waypoints, and aliases will not save if you continue.\n\nThings to try:\n> Make sure a 'workspace' folder is located in the same folder as your exploit\n> If your exploit is inside of a zip/rar file, extract it.\n> Rejoin the game and try again or restart your PC and try again.")
-            end
+    -- Non-destructive load: never overwrite a readable-but-corrupt save file.
+    if not writefileExploit() or type(waxreadfile) ~= "function" then
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "writefile/readfile unavailable")
+        if type(createPopup) == "function" then
+            pcall(createPopup, "There was a problem writing a save file to your PC.\n\nPlease contact the developer/support team for your exploit and tell them writefile/readfile is not working.\n\nYour settings, keybinds, waypoints, and aliases will not save if you continue.\n\nThings to try:\n> Make sure a 'workspace' folder is located in the same folder as your exploit\n> If your exploit is inside of a zip/rar file, extract it.\n> Rejoin the game and try again or restart your PC and try again.")
         end
+        return
+    end
+
+    -- Prefer a retained, not-yet-persisted payload after reload over stale disk data.
+    local buffered = writefileState.pending["IY_FE.iy"]
+    local readOk, raw
+    if buffered then
+        readOk, raw = true, buffered.data
     else
-        if jsonAttempts >= 10 then
-            nosaves = true
-            useFactorySettings()
-            createPopup("Sorry, we have attempted to parse your save file, but it is unreadable!\n\n"..BRAND_NAME.." is now using factory settings until your exploit's file system works.\n\nYour save file has not been deleted.")
-        else
-            nosaves = true
-            useFactorySettings()
+        readOk, raw = IYP_SAFE_READFILE("IY_FE.iy")
+    end
+    if not readOk then
+        -- Only create a fresh default file when isfile explicitly confirms it is missing.
+        local confirmedMissing = false
+        -- The readfile-derived fallback also returns false on permission errors.
+        -- Only the captured native isfile can establish absence safely.
+        if type(IYP_FILE_ENV.IYP_NATIVE_ISFILE) == "function" then
+            local isOk, exists = pcall(IYP_FILE_ENV.IYP_NATIVE_ISFILE, "IY_FE.iy")
+            if isOk and exists == false then confirmedMissing = true end
         end
+        if confirmedMissing then
+            local wroteOk = IYP_SAFE_WRITEFILE("IY_FE.iy", defaults)
+            if wroteOk then
+                nosaves = false
+                writefileState._setStatus("saved")
+                return
+            end
+        end
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "could not read IY_FE.iy")
+        warn("[IY+] Could not read IY_FE.iy; using session-only settings (existing file preserved).")
+        return
+    end
+
+    if raw == nil or tostring(raw):gsub("%s", "") == "" then
+        -- Empty file: preserve it rather than overwriting.
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "IY_FE.iy is empty")
+        warn("[IY+] IY_FE.iy is empty; using session-only settings (file preserved).")
+        return
+    end
+
+    if type(raw) ~= "string" or #raw > writefileState.MAX_SETTINGS_BYTES then
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "save file exceeds 2 MiB or is not text")
+        warn("[IY+] Save file rejected before decoding; existing file preserved.")
+        return
+    end
+
+    local decodeOk, decoded = pcall(function()
+        return HttpService:JSONDecode(raw)
+    end)
+    if not decodeOk or type(decoded) ~= "table" then
+        -- Malformed nonempty raw: keep the file untouched, never reread in a loop.
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "malformed save file")
+        warn("[IY+] IY_FE.iy is malformed; using session-only settings (file preserved, not overwritten).")
+        return
+    end
+
+    -- Pure normalization: one bad field never discards the rest of the settings.
+    local normalized, repaired = writefileState.normalizeSettings(decoded, defaultsettings)
+    if type(normalized) ~= "table" then
+        nosaves = true
+        useFactorySettings()
+        writefileState._setStatus("session", "settings normalization failed")
+        warn("[IY+] IY_FE.iy failed normalization; using session-only settings (file preserved).")
+        return
+    end
+
+    prefix = normalized.prefix
+    StayOpen = normalized.StayOpen
+    uiLang = normalized.uiLang
+    guiScale = normalized.guiScale
+    KeepInfYield = normalized.keepIY
+    espTransparency = normalized.espTransparency
+    logsEnabled = normalized.logsEnabled
+    jLogsEnabled = normalized.jLogsEnabled
+    logsWebhook = normalized.logsWebhook
+    aliases = normalized.aliases
+    binds = normalized.binds
+    spawnCmds = normalized.spawnCmds
+    AllWaypoints = normalized.WayPoints
+    PluginsTable = normalized.PluginsTable
+    favCmds = normalized.favCmds
+    currentShade1 = Color3.new(normalized.currentShade1[1], normalized.currentShade1[2], normalized.currentShade1[3])
+    currentShade2 = Color3.new(normalized.currentShade2[1], normalized.currentShade2[2], normalized.currentShade2[3])
+    currentShade3 = Color3.new(normalized.currentShade3[1], normalized.currentShade3[2], normalized.currentShade3[3])
+    currentText1 = Color3.new(normalized.currentText1[1], normalized.currentText1[2], normalized.currentText1[3])
+    currentText2 = Color3.new(normalized.currentText2[1], normalized.currentText2[2], normalized.currentText2[3])
+    currentScroll = Color3.new(normalized.currentScroll[1], normalized.currentScroll[2], normalized.currentScroll[3])
+    themeCustomColors = {}
+    for i = 1, 12 do
+        local c = normalized.themeCustomColors[i]
+        if c then themeCustomColors[i] = Color3.new(c[1], c[2], c[3]) end
+    end
+    if type(normalized.eventBinds) == "string" then
+        loadedEventData = normalized.eventBinds
+    end
+    if type(normalized.cmdHistory) == "table" then
+        loadedCmdHistory = normalized.cmdHistory
+    end
+
+    nosaves = false
+    writefileState.loadError = nil
+    writefileState.refreshStatus()
+    if buffered then writefileState.start() end
+    if (repaired or 0) > 0 then
+        warn("[IY+] Repaired " .. tostring(repaired) .. " malformed setting(s) while loading IY_FE.iy.")
     end
 end
 
@@ -8823,6 +9633,22 @@ function updatesaves()
                 customSave[i] = {c.R, c.G, c.B}
             end
         end
+
+        local function tri(c, fallback)
+            if typeof(c) == "Color3" then return {c.R, c.G, c.B} end
+            if type(fallback) == "table" then return {fallback[1], fallback[2], fallback[3]} end
+            return {1, 1, 1}
+        end
+
+        -- Fail closed: saving stale event data would silently erase newer edits.
+        local ebOk, eb = pcall(function() return eventEditor.SaveData() end)
+        if not ebOk or type(eb) ~= "string" then
+            writefileState.encodeError = "could not serialize Automation Studio settings"
+            writefileState.refreshStatus()
+            warn("[IY+] Settings not saved: Automation Studio serialization failed.")
+            return false
+        end
+
         local update = {
             prefix = prefix;
             StayOpen = StayOpen;
@@ -8838,16 +9664,31 @@ function updatesaves()
             WayPoints = AllWaypoints;
             PluginsTable = PluginsTable;
             favCmds = favCmds or {};
-            currentShade1 = {currentShade1.R,currentShade1.G,currentShade1.B};
-            currentShade2 = {currentShade2.R,currentShade2.G,currentShade2.B};
-            currentShade3 = {currentShade3.R,currentShade3.G,currentShade3.B};
-            currentText1 = {currentText1.R,currentText1.G,currentText1.B};
-            currentText2 = {currentText2.R,currentText2.G,currentText2.B};
-            currentScroll = {currentScroll.R,currentScroll.G,currentScroll.B};
+            cmdHistory = cmdHistory or {};
+            currentShade1 = tri(currentShade1, defaultsettings and defaultsettings.currentShade1);
+            currentShade2 = tri(currentShade2, defaultsettings and defaultsettings.currentShade2);
+            currentShade3 = tri(currentShade3, defaultsettings and defaultsettings.currentShade3);
+            currentText1 = tri(currentText1, defaultsettings and defaultsettings.currentText1);
+            currentText2 = tri(currentText2, defaultsettings and defaultsettings.currentText2);
+            currentScroll = tri(currentScroll, defaultsettings and defaultsettings.currentScroll);
             themeCustomColors = customSave;
-            eventBinds = eventEditor.SaveData()
+            eventBinds = eb
         }
-        writefileCooldown("IY_FE.iy", HttpService:JSONEncode(update))
+
+        local encOk, encoded = pcall(function()
+            return HttpService:JSONEncode(update)
+        end)
+        if not encOk or type(encoded) ~= "string" then
+            writefileState.encodeError = "JSONEncode failed"
+            writefileState.refreshStatus()
+            warn("[IY+] Failed to encode settings for IY_FE.iy; previous file preserved.")
+            return false
+        end
+
+        writefileState.encodeError = nil
+        local queued = writefileCooldown("IY_FE.iy", encoded)
+        if queued then loadedEventData = eb end
+        return queued
     end
 end
 
@@ -8892,6 +9733,101 @@ local isHidden = false
 settingsTweenToken = 0
 settingsSubToken = 0
 
+-- IYP SETTINGS PANEL BEGIN
+-- A scoped controller avoids adding registers to the monolithic root chunk.
+do
+    local state = writefileState
+    local strings = {
+        en = {
+            settingsTitle = "Settings", settingsSearch = "Find a setting...",
+            settingsEmpty = "No settings match. Clear your search to see all.",
+            settingsSaved = "Saved", settingsPending = "Saving...",
+            settingsError = "Not saved - retry", settingsSession = "Session only",
+            settingsReady = "Changes save automatically. Click Saved to save now.",
+            settingsRetry = "Changes are not saved. Click above to retry.",
+            settingsLocal = "File unavailable or invalid. Original file is preserved.",
+            settingsSaving = "Writing the latest changes. Please wait.",
+        },
+        ru = {
+            settingsTitle = "Настройки", settingsSearch = "Найти настройку...",
+            settingsEmpty = "Ничего не найдено. Очистите поиск.",
+            settingsSaved = "Сохранено", settingsPending = "Сохранение...",
+            settingsError = "Не сохранено - повторить", settingsSession = "Только в сессии",
+            settingsReady = "Автосохранение. Нажмите выше, чтобы сохранить сейчас.",
+            settingsRetry = "Изменения не сохранены. Нажмите выше для повтора.",
+            settingsLocal = "Файл недоступен или повреждён. Оригинал сохранён.",
+            settingsSaving = "Сохраняются последние изменения. Подождите.",
+        },
+    }
+    for lang, pack in pairs(strings) do
+        for key, value in pairs(pack) do UI_L[lang][key] = value end
+    end
+
+    local function label(name, y, height, font, size)
+        local item = Instance.new("TextLabel")
+        item.Name = name
+        item.BackgroundTransparency = 1
+        item.Position = UDim2.new(0, 10, 0, y)
+        item.Size = UDim2.new(1, -20, 0, height)
+        item.Font = font
+        item.TextSize = size
+        item.TextColor3 = currentText1
+        item.TextXAlignment = Enum.TextXAlignment.Left
+        item.RichText = false
+        item.ZIndex = 24
+        item.Parent = SettingsHolder
+        table.insert(text1, item)
+        return item
+    end
+
+    local title = label("SettingsTitle", 8, 24, UI_FONT_MED, 17)
+
+    local rows = {
+        {Prefix, "prefix", "prefix префикс"},
+        {SettingsHolder:FindFirstChild("StayOpen"), "keepOpen", "keep menu open pin закрепить меню"},
+        {LanguageRow, "language", "language russian english язык русский английский ru en"},
+        {ColorsButton, "editTheme", "theme colors appearance тема цвет оформление"},
+        {Keybinds, "editKeybinds", "keyboard shortcuts keybinds клавиши бинды"},
+        {Aliases, "editAliases", "aliases псевдонимы алиасы"},
+        {Positions, "editWaypoints", "waypoints positions точки позиции"},
+        {Plugins, "managePlugins", "plugins плагины"},
+        {EventBind, "editEvents", "events automation workflows события автоматизация"},
+    }
+    -- More comfortable touch targets while retaining all existing controls/handlers.
+    for _, row in ipairs(rows) do
+        local item = row[1]
+        item.Size = UDim2.new(1, -16, 0, 36)
+        local icon = item:FindFirstChild("Icon")
+        if icon then icon.Position = UDim2.new(0, 8, 0.5, -8) end
+    end
+    PrefixBox.Size = UDim2.new(0, 30, 0, 28)
+    PrefixBox.Position = UDim2.new(1, -36, 0.5, -14)
+    Button.Size = UDim2.new(0, 30, 0, 28)
+    Button.Position = UDim2.new(1, -36, 0.5, -14)
+    On.Position = UDim2.new(0.5, -8, 0.5, -8)
+    LanguageValue.Size = UDim2.new(0, 46, 0, 28)
+    LanguageValue.Position = UDim2.new(1, -52, 0.5, -14)
+    SettingsHolder.ScrollBarThickness = 5
+    SettingsHolder.ScrollingDirection = Enum.ScrollingDirection.Y
+    SETTINGS_CONTENT_H = 38 + #rows * 42 + 8
+
+    function state.refreshPanel()
+        if not title.Parent then return end
+        title.Text = T("settingsTitle")
+        local y = 38
+        for _, row in ipairs(rows) do
+            local item = row[1]
+            item.Visible = true
+            item.Position = UDim2.new(0, 8, 0, y)
+            y = y + 42
+        end
+        SettingsHolder.CanvasSize = UDim2.new(0, 0, 0, y + 8)
+    end
+    state.onStatusChanged = state.refreshPanel
+    state.refreshPanel()
+end
+-- IYP SETTINGS PANEL END
+
 function hideSettingsHolderAfterTween(token)
 	task.delay(0.5, function()
 		if settingsSubToken ~= token then return end
@@ -8915,6 +9851,7 @@ function openSettingsPanel()
 	SettingsHolder.Visible = true
 	SettingsHolder.CanvasPosition = Vector2.zero
 	SettingsHolder.CanvasSize = UDim2.new(0, 0, 0, SETTINGS_CONTENT_H)
+	if type(writefileState.refreshPanel) == "function" then writefileState.refreshPanel() end
 
 	local maxH = PANEL_H - SETTINGS_OPEN_Y
 	local openSize = UDim2.new(1, 0, 0, math.min(SETTINGS_CONTENT_H, maxH))
@@ -9355,6 +10292,9 @@ local BASIC_THEME_COLORS = {
 local function themeTrack(conn)
 	if conn then
 		themeEditorConns[#themeEditorConns + 1] = conn
+		if type(IYR_TRACK) == "function" then
+			IYR_TRACK(conn)
+		end
 	end
 	return conn
 end
@@ -10323,7 +11263,7 @@ end)
 
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
     prefix = PrefixBox.Text
-    Cmdbar.PlaceholderText = T("command")
+    Cmdbar.PlaceholderText = T("cmdBarHint")
     updatesaves()
 end)
 
@@ -10873,12 +11813,16 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         end)
     end
 
+    local hasFavs = not takesPlayer and #favRanked > 0
     if cmdFavHeader then
-        cmdFavHeader.Visible = not takesPlayer and #favRanked > 0
+        cmdFavHeader.Visible = hasFavs
         cmdFavHeader.LayoutOrder = 1
     end
+    if cmdFavEmpty then
+        cmdFavEmpty.Visible = false
+    end
     if cmdAllHeader then
-        cmdAllHeader.Visible = not takesPlayer and #favRanked > 0 and #otherRanked > 0
+        cmdAllHeader.Visible = hasFavs and #otherRanked > 0
         cmdAllHeader.LayoutOrder = 500
     end
 
@@ -10886,6 +11830,9 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         indexnum += 1
         item.btn.Visible = true
         item.btn.LayoutOrder = order
+        if type(applyCmdRowText) == "function" then
+            applyCmdRowText(item.btn, item.btn.Text)
+        end
         if type(applyFavoriteStyle) == "function" then
             applyFavoriteStyle(item.btn)
         end
@@ -10895,7 +11842,7 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         end
     end
 
-    local layout = 2
+    local layout = 10
     for _, item in ipairs(favRanked) do
         placeCmdRow(item, layout)
         layout += 1
@@ -10942,15 +11889,27 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     end
     selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
     -- Paint selection only when typing a filter, or after keyboard navigation
-    local typedFilter = (tostring(str or ""):gsub("^%s+", ""):gsub("%s+$", ""))
     cmdSelectionPainted = typedFilter ~= ""
+    local noMatch = typedFilter ~= "" and indexnum == 0
+    if cmdNoMatchHint then
+        cmdNoMatchHint.Visible = noMatch
+        if noMatch then
+            cmdNoMatchHint.Text = T("cmdNoMatch")
+            cmdNoMatchHint.LayoutOrder = 0
+            if cmdFavHeader then cmdFavHeader.Visible = false end
+            if cmdFavEmpty then cmdFavEmpty.Visible = false end
+            if cmdAllHeader then cmdAllHeader.Visible = false end
+        end
+    end
     applyCmdSelection()
 
     frame.CanvasSize = UDim2.new(0,0,0,cmdListLayout.AbsoluteContentSize.Y)
     if introPlaying or introLockMinimize then
         -- Keep the panel open until intro autohide finishes
     elseif not Ianim then
-        if indexnum == 0 then
+        if noMatch then
+            maximizeHolder()
+        elseif indexnum == 0 then
             if not cmdbar then
                 minimizeHolder()
             elseif cmdbar then
@@ -12393,24 +13352,26 @@ isFavoriteCmd = FavCmds.is
 applyFavoriteStyle = FavCmds.apply
 toggleFavoriteCmd = FavCmds.toggle
 
-for i = 1, #CMDs do
+function createCmdButton(i)
+    local cmd = CMDs[i]
+    if not cmd or not Example or not CMDsF then return nil end
     local newcmd = Example:Clone()
     newcmd.Parent = CMDsF
     newcmd.Visible = false
-    newcmd.Text = CMDs[i].NAME
-    newcmd:SetAttribute("Title", CMDs[i].NAME)
+    newcmd.Text = cmd.NAME
+    newcmd:SetAttribute("Title", cmd.NAME)
     newcmd:SetAttribute("CmdIndex", i)
     newcmd.Name = "CMD"
     styleCmdRow(newcmd)
     applyFavoriteStyle(newcmd)
     table.insert(text1, newcmd)
     registerCmdButton(newcmd)
-    if CMDs[i].DESC ~= "" then
-        newcmd:SetAttribute("Desc", CMDs[i].DESC)
+    if cmd.DESC ~= "" then
+        newcmd:SetAttribute("Desc", cmd.DESC)
         -- Register aliases of the same command for RU lookup
-        local primary = cmdPrimaryKey(CMDs[i].NAME)
-        if CMD_DESC_RU[primary] then
-            for part in string.gmatch(CMDs[i].NAME:lower(), "[^%s/%[%]]+") do
+        local primary = cmdPrimaryKey(cmd.NAME)
+        if CMD_DESC_RU and CMD_DESC_RU[primary] then
+            for part in string.gmatch(cmd.NAME:lower(), "[^%s/%[%]]+") do
                 if not part:find("%[") then
                     CMD_DESC_RU[part] = CMD_DESC_RU[primary]
                 end
@@ -12455,6 +13416,11 @@ for i = 1, #CMDs do
             end
         end)
     end
+    return newcmd
+end
+
+for i = 1, #CMDs do
+    createCmdButton(i)
     if i % 80 == 0 then
         task.wait()
     end
@@ -12736,6 +13702,17 @@ function splitString(str,delim)
 end
 
 cmdHistory = {}
+if type(loadedCmdHistory) == "table" then
+    for i = 1, #loadedCmdHistory do
+        if #cmdHistory >= 30 then
+            break
+        end
+        if type(loadedCmdHistory[i]) == "string" and loadedCmdHistory[i] ~= "" then
+            cmdHistory[#cmdHistory + 1] = loadedCmdHistory[i]
+        end
+    end
+    loadedCmdHistory = nil
+end
 local lastCmds = {}
 local historyCount = 0
 local split=" "
@@ -12795,11 +13772,16 @@ function execCmd(cmdStr,speaker,store)
                 if not speaker then speaker = Players.LocalPlayer end
                 if store then
                     if speaker == Players.LocalPlayer then
-                        if cmdHistory[1] ~= rawCmdStr and rawCmdStr:sub(1,11) ~= 'lastcommand' and rawCmdStr:sub(1,7) ~= 'lastcmd' then
+                        local firstWord = string.lower((string.match(tostring(rawCmdStr or ""), "^%s*(%S+)") or ""))
+                        local isMeta = (firstWord == 'lastcommand' or firstWord == 'lastcmd' or firstWord == 'clearhistory' or firstWord == 'clrhist' or firstWord == 'wipehistory' or firstWord == 'showhistory' or firstWord == 'hist' or firstWord == 'repeatlast' or firstWord == 'again')
+                        if cmdHistory[1] ~= rawCmdStr and not isMeta then
                             table.insert(cmdHistory,1,rawCmdStr)
+                            if #cmdHistory > 30 then table.remove(cmdHistory) end
+                            if type(updatesaves) == "function" then
+                                pcall(updatesaves)
+                            end
                         end
                     end
-                    if #cmdHistory > 30 then table.remove(cmdHistory) end
 
                     lastCmds[cmdName] = v
                 end
@@ -13322,22 +14304,38 @@ IYR_TRACK(UserInputService.InputBegan:Connect(function(input,gameProcessed)
     if gameProcessed then
         if Cmdbar and Cmdbar:IsFocused() then
             if input.KeyCode == Enum.KeyCode.Up then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(-1)
+                if cmdSelectionPainted and #visibleCmdButtons > 0 then
+                    if selectedCmdIndex <= 1 then
+                        cmdSelectionPainted = false
+                        applyCmdSelection()
+                        historyCount += 1
+                        if historyCount > #cmdHistory then historyCount = #cmdHistory end
+                        Cmdbar.Text = cmdHistory[historyCount] or ""
+                        Cmdbar.CursorPosition = 1020
+                    else
+                        moveCmdSelection(-1)
+                    end
                 else
-                historyCount += 1
-                if historyCount > #cmdHistory then historyCount = #cmdHistory end
-                Cmdbar.Text = cmdHistory[historyCount] or ""
-                Cmdbar.CursorPosition = 1020
+                    historyCount += 1
+                    if historyCount > #cmdHistory then historyCount = #cmdHistory end
+                    Cmdbar.Text = cmdHistory[historyCount] or ""
+                    Cmdbar.CursorPosition = 1020
                 end
             elseif input.KeyCode == Enum.KeyCode.Down then
-                if Cmdbar.Text ~= "" and #visibleCmdButtons > 0 then
-                    moveCmdSelection(1)
+                if #visibleCmdButtons > 0 then
+                    if not cmdSelectionPainted then
+                        cmdSelectionPainted = true
+                        selectedCmdIndex = 1
+                        selectedCmdButton = visibleCmdButtons[1]
+                        applyCmdSelection()
+                    else
+                        moveCmdSelection(1)
+                    end
                 else
-                historyCount = historyCount - 1
-                if historyCount < 0 then historyCount = 0 end
-                Cmdbar.Text = cmdHistory[historyCount] or ""
-                Cmdbar.CursorPosition = 1020
+                    historyCount = historyCount - 1
+                    if historyCount < 0 then historyCount = 0 end
+                    Cmdbar.Text = cmdHistory[historyCount] or ""
+                    Cmdbar.CursorPosition = 1020
                 end
             end
         elseif input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
@@ -13355,7 +14353,7 @@ IYR_TRACK(Players.LocalPlayer.Chatted:Connect(function()
     end
 end))
 
-Cmdbar.PlaceholderText = T("command")
+Cmdbar.PlaceholderText = T("cmdBarHint")
 IYR_TRACK(Cmdbar:GetPropertyChangedSignal("Text"):Connect(function()
     if Cmdbar:IsFocused() then
         scheduleIndexContents(Cmdbar.Text,true,true)
@@ -13377,7 +14375,34 @@ end))
 
 local tabComplete = nil
 tabAllowed = true
+
+function handleCmdbarTab(actionName, inputState, inputObject)
+    if inputState == Enum.UserInputState.Begin and Cmdbar and Cmdbar:IsFocused() then
+        if tabAllowed == true then
+            flushIndexContents()
+            if selectedCmdButton then
+                completeFromSuggestion(selectedCmdButton)
+            elseif topCommand ~= nil then
+                autoComplete(topCommand)
+            end
+        end
+        pcall(function()
+            local gs = game:GetService("GuiService")
+            gs.SelectedObject = nil
+            gs.SelectedCoreObject = nil
+        end)
+        return Enum.ContextActionResult.Sink
+    end
+    return Enum.ContextActionResult.Pass
+end
+
 IYR_TRACK(Cmdbar.FocusLost:Connect(function(enterpressed)
+    pcall(function()
+        ContextActionService:UnbindAction("IYR_CmdbarTab")
+        local gs = game:GetService("GuiService")
+        gs.SelectedObject = nil
+        gs.SelectedCoreObject = nil
+    end)
     flushIndexContents()
     if enterpressed then
         local cmdbarText = Cmdbar.Text:gsub("^"..prefix,"")
@@ -13427,6 +14452,15 @@ IYR_TRACK(Cmdbar.Focused:Connect(function()
     if SettingsOpen == true then
         closeSettingsPanel(false)
     end
+    pcall(function()
+        ContextActionService:BindActionAtPriority(
+            "IYR_CmdbarTab",
+            handleCmdbarTab,
+            false,
+            Enum.ContextActionPriority.High.Value + 3000,
+            Enum.KeyCode.Tab
+        )
+    end)
     tabComplete = UserInputService.InputBegan:Connect(function(input,gameProcessed)
         if Cmdbar:IsFocused() then
             if tabAllowed == true and input.KeyCode == Enum.KeyCode.Tab then
@@ -13434,12 +14468,26 @@ IYR_TRACK(Cmdbar.Focused:Connect(function()
                 if selectedCmdButton then
                     completeFromSuggestion(selectedCmdButton)
                 elseif topCommand ~= nil then
-                autoComplete(topCommand)
+                    autoComplete(topCommand)
                 end
+                pcall(function()
+                    local gs = game:GetService("GuiService")
+                    gs.SelectedObject = nil
+                    gs.SelectedCoreObject = nil
+                end)
             end
         else
-            tabComplete:Disconnect()
+            if tabComplete then tabComplete:Disconnect() end
+            pcall(function() ContextActionService:UnbindAction("IYR_CmdbarTab") end)
         end
+    end)
+end))
+
+IYR_TRACK(game:GetService("GuiService").MenuOpened:Connect(function()
+    pcall(function()
+        local gs = game:GetService("GuiService")
+        gs.SelectedObject = nil
+        gs.SelectedCoreObject = nil
     end)
 end))
 
@@ -18192,8 +19240,13 @@ addcmd('notify',{},function(args, speaker)
 end)
 
 addcmd('lastcommand',{'lastcmd'},function(args, speaker)
-    if cmdHistory[1]:sub(1,11) ~= 'lastcommand' and cmdHistory[1]:sub(1,7) ~= 'lastcmd' then
-        execCmd(cmdHistory[1])
+    local prev = cmdHistory and cmdHistory[1]
+    if type(prev) ~= "string" or prev == "" then
+        notify(T("lastCmdEmpty"), T("lastCmdEmptyText"))
+        return
+    end
+    if prev:sub(1,11) ~= 'lastcommand' and prev:sub(1,7) ~= 'lastcmd' then
+        execCmd(prev)
     end
 end)
 
@@ -24875,14 +25928,44 @@ end)
 
 addcmd('reload', {'iypreload', 'iyreload', 'reiy', 'refreshiy'}, function(args, speaker)
     pcall(function()
+        if type(updatesaves) == "function" then
+            updatesaves()
+        end
+        if type(writefileState) == "table" and type(writefileState.pending) == "table" then
+            for n, d in pairs(writefileState.pending) do
+                IYP_SAFE_WRITEFILE(n, d)
+            end
+            writefileState.pending = {}
+        end
+    end)
+    pcall(function()
         local genv = (getgenv and getgenv()) or _G
         genv.IYR_SKIP_INTRO = true
         if type(genv.IYR_CLEANUP) == "function" then genv.IYR_CLEANUP() end
     end)
     pcall(function()
+        if typeof(PARENT) == "Instance" then PARENT:Destroy() end
         if typeof(IYR_MAIN) == "Instance" then IYR_MAIN:Destroy() end
         local genv = (getgenv and getgenv()) or _G
         if typeof(genv.IYR_MAIN) == "Instance" then genv.IYR_MAIN:Destroy() end
+        genv.IYR_MAIN = nil
+        local hidden = get_hidden_gui or gethui
+        local roots = { COREGUI, game:GetService("CoreGui") }
+        if hidden then
+            pcall(function()
+                roots[#roots + 1] = hidden()
+            end)
+        end
+        for r = 1, #roots do
+            local root = roots[r]
+            if typeof(root) == "Instance" then
+                for _, v in pairs(root:GetChildren()) do
+                    if v.Name == "IYR_MAIN" then
+                        pcall(function() v:Destroy() end)
+                    end
+                end
+            end
+        end
     end)
     local src
     pcall(function()
@@ -25618,6 +26701,779 @@ IYR_TRACK(task.spawn(function()
         iyonloadstuff()
     end
 end))
+
+-- Native v7.63 Baked Hotfixes & Utility Commands
+;(function()
+	local function clipText(text)
+		if type(everyClipboard) == "function" then
+			local ok = pcall(everyClipboard, tostring(text))
+			if ok then return true end
+		end
+		if type(setclipboard) == "function" then
+			return pcall(setclipboard, tostring(text))
+		elseif type(toclipboard) == "function" then
+			return pcall(toclipboard, tostring(text))
+		elseif type(set_clipboard) == "function" then
+			return pcall(set_clipboard, tostring(text))
+		end
+		return false
+	end
+
+	local function fmtDuration(sec)
+		if type(sec) ~= "number" or sec ~= sec or sec < 0 then
+			return "n/a"
+		end
+		sec = math.floor(sec)
+		local h = math.floor(sec / 3600)
+		local m = math.floor((sec % 3600) / 60)
+		local s = sec % 60
+		if h > 0 then
+			return string.format("%dh %dm %ds", h, m, s)
+		end
+		if m > 0 then
+			return string.format("%dm %ds", m, s)
+		end
+		return string.format("%ds", s)
+	end
+
+	local HIST_META = {
+		lastcommand = true, lastcmd = true,
+		clearhistory = true, clrhist = true, wipehistory = true,
+		showhistory = true, hist = true, cmdhistory = true,
+		copyhistory = true, copyhist = true, copycmd = true,
+		starlast = true, favlast = true, pinlast = true,
+		repeatlast = true, again = true, rerun = true,
+		checkupdate = true, upd = true, vercheck = true,
+	}
+
+	local function pickLastRealCmd()
+		if type(cmdHistory) ~= "table" then return nil end
+		for i = 1, #cmdHistory do
+			local line = cmdHistory[i]
+			if type(line) == "string" and line ~= "" then
+				local first = line:match("^%s*;?%s*(%S+)")
+				if first and not HIST_META[first:lower()] then
+					return line
+				end
+			end
+		end
+		return nil
+	end
+
+	local function safeCall(fn)
+		local ok, res = pcall(fn)
+		if ok then return res end
+		return nil
+	end
+
+	local function detectExecutor()
+		local name = safeCall(function()
+			if type(identifyexecutor) == "function" then
+				local a, b = identifyexecutor()
+				if type(a) == "string" and a ~= "" then
+					return b and (a .. " " .. tostring(b)) or a
+				end
+			end
+			return nil
+		end)
+		if name then return name end
+		local guesses = { "Synapse", "ScriptWare", "Krnl", "Fluxus", "Solara", "Wave", "Delta", "Codex", "Arceus", "Macsploit" }
+		for i = 1, #guesses do
+			if _G[guesses[i]] or (getgenv and getgenv()[guesses[i]]) then
+				return guesses[i]
+			end
+		end
+		return "unknown"
+	end
+
+	-- Detach aliases from legacy commands to give baked commands priority
+	local oldPing = findCmd('notifyping')
+	if oldPing and type(oldPing.ALIAS) == "table" then
+		for i = #oldPing.ALIAS, 1, -1 do
+			if oldPing.ALIAS[i]:lower() == "ping" then
+				table.remove(oldPing.ALIAS, i)
+			end
+		end
+		if cmdByName then cmdByName["ping"] = nil end
+	end
+	local oldServerInfo = findCmd('serverinfo')
+	if oldServerInfo and type(oldServerInfo.ALIAS) == "table" then
+		for i = #oldServerInfo.ALIAS, 1, -1 do
+			if oldServerInfo.ALIAS[i]:lower() == "info" then
+				table.remove(oldServerInfo.ALIAS, i)
+			end
+		end
+		if cmdByName then cmdByName["info"] = nil end
+	end
+
+	local function registerBakedCmd(name, aliases, descEn, descRu, fn)
+		local aliasStr = (type(aliases) == "table" and #aliases > 0) and (" / " .. table.concat(aliases, " / ")) or ""
+		local newIdx = #CMDs + 1
+		CMDs[newIdx] = { NAME = name .. aliasStr, DESC = descEn }
+
+		if type(descRu) == "string" and descRu ~= "" then
+			registerRuDesc(name, descRu)
+			if type(aliases) == "table" then
+				for _, a in ipairs(aliases) do
+					registerRuDesc(a, descRu)
+				end
+			end
+		end
+
+		local existing = findCmd(name)
+		if existing and existing.NAME:lower() == name:lower() then
+			existing.FUNC = fn
+		else
+			addcmd(name, aliases or {}, fn)
+		end
+
+		if type(createCmdButton) == "function" then
+			createCmdButton(newIdx)
+		end
+	end
+
+	-- 1. History
+	registerBakedCmd('clearhistory', {'clrhist', 'wipehistory'}, 'Clears command history', 'Очищает сохранённую историю команд', function()
+		if type(cmdHistory) == "table" then
+			table.clear(cmdHistory)
+		else
+			cmdHistory = {}
+		end
+		pcall(updatesaves)
+		notify(T("histCleared"), T("histClearedText"))
+	end)
+
+	registerBakedCmd('showhistory', {'hist', 'cmdhistory'}, 'Shows recent command history', 'Показывает недавнюю историю команд', function()
+		if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+			notify(T("histTitle"), T("histEmpty"))
+			return
+		end
+		local n = math.min(#cmdHistory, 8)
+		local lines = {}
+		for i = 1, n do
+			lines[i] = tostring(i) .. ". " .. cmdHistory[i]
+		end
+		notify(T("histTitle"), table.concat(lines, "\n"))
+	end)
+
+	registerBakedCmd('copyhistory', {'copyhist', 'copycmd'}, 'Copies last command (or all) to clipboard', 'Копирует последнюю команду (all — весь список)', function(args)
+		local mode = type(args) == "table" and tostring(args[1] or ""):lower() or ""
+		local text
+		if mode == "all" or mode == "full" then
+			if type(cmdHistory) ~= "table" or #cmdHistory == 0 then
+				notify(T("copyTitle"), T("copyEmpty"))
+				return
+			end
+			text = table.concat(cmdHistory, "\n")
+		else
+			text = pickLastRealCmd()
+			if not text then
+				notify(T("copyTitle"), T("copyEmpty"))
+				return
+			end
+		end
+		if clipText(text) then
+			notify(T("copyTitle"), T("copyOk"))
+		else
+			notify(T("copyTitle"), T("copyFail"))
+		end
+	end)
+
+	registerBakedCmd('starlast', {'favlast', 'pinlast'}, 'Adds last command to favorites', 'Добавляет последнюю команду в избранное', function()
+		local cmd = pickLastRealCmd()
+		if not cmd or cmd == "" then
+			notify(T("starTitle"), T("starEmpty"))
+			return
+		end
+		local key = cmdPrimaryKey(cmd)
+		if key == "" then
+			notify(T("starTitle"), T("starEmpty"))
+			return
+		end
+		if type(isFavoriteCmd) == "function" and isFavoriteCmd(key) then
+			notify(T("starTitle"), T("starOk"))
+			return
+		end
+		if type(toggleFavoriteCmd) == "function" then
+			toggleFavoriteCmd(key)
+			notify(T("starTitle"), T("starOk"))
+		elseif type(addFavorite) == "function" then
+			addFavorite(key)
+			notify(T("starTitle"), T("starOk"))
+		else
+			notify(T("starTitle"), T("starFail"))
+		end
+	end)
+
+	registerBakedCmd('repeatlast', {'again', 'rerun'}, 'Repeats the last executed command', 'Повторяет последнюю выполненную команду', function(_, speaker)
+		local cmd = pickLastRealCmd()
+		if not cmd then
+			notify(T("repTitle"), T("repEmpty"))
+			return
+		end
+		notify(T("repTitle"), T("repOk") .. ": " .. cmd)
+		execCmd(cmd, speaker or Players.LocalPlayer, true)
+	end)
+
+	-- 2. Inspection Lists
+	registerBakedCmd('listplugins', {'showplugins', 'pluginlist'}, 'Lists loaded plugin files', 'Показывает загруженные файлы плагинов', function()
+		local names = {}
+		if type(PluginsTable) == "table" then
+			for i = 1, #PluginsTable do
+				local n = PluginsTable[i]
+				if type(n) == "string" and n ~= "" then
+					names[#names + 1] = n
+				end
+			end
+		end
+		if #names == 0 then
+			notify(T("listPluginsTitle"), T("listPluginsEmpty"))
+			return
+		end
+		local cap = 12
+		local shown = {}
+		for i = 1, math.min(#names, cap) do
+			shown[i] = tostring(i) .. ". " .. names[i]
+		end
+		if #names > cap then
+			shown[#shown + 1] = "+" .. tostring(#names - cap)
+		end
+		notify(T("listPluginsTitle") .. " (" .. tostring(#names) .. ")", table.concat(shown, "\n"))
+	end)
+
+	registerBakedCmd('listaliases', {'listalias', 'showaliases', 'aliaslist'}, 'Shows saved custom aliases', 'Показывает сохранённые алиасы', function()
+		local rows = {}
+		if type(aliases) == "table" then
+			for i = 1, #aliases do
+				local row = aliases[i]
+				if type(row) == "table" then
+					local a = tostring(row.ALIAS or "")
+					local c = tostring(row.CMD or "")
+					if a ~= "" then
+						rows[#rows + 1] = a .. " -> " .. c
+					end
+				end
+			end
+		end
+		if #rows == 0 then
+			notify(T("listAliasesTitle"), T("listAliasesEmpty"))
+			return
+		end
+		local cap = 12
+		local shown = {}
+		for i = 1, math.min(#rows, cap) do
+			shown[i] = rows[i]
+		end
+		if #rows > cap then
+			shown[#shown + 1] = "+" .. tostring(#rows - cap)
+		end
+		notify(T("listAliasesTitle") .. " (" .. tostring(#rows) .. ")", table.concat(shown, "\n"))
+	end)
+
+	registerBakedCmd('listkeybinds', {'listbinds', 'showbinds', 'bindlist'}, 'Shows saved keybinds', 'Показывает сохранённые бинды', function()
+		local rows = {}
+		if type(binds) == "table" then
+			for i = 1, #binds do
+				local row = binds[i]
+				if type(row) == "table" then
+					local input = tostring(row.KEY or "")
+					local key = input
+					if string.sub(input, 1, 13) == "Enum.KeyCode." then
+						key = string.sub(input, 14)
+					end
+					local cmd = tostring(row.COMMAND or "")
+					if key ~= "" and cmd ~= "" then
+						local line = key .. " -> " .. cmd
+						if row.TOGGLE then
+							line = line .. " / " .. tostring(row.TOGGLE)
+						elseif row.ISKEYUP then
+							line = line .. " (keyup)"
+						end
+						rows[#rows + 1] = line
+					end
+				end
+			end
+		end
+		if #rows == 0 then
+			notify(T("listKeybindsTitle"), T("listKeybindsEmpty"))
+			return
+		end
+		local cap = 12
+		local shown = {}
+		for i = 1, math.min(#rows, cap) do
+			shown[i] = rows[i]
+		end
+		if #rows > cap then
+			shown[#shown + 1] = "+" .. tostring(#rows - cap)
+		end
+		notify(T("listKeybindsTitle") .. " (" .. tostring(#rows) .. ")", table.concat(shown, "\n"))
+	end)
+
+	-- 3. Diagnostics & Server & Player
+	registerBakedCmd('ping', {'latency'}, 'Shows current network ping', 'Показывает текущий пинг', function(_, speaker)
+		local ms = safeCall(function()
+			return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+		end)
+		if type(ms) ~= "number" and speaker then
+			safeCall(function()
+				ms = speaker:GetNetworkPing() * 1000
+			end)
+		end
+		if type(ms) == "number" then
+			notify(T("pingTitle"), string.format("%.0f ms", ms))
+		else
+			notify(T("pingTitle"), "n/a")
+		end
+	end)
+
+	registerBakedCmd('fps', {}, 'Shows physics and frame rate estimate', 'Показывает текущий FPS', function()
+		local fps = safeCall(function()
+			return workspace:GetRealPhysicsFPS()
+		end)
+		if type(fps) ~= "number" then
+			safeCall(function()
+				local t0 = os.clock()
+				game:GetService("RunService").Heartbeat:Wait()
+				local dt = os.clock() - t0
+				if dt > 0 then fps = 1 / dt end
+			end)
+		end
+		if type(fps) == "number" then
+			notify(T("fpsTitle"), string.format("%.0f FPS", fps))
+		else
+			notify(T("fpsTitle"), "n/a")
+		end
+	end)
+
+	registerBakedCmd('cmdcount', {'cmdn'}, 'Reports how many commands are registered', 'Показывает количество зарегистрированных команд', function()
+		local n = (type(cmds) == "table" and #cmds) or (type(CMDs) == "table" and #CMDs) or 0
+		notify(T("cntTitle"), tostring(n))
+	end)
+
+	registerBakedCmd('placeinfo', {'gameinfo', 'placeid'}, 'Shows PlaceId, GameId, and JobId', 'Показывает данные плейса, игры и JobId', function()
+		local pId = tostring(game.PlaceId or "?")
+		local gId = safeCall(function() return tostring(game.GameId) end) or "?"
+		local jId = safeCall(function() return tostring(game.JobId) end) or "?"
+		local line = string.format("Place %s\nGame %s\nJob %s", pId, gId, jId)
+		notify(T("placeTitle"), line)
+	end)
+
+	registerBakedCmd('copyplace', {'cpplace'}, 'Copies PlaceId to clipboard', 'Копирует PlaceId в буфер обмена', function()
+		local id = tostring(game.PlaceId or "?")
+		if clipText(id) then
+			notify(T("placeTitle"), T("placeCopied") .. ": " .. id)
+		else
+			notify(T("placeTitle"), id)
+		end
+	end)
+
+	registerBakedCmd('players', {'plrs', 'plrlist'}, 'Shows player count and a name sample', 'Показывает количество игроков и список имён', function()
+		local plrs = game:GetService("Players"):GetPlayers()
+		local names = {}
+		for _, p in ipairs(plrs) do
+			table.insert(names, p.Name)
+		end
+		table.sort(names)
+		local extra = ""
+		if #names > 0 then
+			local shown = {}
+			for i = 1, math.min(8, #names) do
+				shown[i] = names[i]
+			end
+			extra = "\n" .. table.concat(shown, ", ")
+			if #names > 8 then
+				extra = extra .. " …"
+			end
+		end
+		notify(T("plrTitle"), tostring(#plrs) .. extra)
+	end)
+
+	registerBakedCmd('session', {'ses', 'status'}, 'Shows session summary: version, place, players, ping, fps', 'Показывает сводку текущей сессии', function()
+		local ping = safeCall(function()
+			return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+		end)
+		local fps = safeCall(function()
+			return workspace:GetRealPhysicsFPS()
+		end)
+		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
+		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
+		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		notify(T("sesTitle"), msg)
+	end)
+
+	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+	end)
+
+	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
+		local lp = game:GetService("Players").LocalPlayer
+		if not lp then
+			notify(T("whoTitle"), "n/a")
+			return
+		end
+		local name = lp.Name or "?"
+		local display = lp.DisplayName or "?"
+		local uid = tostring(lp.UserId or "?")
+		local extra = (display ~= "" and display ~= name) and ("\n@" .. display) or ""
+		notify(T("whoTitle"), name .. extra .. "\n" .. uid)
+	end)
+
+	registerBakedCmd('copyuserid', {'cpuid', 'copyuid'}, 'Copies your UserId to clipboard', 'Копирует твой UserId в буфер обмена', function()
+		local lp = game:GetService("Players").LocalPlayer
+		local uid = tostring(lp and lp.UserId or "?")
+		if clipText(uid) then
+			notify(T("whoTitle"), T("uidCopied") .. ": " .. uid)
+		else
+			notify(T("whoTitle"), uid)
+		end
+	end)
+
+	registerBakedCmd('copyjob', {'cpjob', 'copyjobid'}, 'Copies JobId to clipboard', 'Копирует JobId в буфер обмена', function()
+		local id = tostring(game.JobId or "?")
+		if clipText(id) then
+			notify(T("placeTitle"), T("jobCopied") .. ": " .. id)
+		else
+			notify(T("placeTitle"), id)
+		end
+	end)
+
+	registerBakedCmd('serverage', {'uptime', 'srvage'}, 'Shows server uptime', 'Показывает аптайм сервера', function()
+		local age = safeCall(function() return workspace.DistributedGameTime end)
+		notify(T("ageTitle"), fmtDuration(age))
+	end)
+
+	registerBakedCmd('memory', {'mem', 'ram'}, 'Shows total memory usage in MB', 'Показывает использование памяти', function()
+		local mb = safeCall(function()
+			return game:GetService("Stats"):GetTotalMemoryUsageMb()
+		end)
+		if type(mb) ~= "number" then
+			safeCall(function()
+				mb = collectgarbage("count") / 1024
+			end)
+		end
+		local body = type(mb) == "number" and string.format("%.1f MB", mb) or "n/a"
+		notify(T("memTitle"), body)
+	end)
+
+	registerBakedCmd('info', {'dump', 'fullinfo'}, 'One-shot diagnostics snapshot', 'Сводная диагностическая информация', function()
+		local lp = game:GetService("Players").LocalPlayer
+		local name = lp and lp.Name or "?"
+		local uid = lp and tostring(lp.UserId) or "?"
+		local pId = tostring(game.PlaceId or "?")
+		local jId = safeCall(function() return tostring(game.JobId) end) or "?"
+		local nPlr, maxPlr = "?", "?"
+		pcall(function()
+			local Players = game:GetService("Players")
+			nPlr = tostring(#Players:GetPlayers())
+			maxPlr = tostring(Players.MaxPlayers)
+		end)
+		local age = fmtDuration(safeCall(function() return workspace.DistributedGameTime end))
+		local ping = "n/a"
+		pcall(function()
+			local item = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+			if item then ping = string.format("%.0f ms", item:GetValue()) end
+		end)
+		local mem = "n/a"
+		pcall(function()
+			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
+		end)
+		local body = table.concat({
+			tostring(currentVersion or "7.63"),
+			name .. " " .. uid,
+			"place " .. pId,
+			"job " .. jId,
+			nPlr .. "/" .. maxPlr,
+			"age " .. age,
+			"ping " .. ping,
+			"mem " .. mem,
+		}, "\n")
+		notify(T("infoTitle"), body)
+	end)
+
+	registerBakedCmd('copyjoin', {'cpjoin', 'joinline'}, 'Copies PlaceId | JobId join string', 'Копирует строку входа PlaceId | JobId', function()
+		local pId = tostring(game.PlaceId or "?")
+		local jId = safeCall(function() return tostring(game.JobId) end) or "?"
+		local line = pId .. " | " .. jId
+		if clipText(line) then
+			notify(T("infoTitle"), T("joinCopied") .. "\n" .. line)
+		else
+			notify(T("infoTitle"), T("noClipboard") .. "\n" .. line)
+		end
+	end)
+
+	registerBakedCmd('creator', {'ownerid', 'gameowner'}, 'Shows game name and creator info', 'Показывает информацию о создателе игры', function()
+		local ctype = safeCall(function() return tostring(game.CreatorType) end) or "?"
+		local cid = safeCall(function() return tostring(game.CreatorId) end) or "?"
+		local gname = safeCall(function() return game.Name end) or "?"
+		notify(T("creatorTitle"), gname .. "\n" .. ctype .. " " .. cid)
+	end)
+
+	registerBakedCmd('clock', {'datetime', 'now'}, 'Shows current date and time', 'Показывает текущее время и дату', function()
+		local stamp = safeCall(function() return os.date("%Y-%m-%d %H:%M:%S") end) or "n/a"
+		notify(T("clockTitle"), stamp)
+	end)
+
+	registerBakedCmd('maxplayers', {'slots', 'cap'}, 'Shows current players and player cap', 'Показывает количество мест на сервере', function()
+		local nPlr, maxPlr = "?", "?"
+		pcall(function()
+			local Players = game:GetService("Players")
+			nPlr = tostring(#Players:GetPlayers())
+			maxPlr = tostring(Players.MaxPlayers)
+		end)
+		notify(T("slotsTitle"), nPlr .. " / " .. maxPlr)
+	end)
+
+	registerBakedCmd('env', {'executor', 'uncinfo'}, 'Shows executor environment capabilities', 'Показывает информацию о среде и эксплойте', function()
+		local exec = detectExecutor()
+		local http = (type(game.HttpGet) == "function" or type(httpget) == "function") and "http+" or "http-"
+		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
+		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
+		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
+		local ver = tostring(currentVersion or "7.63")
+		notify(T("envTitle"), table.concat({
+			ver,
+			exec,
+			http,
+			clipState,
+			fs,
+			hook,
+		}, "\n"))
+	end)
+
+	registerBakedCmd('device', {'platform', 'input'}, 'Shows device and input capabilities', 'Показывает информацию об устройстве и вводе', function()
+		local uis = game:GetService("UserInputService")
+		local touch = safeCall(function() return uis.TouchEnabled end)
+		local kb = safeCall(function() return uis.KeyboardEnabled end)
+		local gp = safeCall(function() return uis.GamepadEnabled end)
+		local acc = safeCall(function() return uis.AccelerometerEnabled end)
+		local plat = safeCall(function() return tostring(uis:GetPlatform()) end) or "?"
+		local kind = touch and not kb and "mobile" or (kb and "desktop" or "mixed")
+		notify(T("deviceTitle"), table.concat({
+			kind,
+			"platform " .. plat,
+			"touch " .. tostring(touch),
+			"keyboard " .. tostring(kb),
+			"gamepad " .. tostring(gp),
+			"accel " .. tostring(acc),
+		}, "\n"))
+	end)
+
+	registerBakedCmd('showprefix', {'getprefix', 'pfx'}, 'Shows the active command prefix', 'Показывает текущий префикс команд', function()
+		local p = "?"
+		pcall(function()
+			if type(prefix) == "string" and prefix ~= "" then
+				p = prefix
+			elseif type(getprefix) == "function" then
+				p = tostring(getprefix())
+			end
+		end)
+		notify(T("prefixTitle"), p)
+	end)
+
+	registerBakedCmd('timezone', {'tz', 'zone'}, 'Shows timezone offset and local time', 'Показывает часовой пояс и локальное время', function()
+		local off = safeCall(function() return os.date("%z") end) or "?"
+		local name = safeCall(function() return os.date("%Z") end) or "?"
+		local stamp = safeCall(function() return os.date("%Y-%m-%d %H:%M:%S") end) or "n/a"
+		notify(T("tzTitle"), name .. " " .. off .. "\n" .. stamp)
+	end)
+
+	registerBakedCmd('display', {'resolution', 'viewport'}, 'Shows screen viewport and display info', 'Показывает разрешение экрана и параметры окна', function()
+		local cam = safeCall(function() return workspace.CurrentCamera end)
+		local vs = cam and cam.ViewportSize
+		local w = vs and math.floor(vs.X) or "?"
+		local h = vs and math.floor(vs.Y) or "?"
+		local gui = safeCall(function() return game:GetService("GuiService"):GetGuiInset() end)
+		local inset = gui and string.format("%d,%d", gui.X, gui.Y) or "n/a"
+		local scale = safeCall(function()
+			return cam and string.format("%.2f", cam.ViewportSize.X / 1920)
+		end) or "n/a"
+		notify(T("displayTitle"), tostring(w) .. "x" .. tostring(h) .. "\ninset " .. inset .. "\nscale ~" .. scale)
+	end)
+
+	registerBakedCmd('checkupdate', {'upd', 'vercheck'}, 'Checks GitHub for updates', 'Сверяет локальную версию с GitHub', function()
+		local getter = (game and game.HttpGet and function(url) return game:HttpGet(url) end) or (type(httpget) == "function" and httpget)
+		if type(getter) ~= "function" then
+			notify(T("updTitle"), T("updFail"))
+			return
+		end
+		local ok, body = pcall(getter, "https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/version")
+		if not ok or type(body) ~= "string" then
+			notify(T("updTitle"), T("updFail"))
+			return
+		end
+		local remote = string.match(body, '"Version"%s*:%s*"([^"]+)"')
+		local ann = string.match(body, '"Announcement"%s*:%s*"([^"]*)"')
+		if not remote then
+			notify(T("updTitle"), T("updFail"))
+			return
+		end
+		local function verTuple(s)
+			local a, b, c = string.match(tostring(s or ""), "^(%d+)%.(%d+)%.(%d+)")
+			if not a then
+				a, b = string.match(tostring(s or ""), "^(%d+)%.(%d+)")
+				c = "0"
+			end
+			return tonumber(a) or 0, tonumber(b) or 0, tonumber(c) or 0
+		end
+		local ra, rb, rc = verTuple(remote)
+		local la, lb, lc = verTuple(currentVersion)
+		local newer = ra > la or (ra == la and rb > lb) or (ra == la and rb == lb and rc > lc)
+		local msg = newer and (T("updNewer") .. " (" .. remote .. ")") or (T("updLatest") .. " (" .. tostring(currentVersion) .. ")")
+		if type(ann) == "string" and ann ~= "" then
+			msg = msg .. "\n" .. ann
+		end
+		notify(T("updTitle"), msg)
+	end)
+
+	-- 4. Crosshair
+	local crosshairFrame = nil
+	local function removeCrosshair()
+		if crosshairFrame and crosshairFrame.Parent then
+			crosshairFrame:Destroy()
+		end
+		crosshairFrame = nil
+	end
+
+	local function parseColor(val)
+		if not val or val == "" then return nil end
+		val = tostring(val):lower()
+		local PRESETS = {
+			green = Color3.fromRGB(0, 255, 136),
+			lime = Color3.fromRGB(50, 255, 50),
+			red = Color3.fromRGB(255, 60, 60),
+			cyan = Color3.fromRGB(0, 230, 255),
+			blue = Color3.fromRGB(60, 140, 255),
+			white = Color3.fromRGB(255, 255, 255),
+			yellow = Color3.fromRGB(255, 230, 0),
+			purple = Color3.fromRGB(180, 80, 255),
+			pink = Color3.fromRGB(255, 105, 180),
+			orange = Color3.fromRGB(255, 140, 0),
+			black = Color3.fromRGB(20, 20, 20),
+		}
+		if PRESETS[val] then return PRESETS[val] end
+		local hex = val:gsub("^#", "")
+		if #hex == 6 and hex:match("^[0-9a-fA-F]+$") then
+			local r = tonumber(hex:sub(1, 2), 16)
+			local g = tonumber(hex:sub(3, 4), 16)
+			local b = tonumber(hex:sub(5, 6), 16)
+			if r and g and b then return Color3.fromRGB(r, g, b) end
+		end
+		local r, g, b = val:match("^(%d+)%s*[, ]%s*(%d+)%s*[, ]%s*(%d+)$")
+		if r and g and b then
+			return Color3.fromRGB(tonumber(r) or 255, tonumber(g) or 255, tonumber(b) or 255)
+		end
+		return nil
+	end
+
+	local function createCrosshair(color, size, gap, thickness, hasDot)
+		removeCrosshair()
+
+		color = color or Color3.fromRGB(0, 255, 136)
+		size = tonumber(size) or 9
+		gap = tonumber(gap) or 4
+		thickness = tonumber(thickness) or 2
+		if hasDot == nil then hasDot = true end
+
+		local holder = Instance.new("Frame")
+		holder.Name = "IYP_Crosshair"
+		holder.BackgroundTransparency = 1
+		holder.AnchorPoint = Vector2.new(0.5, 0.5)
+		holder.Position = UDim2.new(0.5, 0, 0.5, 0)
+		holder.Size = UDim2.new(0, (size + gap) * 2 + thickness, 0, (size + gap) * 2 + thickness)
+		holder.ZIndex = 100
+
+		local function mkBar(name, pos, sz)
+			local bar = Instance.new("Frame")
+			bar.Name = name
+			bar.BackgroundColor3 = color
+			bar.BorderSizePixel = 0
+			bar.AnchorPoint = Vector2.new(0.5, 0.5)
+			bar.Position = pos
+			bar.Size = sz
+			bar.ZIndex = 101
+			bar.Parent = holder
+
+			local stroke = Instance.new("UIStroke")
+			stroke.Color = Color3.fromRGB(0, 0, 0)
+			stroke.Thickness = 1
+			stroke.Transparency = 0.25
+			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			stroke.Parent = bar
+			return bar
+		end
+
+		if hasDot then
+			local dot = mkBar("Dot", UDim2.new(0.5, 0, 0.5, 0), UDim2.new(0, thickness, 0, thickness))
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(1, 0)
+			corner.Parent = dot
+		end
+
+		mkBar("Top", UDim2.new(0.5, 0, 0.5, -(gap + size / 2)), UDim2.new(0, thickness, 0, size))
+		mkBar("Bottom", UDim2.new(0.5, 0, 0.5, gap + size / 2), UDim2.new(0, thickness, 0, size))
+		mkBar("Left", UDim2.new(0.5, -(gap + size / 2), 0.5, 0), UDim2.new(0, size, 0, thickness))
+		mkBar("Right", UDim2.new(0.5, gap + size / 2, 0.5, 0), UDim2.new(0, size, 0, thickness))
+
+		holder.Parent = PARENT
+		crosshairFrame = holder
+	end
+
+	registerBakedCmd('crosshair', {'ch', 'customcrosshair'}, 'Toggles custom screen crosshair [color] [size] [gap] [thickness]', 'Включает или настраивает кастомный прицел [цвет] [размер] [зазор] [толщина]', function(args)
+		local a1 = args and args[1] and tostring(args[1]):lower()
+		if a1 == "off" or a1 == "remove" or a1 == "disable" then
+			removeCrosshair()
+			notify("Crosshair", "Crosshair disabled")
+			return
+		end
+		if (not a1 or a1 == "") and crosshairFrame and crosshairFrame.Parent then
+			removeCrosshair()
+			notify("Crosshair", "Crosshair toggled off")
+			return
+		end
+
+		local col = nil
+		local sz = nil
+		local gap = nil
+		local thick = nil
+
+		if args and args[1] then
+			if tonumber(args[1]) then
+				sz = tonumber(args[1])
+				gap = args and tonumber(args[2])
+				thick = args and tonumber(args[3])
+			else
+				col = parseColor(args[1])
+				sz = args and tonumber(args[2])
+				gap = args and tonumber(args[3])
+				thick = args and tonumber(args[4])
+			end
+		end
+
+		createCrosshair(col, sz, gap, thick, true)
+		notify("Crosshair", "Crosshair enabled")
+	end)
+
+	registerBakedCmd('uncrosshair', {'noch', 'uncustomcrosshair'}, 'Removes custom screen crosshair', 'Отключает кастомный прицел', function()
+		removeCrosshair()
+		notify("Crosshair", "Crosshair disabled")
+	end)
+
+	-- Hotfix idempotent flags to prevent external loaders from overwriting or duplicating
+	_G.__IYP_754_CMDS = true
+	_G.__IYP_755_CMDS = true
+	_G.__IYP_756_CMDS = true
+	_G.__IYP_757_CMDS = true
+	_G.__IYP_758_CMDS = true
+	_G.__IYP_759_CMDS = true
+	_G.__IYP_760_CMDS = true
+	_G.__IYP_761_CMDS = true
+	_G.__IYP_762_CMDS = true
+
+	if type(IndexContents) == "function" then
+		pcall(function() IndexContents("", true) end)
+	end
+end)()
 
 task.defer(function()
         pcall(function()

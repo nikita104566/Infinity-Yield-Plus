@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.63 — 2026-10-06
+
+### Added
+- **Native Baked Hotfixes:** Integrated all 26+ hotfix loader utilities directly into `source`, eliminating secondary network calls (`patches.luau`).
+- **Tactical Crosshair:** Added `crosshair` (`ch`, `customcrosshair`) and `uncrosshair` (`noch`) with full color presets, hex support, size, gap, and stroke configuration.
+- **Inspection Commands:** Added `listplugins`, `listaliases`, and `listkeybinds` to inspect active configurations directly in-game.
+- **System & Session Telemetry:** Added `ping`, `fps`, `cmdcount`, `placeinfo`, `copyplace`, `players`, `session`, `hotfixes`, `whoami`, `copyuserid`, `copyjob`, `serverage`, `memory`, `info`, `copyjoin`, `creator`, `clock`, `maxplayers`, `env`, `device`, `showprefix`, `timezone`, and `display`.
+- **History Toolkit:** Added `showhistory`, `clearhistory`, `copyhistory`, `starlast`, and `repeatlast` with debounce and disk persistence.
+
+### Improved
+- **Minimalist Cmdbar & Command List:** Placeholder simplified to clean `Command`/`Команда`. Removed confusing `+N` alias count numbers from command rows.
+- **Dynamic Favorites Section:** Favorites header and hints now remain completely hidden until at least one command is favorited.
+- **Roblox Escape Menu Tab Isolation:** Intercepted and sunk `Tab` via high-priority `ContextActionService` when the command bar is focused, preventing accidental UI selection changes in Roblox's Escape Menu.
+- **Streamlined Settings:** Removed redundant search bar and manual "Saved" status button; settings rows display immediately under the title.
+- **Automation Studio:** Dynamic multi-line wrapping for event names (e.g., `OnCharacterRemoving`), wrapped variable chip row (`$me`, `$place`, `$job`, `$time`, `$event`), and empty match state in workflow picker.
+- **Full Localization Parity:** 100% RU/EN translation coverage for all UI chrome, hints, dialogs, and command descriptions.
+- **Memory & Teardown Integrity:** Hardened `IYR_CLEANUP` to prevent duplicate ScreenGui leaks on hot reload and client reconnects.
+
 ## 7.62 — 2026-09-14
 
 ### Added
@@ -10,10 +28,6 @@
 - `display` (`resolution`, `viewport`) — viewport size and GUI inset.
 - `patches.luau` now loads 756–762 and retries HttpGet once on failure.
 - `hotfixes` now also reports the 762 flag.
-
-### Notes
-- Main `source` is unchanged. Load `hotfix762.luau` after `source`, or just load `patches.luau`.
-- Idempotent (`_G.__IYP_762_CMDS`). RU/EN strings for the new notices.
 
 ## 7.61 — 2026-09-14
 
@@ -26,10 +40,6 @@
 - `patches.luau` — one loader for hotfixes 756–761 so README only needs two loadstrings.
 - `hotfixes` now also reports the 761 flag.
 
-### Notes
-- Main `source` is unchanged. Load `hotfix761.luau` after `source` (and after 756–760 if you still use them), or just load `patches.luau`.
-- Idempotent (`_G.__IYP_761_CMDS`). RU/EN strings for the new notices.
-
 ## 7.60 — 2026-09-14
 
 ### Added
@@ -40,10 +50,6 @@
 - `memory` (`mem`, `ram`) — total client memory usage when Stats allows it.
 - `hotfixes` now also reports the 760 flag.
 
-### Notes
-- Main `source` is unchanged. Load `hotfix760.luau` after `source` (and after 756–759 if you still use them).
-- Idempotent (`_G.__IYP_760_CMDS`). RU/EN strings for the new notices.
-
 ## 7.59 — 2026-09-14
 
 ### Added
@@ -52,10 +58,6 @@
 - `players` (`plrs`, `plrlist`) — player count plus a short name sample.
 - `session` (`ses`, `status`) — one-line snapshot: version, place, players, ping, fps.
 - `hotfixes` (`hf`, `patches`) — which 754–759 hotfix flags are loaded.
-
-### Notes
-- Main `source` is unchanged. Load `hotfix759.luau` after `source` (and after 756–758 if you still use them).
-- Idempotent (`_G.__IYP_759_CMDS`). RU/EN strings for the new notices.
 
 ## 7.58 — 2026-09-14
 
@@ -66,20 +68,12 @@
 - `cmdcount` (`cmdn`) — reports how many commands are registered.
 - `checkupdate` now also shows the GitHub `Announcement` field when it is set.
 
-### Notes
-- Main `source` is unchanged. Load `hotfix758.luau` after `source` (and after 756/757 if you still use them).
-- Idempotent (`_G.__IYP_758_CMDS`). RU/EN strings for the new notices.
-
 ## 7.57 — 2026-09-14
 
 ### Added
 - `checkupdate` (`upd`, `vercheck`) — compares local version with GitHub `version` file.
 - `copyhistory` (`copyhist`, `copycmd`) — copies the last command; `copyhistory all` copies the full list.
 - `starlast` (`favlast`, `pinlast`) — pins the last history command to favorites when the favorites API is present.
-
-### Notes
-- Main `source` is unchanged. Load `hotfix757.luau` after `source`. You can skip 754–756 if you only need the new commands; keep 756 if you want history dedup / `showhistory`.
-- Idempotent (`_G.__IYP_757_CMDS`). RU/EN strings for the new notices.
 
 ## 7.56 — 2026-09-14
 
@@ -90,18 +84,12 @@
 - History is re-sanitized and capped at 30 after each exec (still debounced ~0.35s).
 - Version badge set to 7.56. Idempotent (`_G.__IYP_756_*` guards).
 
-### Notes
-- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix756.luau` after `source`. You can skip 754/755 if you load 756.
-
 ## 7.55 — 2026-09-14
 
 ### Improved
 - Save-on-exec from 7.54 is now debounced (~0.35s). Rapid commands no longer hammer `IY_FE.iy`.
 - New command: `clearhistory` (`clrhist`, `wipehistory`) — clears ↑/↓ history and persists the empty list.
 - Version badge set to 7.55. Idempotent (`_G.__IYP_755_*` guards).
-
-### Notes
-- Main `source` is still the 7.50 core plus earlier baked fixes. Load `hotfix755.luau` after `source`. `hotfix754` is optional if you already load 755.
 
 ## 7.50 — 2026-09-09
 
