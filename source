@@ -4822,7 +4822,7 @@ eventEditor = (function()
 		end
 	end)
 	local EE_W, EE_H, EE_TITLE = 1020, 660, 50
-	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 232, 248, 12, 52
+	local EE_LEFT_W, EE_RIGHT_W, EE_GAP, EE_FOOTER_H = 254, 226, 12, 52
 	local EE_CENTER_X = EE_GAP + EE_LEFT_W + EE_GAP
 	local EE_CENTER_W_OFF = EE_CENTER_X + EE_GAP + EE_RIGHT_W + EE_GAP
 	local EE_COL_BOTTOM = EE_FOOTER_H + EE_GAP * 2 + 4
@@ -5707,7 +5707,7 @@ eventEditor = (function()
 		return b
 	end
 
-	-- Пилюля-переключатель 34x18 с кружком. isOn = true/false. Возвращает TextButton.
+	-- Пилюля-переключатель 34x18 с анимированным кружком. isOn = true/false. Возвращает TextButton.
 	local function makeSwitch(parent, isOn, pos, cb)
 		local sw = mk("TextButton", {
 			BackgroundColor3 = isOn and EE_PRIMARY or EE_SWITCH_OFF,
@@ -5719,6 +5719,8 @@ eventEditor = (function()
 			ZIndex = 46,
 		}, parent)
 		uiCorner(sw, 9)
+		uiStroke(sw, isOn and EE_ACCENT or EE_BORDER, 1, isOn and 0.25 or 0.7)
+		local swStroke = sw:FindFirstChildOfClass("UIStroke")
 		local knob = mk("Frame", {
 			BackgroundColor3 = isOn and EE_TEXT or EE_MUTED,
 			BorderSizePixel = 0,
@@ -5727,13 +5729,39 @@ eventEditor = (function()
 			ZIndex = 47,
 		}, sw)
 		uiCorner(knob, 6)
+
+		local swTw = TweenInfo.new(0.14, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local function updateSwitch(state, animate)
+			local tPos = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)
+			local tBg = state and EE_PRIMARY or EE_SWITCH_OFF
+			local tKnob = state and EE_TEXT or EE_MUTED
+			local tStroke = state and EE_ACCENT or EE_BORDER
+			local tTrans = state and 0.25 or 0.7
+			if animate then
+				TweenService:Create(knob, swTw, { Position = tPos, BackgroundColor3 = tKnob }):Play()
+				TweenService:Create(sw, swTw, { BackgroundColor3 = tBg }):Play()
+				if swStroke then TweenService:Create(swStroke, swTw, { Color = tStroke, Transparency = tTrans }):Play() end
+			else
+				knob.Position = tPos
+				knob.BackgroundColor3 = tKnob
+				sw.BackgroundColor3 = tBg
+				if swStroke then swStroke.Color = tStroke; swStroke.Transparency = tTrans end
+			end
+		end
+
 		sw.MouseEnter:Connect(function()
-			sw.BackgroundColor3 = isOn and EE_ACCENT or EE_SURFACE_HOVER
+			TweenService:Create(sw, swTw, { BackgroundColor3 = isOn and EE_ACCENT or EE_SURFACE_HOVER }):Play()
 		end)
 		sw.MouseLeave:Connect(function()
-			sw.BackgroundColor3 = isOn and EE_PRIMARY or EE_SWITCH_OFF
+			TweenService:Create(sw, swTw, { BackgroundColor3 = isOn and EE_PRIMARY or EE_SWITCH_OFF }):Play()
 		end)
-		if cb then sw.MouseButton1Click:Connect(cb) end
+		if cb then
+			sw.MouseButton1Click:Connect(function()
+				isOn = not isOn
+				updateSwitch(isOn, true)
+				cb()
+			end)
+		end
 		return sw
 	end
 
@@ -6722,7 +6750,25 @@ eventEditor = (function()
 		countLabel.Text = tot == 0 and "0" or string.format(T("eeFlowCount"), en, tot)
 		local headerStateColor = en > 0 and EE_ACCENT or (tot > 0 and Color3.fromRGB(232, 188, 118) or EE_MUTED)
 		countLabel.TextColor3 = headerStateColor
-		if countLabel:FindFirstChild("EEStatusDot") then countLabel.EEStatusDot.BackgroundColor3 = headerStateColor end
+		local dot = countLabel:FindFirstChild("EEStatusDot")
+		if dot then
+			dot.BackgroundColor3 = headerStateColor
+			if en > 0 and not dot:GetAttribute("EEPulsing") then
+				dot:SetAttribute("EEPulsing", true)
+				task.spawn(function()
+					while dot and dot.Parent and dot:GetAttribute("EEPulsing") do
+						TweenService:Create(dot, TweenInfo.new(0.85, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundTransparency = 0.65 }):Play()
+						task.wait(0.85)
+						if not (dot and dot.Parent and dot:GetAttribute("EEPulsing")) then break end
+						TweenService:Create(dot, TweenInfo.new(0.85, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundTransparency = 0 }):Play()
+						task.wait(0.85)
+					end
+				end)
+			elseif en == 0 then
+				dot:SetAttribute("EEPulsing", false)
+				dot.BackgroundTransparency = 0
+			end
+		end
 		local headerStroke = countLabel:FindFirstChildOfClass("UIStroke")
 		if headerStroke then headerStroke.Color = EE_BORDER headerStroke.Transparency = 0.45 end
 		title.Text = T("autoStudio")
@@ -6866,25 +6912,58 @@ eventEditor = (function()
 				local n = utf8.len(chip)
 				if type(n) ~= "number" then n = #chip end
 				local width = math.max(42, n * 7 + 16)
+				local cBg = EE_SELECTED
+				local cFg = EE_ACCENT
+				local cBorder = EE_BORDER
+				if chip == "$player" or chip == "$me" or chip == "$speaker" then
+					cBg = Color3.fromRGB(16, 45, 34)
+					cFg = Color3.fromRGB(52, 211, 153)
+					cBorder = Color3.fromRGB(16, 185, 129)
+				elseif chip == "$place" or chip == "$job" then
+					cBg = Color3.fromRGB(20, 35, 58)
+					cFg = Color3.fromRGB(96, 165, 250)
+					cBorder = Color3.fromRGB(59, 130, 246)
+				elseif chip:match("^%$%d") or chip == "$*" or chip == "$tool" or chip == "$msg" or chip == "$key" then
+					cBg = Color3.fromRGB(48, 35, 18)
+					cFg = Color3.fromRGB(251, 191, 36)
+					cBorder = Color3.fromRGB(245, 158, 11)
+				elseif chip == "$time" or chip == "$event" then
+					cBg = Color3.fromRGB(18, 42, 48)
+					cFg = Color3.fromRGB(34, 211, 238)
+					cBorder = Color3.fromRGB(6, 182, 212)
+				end
 				local b = mk("TextButton", {
-					BackgroundColor3 = EE_SELECTED,
+					BackgroundColor3 = cBg,
 					BorderSizePixel = 0,
 					Size = UDim2.new(0, width, 0, 18),
 					Text = chip,
-					TextColor3 = EE_ACCENT,
-					Font = UI_FONT,
+					TextColor3 = cFg,
+					Font = UI_FONT_MED,
 					TextSize = 11,
 					AutoButtonColor = false,
 					ZIndex = 42,
 				}, varBar)
-				uiCorner(b, 8)
+				uiCorner(b, 6)
+				uiStroke(b, cBorder, 1, 0.45)
+				local chipStroke = b:FindFirstChildOfClass("UIStroke")
+				local chipScale = Instance.new("UIScale", b)
 				b.MouseEnter:Connect(function()
-					TweenService:Create(b, chipTw, { BackgroundColor3 = EE_SURFACE_HOVER }):Play()
+					TweenService:Create(b, chipTw, { BackgroundColor3 = cBg:Lerp(Color3.new(1, 1, 1), 0.1) }):Play()
+					TweenService:Create(chipScale, chipTw, { Scale = 1.05 }):Play()
+					if chipStroke then TweenService:Create(chipStroke, chipTw, { Transparency = 0.2 }):Play() end
 				end)
 				b.MouseLeave:Connect(function()
-					TweenService:Create(b, chipTw, { BackgroundColor3 = EE_SELECTED }):Play()
+					TweenService:Create(b, chipTw, { BackgroundColor3 = cBg }):Play()
+					TweenService:Create(chipScale, chipTw, { Scale = 1 }):Play()
+					if chipStroke then TweenService:Create(chipStroke, chipTw, { Transparency = 0.45 }):Play() end
 				end)
 				b.MouseButton1Click:Connect(function()
+					TweenService:Create(chipScale, TweenInfo.new(0.06), { Scale = 0.92 }):Play()
+					task.delay(0.07, function()
+						if b.Parent then
+							TweenService:Create(chipScale, TweenInfo.new(0.12), { Scale = 1 }):Play()
+						end
+					end)
 					local ov = center:FindFirstChild("EECmdFocus")
 					local box = (ov and ov.Value) or addBox
 					if not (box and box.Parent) then box = addBox end
@@ -7247,19 +7326,39 @@ eventEditor = (function()
 				refreshFlows()
 				refreshInspector()
 			end)
+			local hintCard = mk("Frame", {
+				BackgroundColor3 = Color3.fromRGB(22, 20, 34),
+				BorderSizePixel = 0,
+				Size = UDim2.new(1, -4, 0, 110),
+				ZIndex = 43,
+			}, inspHolder)
+			uiCorner(hintCard, 8)
+			uiStroke(hintCard, EE_BORDER, 1, 0.6)
+			uiPad(hintCard, 8, 8, 8, 8)
 			mk("TextLabel", {
 				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -8, 0, 72),
+				Size = UDim2.new(1, 0, 0, 18),
+				Font = UI_FONT_MED,
+				TextSize = 11,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextColor3 = EE_ACCENT,
+				Text = "QUICK TIPS",
+				ZIndex = 44,
+			}, hintCard)
+			mk("TextLabel", {
+				BackgroundTransparency = 1,
+				Position = UDim2.new(0, 0, 0, 20),
+				Size = UDim2.new(1, 0, 1, -20),
 				Font = UI_FONT,
-				TextSize = 12,
+				TextSize = 10,
 				TextWrapped = true,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextYAlignment = Enum.TextYAlignment.Top,
-				TextColor3 = EE_MUTED,
-				Text = T("eeInspEventHint"),
-				ZIndex = 43,
-			}, inspHolder)
-			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 140)
+				TextColor3 = Color3.fromRGB(180, 175, 205),
+				Text = "• Tab : Autocomplete command\n• \\ or / : Chain multiple actions\n• Click chips : Quick insert $vars\n• Shift+Test : Bypass event filters",
+				ZIndex = 44,
+			}, hintCard)
+			inspScroll.CanvasSize = UDim2.new(0, 0, 0, 170)
 			return
 		end
 		local ev = events[selectedEventName]
@@ -8136,16 +8235,17 @@ eventEditor = (function()
 				rowScale.Name = "EEEventScale"
 				rowScale.Scale = 1
 				rowScale.Parent = row
-				local nameColor = (ev.enabled == false) and EE_MUTED or Color3.fromRGB(245, 245, 247)
+				local cardRightSpace = (tot > 0) and 90 or 46
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 6),
-					Size = UDim2.new(1, -96, 0, 24),
+					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 24),
 					Font = UI_FONT_MED,
 					TextSize = 12,
-					TextWrapped = true,
+					TextWrapped = false,
+					TextTruncate = Enum.TextTruncate.AtEnd,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Top,
+					TextYAlignment = Enum.TextYAlignment.Center,
 					TextColor3 = nameColor,
 					Text = name,
 					ZIndex = 44,
@@ -8153,7 +8253,7 @@ eventEditor = (function()
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 32),
-					Size = UDim2.new(1, -96, 0, 14),
+					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
@@ -8164,7 +8264,7 @@ eventEditor = (function()
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -98, 1, 0),
+					Size = UDim2.new(1, -(cardRightSpace + 14), 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -8370,6 +8470,13 @@ eventEditor = (function()
 		refreshEventList()
 		refreshInspector()
 		setPickerVisible(false)
+		local origAddBg = addBtn.BackgroundColor3
+		TweenService:Create(addBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(16, 185, 129) }):Play()
+		task.delay(0.22, function()
+			if addBtn.Parent then
+				TweenService:Create(addBtn, TweenInfo.new(0.2), { BackgroundColor3 = origAddBg }):Play()
+			end
+		end)
 	end
 
 	addBtn.MouseButton1Click:Connect(function()
@@ -8692,6 +8799,13 @@ eventEditor = (function()
 			shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
 		end)
 		forceTest = shift
+		local origBg = testEventBtn.BackgroundColor3
+		TweenService:Create(testEventBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(16, 185, 129) }):Play()
+		task.delay(0.22, function()
+			if testEventBtn.Parent then
+				TweenService:Create(testEventBtn, TweenInfo.new(0.2), { BackgroundColor3 = origBg }):Play()
+			end
+		end)
 		local queued = fireEvent(selectedEventName, table.unpack(args))
 		if historyFrame.Visible then refreshHistory() end
 		if queued == 0 then
@@ -9103,6 +9217,11 @@ eventEditor = (function()
 		EE_H = EE_H,
 	}
 end)()
+pcall(function()
+	local genv = (getgenv and getgenv()) or _G
+	genv.eventEditor = eventEditor
+	genv.IYP_EVENT_EDITOR = eventEditor
+end)
 
 reference = (function()
     local main = create({
@@ -27536,6 +27655,15 @@ end))
 	registerBakedCmd('uncrosshair', {'noch', 'uncustomcrosshair'}, 'Removes custom screen crosshair', 'Отключает кастомный прицел', function()
 		removeCrosshair()
 		notify("Crosshair", "Crosshair disabled")
+	end)
+
+	registerBakedCmd('automation', {'autostudio', 'events', 'ee'}, 'Opens Automation Studio panel', 'Открывает окно Automation Studio', function()
+		pcall(function()
+			local ee = eventEditor or ((getgenv and getgenv().eventEditor) or _G.eventEditor)
+			if ee and type(ee.Open) == "function" then
+				ee.Open()
+			end
+		end)
 	end)
 
 	-- Hotfix idempotent flags to prevent external loaders from overwriting or duplicating
