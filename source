@@ -27335,19 +27335,62 @@ end))
 	-- 4. Crosshair
 	local crosshairGui = nil
 	local crosshairFrame = nil
+
+	local function isCrosshairActive()
+		if crosshairGui and crosshairGui.Parent then return true end
+		if crosshairFrame and crosshairFrame.Parent then return true end
+		local genv = (getgenv and getgenv()) or _G
+		if genv.__IYP_CROSSHAIR_GUI and typeof(genv.__IYP_CROSSHAIR_GUI) == "Instance" and genv.__IYP_CROSSHAIR_GUI.Parent then
+			return true
+		end
+		local checkContainers = {
+			(PARENT and PARENT.Parent),
+			PARENT,
+			COREGUI or game:GetService("CoreGui"),
+			(gethui and gethui()),
+		}
+		for _, c in ipairs(checkContainers) do
+			if typeof(c) == "Instance" then
+				if c:FindFirstChild("IYP_CrosshairGui", true) or c:FindFirstChild("IYP_Crosshair", true) then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
 	local function removeCrosshair()
 		if crosshairGui and crosshairGui.Parent then
-			crosshairGui:Destroy()
+			pcall(function() crosshairGui:Destroy() end)
 		end
 		crosshairGui = nil
 		if crosshairFrame and crosshairFrame.Parent then
-			crosshairFrame:Destroy()
+			pcall(function() crosshairFrame:Destroy() end)
 		end
 		crosshairFrame = nil
+
+		local checkContainers = {
+			(PARENT and PARENT.Parent),
+			PARENT,
+			COREGUI or game:GetService("CoreGui"),
+			(gethui and gethui()),
+		}
+		for _, root in ipairs(checkContainers) do
+			if typeof(root) == "Instance" then
+				pcall(function()
+					for _, ch in ipairs(root:GetDescendants()) do
+						if ch.Name == "IYP_CrosshairGui" or ch.Name == "IYP_Crosshair" then
+							pcall(function() ch:Destroy() end)
+						end
+					end
+				end)
+			end
+		end
+
 		pcall(function()
 			local genv = (getgenv and getgenv()) or _G
 			if genv.__IYP_CROSSHAIR_GUI and typeof(genv.__IYP_CROSSHAIR_GUI) == "Instance" then
-				genv.__IYP_CROSSHAIR_GUI:Destroy()
+				pcall(function() genv.__IYP_CROSSHAIR_GUI:Destroy() end)
 			end
 			genv.__IYP_CROSSHAIR_GUI = nil
 		end)
@@ -27462,7 +27505,7 @@ end))
 			notify("Crosshair", "Crosshair disabled")
 			return
 		end
-		if (not a1 or a1 == "") and crosshairFrame and crosshairFrame.Parent then
+		if (not a1 or a1 == "") and isCrosshairActive() then
 			removeCrosshair()
 			notify("Crosshair", "Crosshair toggled off")
 			return
