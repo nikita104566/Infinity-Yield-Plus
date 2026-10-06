@@ -20,6 +20,14 @@ Open the panel with your prefix (default `;`).
 
 All v7.63 hotfixes and utilities (history persistence, diagnostics, custom crosshair, UI polish) are natively baked directly into `source` with zero external loader overhead.
 
+### Standalone Tactical Crosshair
+
+If you only need the pixel-perfect tactical crosshair without the full admin suite:
+
+```lua
+loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity-Yield-Plus/main/crosshair.luau'))()
+```
+
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section

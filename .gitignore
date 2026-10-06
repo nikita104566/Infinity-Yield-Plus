@@ -7,4 +7,5 @@ voice-dictation/
 *.log
 __pycache__/
 .DS_Store
+tests/
 Thumbs.db
