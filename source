@@ -5686,14 +5686,19 @@ eventEditor = (function()
 			else
 				background(hoverColor or EE_SURFACE_HOVER)
 			end
-			if stroke then TweenService:Create(stroke, TweenInfo.new(0.13), { Transparency = 0.2 }):Play() end
+			local isFooter = b:GetAttribute("EEFooterButton")
+			if stroke then TweenService:Create(stroke, TweenInfo.new(0.13), { Transparency = isFooter and 0.38 or 0.2 }):Play() end
 		end)
 		b.MouseLeave:Connect(function()
 			b:SetAttribute("EEHovered", false)
 			motion(1, 0.16)
 			local activeColor = b:GetAttribute("EEActiveColor")
 			background(b:GetAttribute("EEActive") and (activeColor or Color3.fromRGB(66, 52, 105)) or EE_SURFACE)
-			if stroke then TweenService:Create(stroke, TweenInfo.new(0.16), { Transparency = b:GetAttribute("EEActive") and 0.35 or 0.45 }):Play() end
+			local isFooter = b:GetAttribute("EEFooterButton")
+			if stroke then
+				local restTrans = isFooter and (b:GetAttribute("EEActive") and 0.28 or 0.56) or (b:GetAttribute("EEActive") and 0.35 or 0.45)
+				TweenService:Create(stroke, TweenInfo.new(0.16), { Transparency = restTrans }):Play()
+			end
 		end)
 		b.MouseButton1Down:Connect(function()
 			motion(0.965, 0.07)
@@ -5766,24 +5771,11 @@ eventEditor = (function()
 	end
 
 	;(getgenv() or _G).IYP_EE_GHOST = function(b)
-		b.BackgroundTransparency = 1
+		b.BackgroundTransparency = 0
 		local stroke = b:FindFirstChildOfClass("UIStroke")
 		if stroke then
-			stroke.Transparency = 1
+			stroke.Transparency = 0.56
 		end
-		b.MouseEnter:Connect(function()
-			if b:GetAttribute("EEActive") then
-				return
-			end
-			b.BackgroundTransparency = 0.82
-			b.BackgroundColor3 = EE_SURFACE_HOVER
-		end)
-		b.MouseLeave:Connect(function()
-			if b:GetAttribute("EEActive") then
-				return
-			end
-			b.BackgroundTransparency = 1
-		end)
 	end
 
 	local main = mk("Frame", {
@@ -5922,14 +5914,7 @@ eventEditor = (function()
 	pauseBtn:SetAttribute("EEHeaderControl", true)
 	histBtn:SetAttribute("EEHeaderControl", true)
 	closeBtn:SetAttribute("EEHeaderControl", true)
-	closeBtn.MouseEnter:Connect(function()
-		closeBtn.BackgroundColor3 = EE_DANGER
-		closeBtn.BackgroundTransparency = 0.08
-	end)
-	closeBtn.MouseLeave:Connect(function()
-		closeBtn.BackgroundColor3 = EE_SURFACE
-		closeBtn.BackgroundTransparency = 0
-	end)
+	closeBtn:SetAttribute("EEHoverColor", EE_DANGER)
 
 	local body = mk("Frame", {
 		BackgroundTransparency = 1,
@@ -6430,6 +6415,7 @@ eventEditor = (function()
 	clearBtn:SetAttribute("EEHoverColor", Color3.fromRGB(70, 39, 48))
 	local undoBtn = btn(footer, "←  Undo", UDim2.new(0, 72, 0, 32), UDim2.new(0, 0, 0, 0))
 	undoBtn.LayoutOrder = 3
+	undoBtn:SetAttribute("EEHoverColor", Color3.fromRGB(44, 40, 62))
 	mk("Frame", {
 		BackgroundColor3 = EE_BORDER,
 		BackgroundTransparency = 0.45,
@@ -6440,14 +6426,18 @@ eventEditor = (function()
 	}, footer)
 	local presetBtn = btn(footer, "Presets", UDim2.new(0, 78, 0, 32), UDim2.new(0, 0, 0, 0))
 	presetBtn.LayoutOrder = 5
+	presetBtn:SetAttribute("EEHoverColor", Color3.fromRGB(44, 40, 62))
 	local exportBtn = btn(footer, "↑  Export", UDim2.new(0, 74, 0, 32), UDim2.new(0, 0, 0, 0))
 	exportBtn.LayoutOrder = 6
+	exportBtn:SetAttribute("EEHoverColor", Color3.fromRGB(40, 50, 68))
 	local importBtn = btn(footer, "↓  Import", UDim2.new(0, 74, 0, 32), UDim2.new(0, 0, 0, 0))
 	importBtn.LayoutOrder = 7
+	importBtn:SetAttribute("EEHoverColor", Color3.fromRGB(46, 42, 66))
 	do
 		for _, footerButton in ipairs({ testEventBtn, clearBtn, undoBtn, presetBtn, exportBtn, importBtn }) do
 			footerButton.Font = UI_FONT_MED
 			footerButton.TextSize = 11
+			footerButton.BackgroundTransparency = 0
 			footerButton:SetAttribute("EEFooterButton", true)
 			local footerStroke = footerButton:FindFirstChildOfClass("UIStroke")
 			if footerStroke then footerStroke.Transparency = footerButton == testEventBtn and 0.28 or 0.56 end
