@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -611,8 +611,8 @@ UI_L = {
 		allCommands = "Commands",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
-		favHintAdd = "★  Right-click to favorite",
-		favHintRemove = "★  Favorited · right-click to remove",
+		favHintAdd = "Click the star on the row to pin",
+		favHintRemove = "Click the star on the row to unpin",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -896,8 +896,8 @@ UI_L = {
 		allCommands = "Команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
-		favHintAdd = "★  ПКМ — в избранное",
-		favHintRemove = "★  В избранном · ПКМ — убрать",
+		favHintAdd = "Звезда на строке — закрепить",
+		favHintRemove = "Звезда на строке — убрать",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -2352,7 +2352,7 @@ function styleCmdRow(btn)
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
 	label.BackgroundTransparency = 1
-	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Size = UDim2.new(1, -26, 1, 0)
 	label.Font = UI_FONT
 	label.TextSize = 13
 	label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2372,6 +2372,29 @@ function styleCmdRow(btn)
 	marker.ZIndex = 12
 	marker.Parent = btn
 	uiCorner(marker, 2)
+	local star = Instance.new("TextButton")
+	star.Name = "FavStar"
+	star.BackgroundTransparency = 1
+	star.AnchorPoint = Vector2.new(1, 0.5)
+	star.Position = UDim2.new(1, -2, 0.5, 0)
+	star.Size = UDim2.fromOffset(22, 22)
+	star.Font = UI_FONT
+	star.TextSize = 16
+	star.Text = "☆"
+	star.TextColor3 = Color3.fromRGB(154, 148, 176)
+	star.TextXAlignment = Enum.TextXAlignment.Center
+	star.AutoButtonColor = false
+	star.ZIndex = 13
+	star.Visible = false
+	star.Active = false
+	star.Parent = btn
+	star.MouseButton1Click:Connect(function()
+		if not btn.Visible or btn:GetAttribute("Disabled") then return end
+		if btn:GetAttribute("SuggestKind") == "player" then return end
+		if type(toggleFavoriteCmd) == "function" then
+			toggleFavoriteCmd(btn:GetAttribute("Title") or btn.Text)
+		end
+	end)
 	btn.MouseEnter:Connect(function()
 		if cmdSelectionPainted and selectedCmdButton == btn then
 			setCmdRowSelected(btn, true)
@@ -11692,7 +11715,7 @@ function showHelper(title, desc)
     local titleH = 28
     local gap = 6
     local bottomPad = 12
-    -- Tooltip follows the cursor, so the fav row is a hint only: right-click the row to toggle
+    -- The card follows the cursor, so this line is a caption. Pin with the star on the row.
     local favHint = nil
     if HelperFavBtn and type(isFavoriteCmd) == "function" then
         local ok, fav = pcall(isFavoriteCmd, title)
@@ -11712,10 +11735,10 @@ function showHelper(title, desc)
     if HelperFavBtn then
         HelperFavBtn.Active = false
         HelperFavBtn.Visible = favHint ~= nil
+        HelperFavBtn.BackgroundTransparency = 1
         if favHint ~= nil then
             HelperFavBtn.Text = favHint and T("favHintRemove") or T("favHintAdd")
             HelperFavBtn.TextColor3 = favHint and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(152, 150, 172)
-            HelperFavBtn.BackgroundTransparency = favHint and 0 or 0.5
             HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
         end
     end
@@ -11987,6 +12010,9 @@ IndexContents = function(str,bool,cmdbar,Ianim)
             btn:SetAttribute("Desc", sug.desc)
             btn:SetAttribute("SuggestKind", "player")
             btn:SetAttribute("SuggestValue", sug.value)
+            if type(applyFavoriteStyle) == "function" then
+                applyFavoriteStyle(btn)
+            end
             btn.LayoutOrder = i
             btn.Visible = true
             indexnum += 1
@@ -13340,8 +13366,27 @@ function FavCmds.apply(btn)
 	local title = tostring(btn:GetAttribute("Title") or btn.Text)
 	local fav = FavCmds.is(title)
 	local label = btn:FindFirstChild("Label")
+	local star = btn:FindFirstChild("FavStar")
+	if btn:GetAttribute("SuggestKind") == "player" then
+		if label then
+			label.TextColor3 = Color3.fromRGB(244, 244, 248)
+			label.Size = UDim2.new(1, 0, 1, 0)
+		end
+		if star then
+			star.Visible = false
+			star.Active = false
+		end
+		return
+	end
 	if label then
 		label.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(244, 244, 248)
+		label.Size = UDim2.new(1, -26, 1, 0)
+	end
+	if star then
+		star.Visible = true
+		star.Active = true
+		star.Text = fav and "★" or "☆"
+		star.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(154, 148, 176)
 	end
 end
 function FavCmds.find(key)
@@ -13462,6 +13507,13 @@ function FavCmds.toggle(name)
 			TextTransparency = 0,
 		}):Play()
 	end
+	if Tooltip and Tooltip.Visible and HelperFavBtn and type(cmdPrimaryKey) == "function" then
+		local shown = Tooltip:GetAttribute("CmdTitle")
+		if shown and cmdPrimaryKey(shown) == key then
+			HelperFavBtn.Text = isFav and T("favHintAdd") or T("favHintRemove")
+			HelperFavBtn.TextColor3 = isFav and Color3.fromRGB(152, 150, 172) or Color3.fromRGB(255, 214, 102)
+		end
+	end
 	updatesaves()
 end
 
@@ -13496,6 +13548,14 @@ function createCmdButton(i)
         end
         newcmd.MouseButton1Down:Connect(function()
             if not IsOnMobile and newcmd.Visible and not newcmd:GetAttribute("Disabled") then
+                local starHit = newcmd:FindFirstChild("FavStar")
+                if starHit and starHit.Visible and IYMouse then
+                    local sp = starHit.AbsolutePosition
+                    local ss = starHit.AbsoluteSize
+                    if IYMouse.X >= sp.X and IYMouse.X <= sp.X + ss.X and IYMouse.Y >= sp.Y and IYMouse.Y <= sp.Y + ss.Y then
+                        return
+                    end
+                end
                 cmdSelectionPainted = true
 
                 selectedCmdButton = newcmd
@@ -13526,7 +13586,17 @@ function createCmdButton(i)
                 and (os.clock() - touchDownAt) >= 0.45
                 and newcmd.Visible
                 and not newcmd:GetAttribute("Disabled") then
-                toggleFavoriteCmd(newcmd:GetAttribute("Title") or newcmd.Text)
+                local starHit = newcmd:FindFirstChild("FavStar")
+                local onStar = false
+                if starHit and starHit.Visible and input.Position then
+                    local sp = starHit.AbsolutePosition
+                    local ss = starHit.AbsoluteSize
+                    local x, y = input.Position.X, input.Position.Y
+                    onStar = x >= sp.X and x <= sp.X + ss.X and y >= sp.Y and y <= sp.Y + ss.Y
+                end
+                if not onStar then
+                    toggleFavoriteCmd(newcmd:GetAttribute("Title") or newcmd.Text)
+                end
             end
             if input.UserInputType == Enum.UserInputType.Touch then
                 touchDownAt = 0
