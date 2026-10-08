@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.64-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -31,7 +31,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section
-- Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
+- Click the star on a command row to pin or unpin it (right-click and long-press still work)
 - Command history persistence across reloads and rejoins (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands automatically filtered from history
 - `showhistory` / `clearhistory` / `copyhistory` / `starlast` / `repeatlast` — complete history toolkit

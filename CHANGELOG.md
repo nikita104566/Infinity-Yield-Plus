@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-10-08
+
+- Each command row has a star: click it to pin or unpin that command in Favorites.
+
 ## 7.63 — 2026-10-06
 
 ### Added
