@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.65'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -768,6 +768,7 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Add",
+		keybindsEmpty = "No keybinds yet.\nPress Add, then a key, then a command.",
 		eeYes = "yes",
 		eeNo = "no",
 		refCase_all = "- includes everyone",
@@ -1053,6 +1054,7 @@ UI_L = {
 		keybindKeyDown = "KeyDown",
 		keybindKeyUp = "KeyUp",
 		keybindAdd = "Доб.",
+		keybindsEmpty = "Пока нет биндов.\nНажмите Доб., затем клавишу и команду.",
 		eeYes = "да",
 		eeNo = "нет",
 		refCase_all = "— все игроки",
@@ -1369,6 +1371,7 @@ function applyUiLanguage()
 	if type(updateKbToggleLabel) == "function" then updateKbToggleLabel() end
 	if TriggerLabel then TriggerLabel.Text = T("keybindTrigger") end
 	if Add then Add.Text = T("keybindAdd") end
+	if KeybindsHint then KeybindsHint.Text = T("keybindsEmpty") end
 	if BindTo then
 		local idleEn = UI_L.en and UI_L.en.keybindClickToBind
 		local idleRu = UI_L.ru and UI_L.ru.keybindClickToBind
@@ -2782,6 +2785,25 @@ Holder_2.ScrollBarThickness = 0
 Holder_2.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 Holder_2.VerticalScrollBarInset = 'Always'
 Holder_2.ZIndex = 10
+
+KeybindsHint = Instance.new("TextLabel")
+KeybindsHint.Name = "KeybindsHint"
+KeybindsHint.Parent = KeybindsFrame
+KeybindsHint.BackgroundTransparency = 1
+KeybindsHint.BorderSizePixel = 0
+KeybindsHint.Position = UDim2.new(0, 12, 0, 16)
+KeybindsHint.Size = UDim2.new(1, -24, 0, 80)
+KeybindsHint.Font = UI_FONT
+KeybindsHint.TextSize = 14
+KeybindsHint.Text = T("keybindsEmpty")
+KeybindsHint.TextColor3 = Color3.fromRGB(186, 182, 204)
+KeybindsHint.TextWrapped = true
+KeybindsHint.TextXAlignment = Enum.TextXAlignment.Left
+KeybindsHint.TextYAlignment = Enum.TextYAlignment.Top
+KeybindsHint.TextTruncate = Enum.TextTruncate.None
+KeybindsHint.ZIndex = 12
+KeybindsHint.Visible = true
+table.insert(text1, KeybindsHint)
 
 Example_2.Name = "Example"
 Example_2.Parent = KeybindsFrame
@@ -15335,6 +15357,10 @@ function refreshbinds()
                 unkeybind(binds[i].COMMAND,binds[i].KEY)
             end)
         end
+        if KeybindsHint then
+            KeybindsHint.Visible = #binds == 0
+            KeybindsHint.Text = T("keybindsEmpty")
+        end
     end
     pcall(function()
         if Keybinds and Keybinds:FindFirstChild("ButtonLabel") then
@@ -27220,7 +27246,7 @@ end))
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v" .. tostring(currentVersion) .. ")")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()

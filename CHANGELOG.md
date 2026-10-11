@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.65 — 2026-10-11
+
+Settings, Edit Keybinds: an empty list now says to press Add, pick a key, then a command (EN/RU). The hint comes back after Clear.
+
 ## 7.63 — 2026-10-06
 
 ### Added

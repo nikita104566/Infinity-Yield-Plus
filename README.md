@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.65-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -18,7 +18,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 
 Open the panel with your prefix (default `;`).
 
-All v7.63 hotfixes and utilities (history persistence, diagnostics, custom crosshair, UI polish) are natively baked directly into `source` with zero external loader overhead.
+All v7.65 hotfixes and utilities (history persistence, diagnostics, custom crosshair, UI polish) are natively baked directly into `source` with zero external loader overhead.
 
 ### Standalone Tactical Crosshair
 
