@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.66 — 2026-10-12
+
+Command bar: Down or a typed name highlights that command and opens what it does beside the list. An empty bar no longer pre-selects the first row.
+
 ## 7.63 — 2026-10-06
 
 ### Added
