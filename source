@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.66'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2382,6 +2382,9 @@ function styleCmdRow(btn)
 			if m then m.Visible = false end
 		end
 		if not splashBlocksUi() and holderIsExpanded() and btn.Visible and btn:GetAttribute("Title") and type(showHelper) == "function" then
+			if Tooltip then
+				Tooltip:SetAttribute("HelperAnchor", nil)
+			end
 			showHelper(btn:GetAttribute("Title") or btn.Text, btn:GetAttribute("Desc"))
 		elseif type(hideHelper) == "function" then
 			hideHelper()
@@ -11613,36 +11616,53 @@ function placeHelper()
     if not Tooltip or not Tooltip.Visible or not Holder then
         return
     end
-    -- Use laid-out Size from showHelper; never rewrite height (AbsoluteSize can lag / clip text)
     local tw = Tooltip.Size.X.Offset
     if tw < 1 then tw = HELPER_W end
     local th = Tooltip.Size.Y.Offset
     if th < 1 then th = 96 end
 
-    local gap = 6
-    local x = IYMouse.X + gap
-    local y = IYMouse.Y + gap
-
+    local gap = 8
     local parent = Tooltip.Parent
-    if parent then
-        local pp = parent.AbsolutePosition
-        local ps = parent.AbsoluteSize
-        local minX = pp.X + 8
-        local minY = pp.Y + 8
-        local maxX = pp.X + ps.X - tw - 8
-        local maxY = pp.Y + ps.Y - th - 8
-        if maxX < minX then maxX = minX end
-        if maxY < minY then maxY = minY end
-        -- If it would go past the right edge, flip to the left of the cursor
+    local pp = parent and parent.AbsolutePosition or Vector2.new(0, 0)
+    local ps = parent and parent.AbsoluteSize or Vector2.new(0, 0)
+    local minX = pp.X + 8
+    local minY = pp.Y + 8
+    local maxX = pp.X + ps.X - tw - 8
+    local maxY = pp.Y + ps.Y - th - 8
+    if maxX < minX then maxX = minX end
+    if maxY < minY then maxY = minY end
+
+    local x, y
+    local row = nil
+    if Tooltip:GetAttribute("HelperAnchor") == "row" and selectedCmdButton and selectedCmdButton.Parent then
+        row = selectedCmdButton
+    end
+    if row and Holder then
+        local hp = Holder.AbsolutePosition
+        local hs = Holder.AbsoluteSize
+        local rp = row.AbsolutePosition
+        local rh = row.AbsoluteSize.Y
+        x = hp.X - tw - gap
+        y = rp.Y + math.floor((rh - th) / 2)
+        if x < minX then
+            x = minX
+            y = hp.Y - th - gap
+            if y < minY then
+                y = hp.Y + hs.Y + gap
+            end
+        end
+    else
+        x = IYMouse.X + gap
+        y = IYMouse.Y + gap
         if x > maxX then
             x = IYMouse.X - tw - gap
         end
         if y > maxY then
             y = IYMouse.Y - th - gap
         end
-        x = math.clamp(x, minX, maxX)
-        y = math.clamp(y, minY, maxY)
     end
+    x = math.clamp(x, minX, maxX)
+    y = math.clamp(y, minY, maxY)
     Tooltip.Position = UDim2.fromOffset(math.floor(x), math.floor(y))
 end
 
@@ -11655,6 +11675,7 @@ local helperShownKey = nil
 function hideHelper()
 	if not Tooltip then return end
 	helperShownKey = nil
+	Tooltip:SetAttribute("HelperAnchor", nil)
 	Tooltip.Visible = false
 	Tooltip.BackgroundTransparency = 0
 	if Title_3 then Title_3.TextTransparency = 0 end
@@ -11749,6 +11770,36 @@ function updateHintAndGhost()
     end
 end
 
+function rowUnderPointer()
+    if not IYMouse then return nil end
+    local mx, my = IYMouse.X, IYMouse.Y
+    for _, btn in ipairs(visibleCmdButtons) do
+        if btn and btn.Visible and btn:GetAttribute("Title") then
+            local p = btn.AbsolutePosition
+            local s = btn.AbsoluteSize
+            if mx >= p.X and mx <= p.X + s.X and my >= p.Y and my <= p.Y + s.Y then
+                return btn
+            end
+        end
+    end
+    return nil
+end
+
+function syncSelectionHelper()
+    if not Tooltip or type(showHelper) ~= "function" then return end
+    if rowUnderPointer() then
+        return
+    end
+    if cmdSelectionPainted and selectedCmdButton and selectedCmdButton.Parent and selectedCmdButton.Visible and selectedCmdButton:GetAttribute("Title") then
+        Tooltip:SetAttribute("HelperAnchor", "row")
+        showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
+        return
+    end
+    if Tooltip:GetAttribute("HelperAnchor") == "row" and type(hideHelper) == "function" then
+        hideHelper()
+    end
+end
+
 function applyCmdSelection()
     for i, btn in ipairs(visibleCmdButtons) do
         setCmdRowSelected(btn, cmdSelectionPainted and btn == selectedCmdButton)
@@ -11774,6 +11825,14 @@ function applyCmdSelection()
         topCommand = nil
     end
     updateHintAndGhost()
+    scoreCache.helperTok = (scoreCache.helperTok or 0) + 1
+    local helperTok = scoreCache.helperTok
+    task.defer(function()
+        if helperTok ~= scoreCache.helperTok then return end
+        if type(syncSelectionHelper) == "function" then
+            syncSelectionHelper()
+        end
+    end)
 end
 
 function moveCmdSelection(delta)
@@ -11857,6 +11916,11 @@ IndexContents = function(str,bool,cmdbar,Ianim)
     end
     if #chunks > 0 then str = chunks[#chunks] end
     if str:sub(1,1) == "!" then str = str:sub(2) end
+    if bool then
+        typedFilter = str or ""
+    else
+        typedFilter = ""
+    end
 
     local hasSpace = str:find("%s") ~= nil
     local cmdQuery = str
@@ -13623,7 +13687,17 @@ function checkTT()
     end
 
     if hovered then
+        if Tooltip then
+            Tooltip:SetAttribute("HelperAnchor", nil)
+        end
         showHelper(hovered:GetAttribute("Title") or hovered.Text, hovered:GetAttribute("Desc"))
+        return
+    end
+    if cmdSelectionPainted and selectedCmdButton and selectedCmdButton.Parent and selectedCmdButton.Visible and selectedCmdButton:GetAttribute("Title") then
+        if Tooltip then
+            Tooltip:SetAttribute("HelperAnchor", "row")
+        end
+        showHelper(selectedCmdButton:GetAttribute("Title") or selectedCmdButton.Text, selectedCmdButton:GetAttribute("Desc"))
         return
     end
     hideHelper()
