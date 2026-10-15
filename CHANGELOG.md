@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.68 — 2026-10-15
+
+- Automation Studio inspector keeps up, down, run, preview, copy, and delete inside the column, and those hover labels follow EN/RU.
+
 ## 7.63 — 2026-10-06
 
 ### Added

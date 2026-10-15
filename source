@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.68'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -7373,12 +7373,12 @@ eventEditor = (function()
 		}, inspHolder)
 		uiCorner(acts, 8)
 		uiStroke(acts, EE_BORDER, 1, 0.62)
-		uiPad(acts, 4, 2, 4, 2)
+		uiPad(acts, 2, 2, 2, 2)
 		mk("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 4),
+			Padding = UDim.new(0, 2),
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}, acts)
 		local function inspAct(label, order, width, cb, color)
@@ -7389,7 +7389,7 @@ eventEditor = (function()
 			elseif order == 3 or order == 4 then
 				enabled = tostring(cmd[1] or "") ~= ""
 			end
-			local b = btn(acts, label, UDim2.new(0, 31, 0, 30), UDim2.new(0, 0, 0, 0), cb)
+			local b = btn(acts, label, UDim2.new(0, 24, 0, 30), UDim2.new(0, 0, 0, 0), cb)
 			local baseColor = enabled and (order == 3 and EE_PRIMARY or Color3.fromRGB(34, 31, 50)) or Color3.fromRGB(24, 23, 34)
 			if order == 5 then
 				b.Text = ""
@@ -7400,10 +7400,10 @@ eventEditor = (function()
 				uiCorner(front, 2)
 				uiStroke(front, EE_MUTED, 1, 0.08)
 			end
-			local hintText = order == 1 and "Move up" or (order == 2 and "Move down" or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
+			local hintText = order == 1 and T("eeUp") or (order == 2 and T("eeDown") or (order == 3 and T("eeRun") or (order == 4 and T("eePreview") or (order == 5 and T("eeCopy") or T("eeDel")))))
 			b.LayoutOrder = order
 			b.ZIndex = 47
-			b.TextSize = 14
+			b.TextSize = 13
 			b.TextTransparency = enabled and 0 or 0.52
 			b.BackgroundColor3 = baseColor
 			b.Active = enabled
