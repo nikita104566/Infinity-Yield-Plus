@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.67 — 2026-10-15
+
+### Improved
+- Settings prefix and the Add / Goto / Delete buttons stay light on the dark theme, including saves that still stored black text on the dark button color.
+
 ## 7.63 — 2026-10-06
 
 ### Added

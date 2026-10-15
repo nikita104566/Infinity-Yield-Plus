@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.67'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2059,9 +2059,10 @@ PrefixBox.BorderSizePixel = 0
 PrefixBox.Position = UDim2.new(1, -28, 0.5, -11)
 PrefixBox.Size = UDim2.new(0, 22, 0, 22)
 PrefixBox.Font = Enum.Font.SourceSansBold
-PrefixBox.TextSize = 14
+PrefixBox.TextSize = 16
 PrefixBox.Text = ''
-PrefixBox.TextColor3 = Color3.new(0, 0, 0)
+PrefixBox.TextColor3 = Color3.fromRGB(245, 245, 247)
+PrefixBox.TextXAlignment = Enum.TextXAlignment.Center
 PrefixBox.ZIndex = 24
 table.insert(shade3,PrefixBox)
 table.insert(text2,PrefixBox)
@@ -9481,7 +9482,7 @@ currentShade1 = Color3.fromRGB(14, 14, 18)
 currentShade2 = Color3.fromRGB(18, 18, 24)
 currentShade3 = Color3.fromRGB(48, 44, 66)
 currentText1 = Color3.new(1, 1, 1)
-currentText2 = Color3.new(0, 0, 0)
+currentText2 = Color3.fromRGB(245, 245, 247)
 currentScroll = Color3.fromRGB(90, 84, 120)
 
 defaultGuiScale = IsOnMobile and 0.9 or 1
@@ -10398,7 +10399,7 @@ local DEFAULT_THEME = {
 	shade2 = Color3.fromRGB(18, 18, 24),
 	shade3 = Color3.fromRGB(48, 44, 66),
 	text1 = Color3.new(1, 1, 1),
-	text2 = Color3.new(0, 0, 0),
+	text2 = Color3.fromRGB(245, 245, 247),
 	scroll = Color3.fromRGB(90, 84, 120),
 }
 
@@ -26214,6 +26215,10 @@ updateColors(currentShade1,shade1)
 updateColors(currentShade2,shade2)
 updateColors(currentShade3,shade3)
 updateColors(currentText1,text1)
+if (currentShade3.R * 0.2126 + currentShade3.G * 0.7152 + currentShade3.B * 0.0722) < 0.42
+	and (currentText2.R * 0.2126 + currentText2.G * 0.7152 + currentText2.B * 0.0722) < 0.42 then
+	currentText2 = Color3.fromRGB(245, 245, 247)
+end
 updateColors(currentText2,text2)
 updateColors(currentScroll,scroll)
 
@@ -27220,7 +27225,7 @@ end))
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v" .. tostring(currentVersion) .. ")")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
