@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.69 — 2026-10-16
+
+### Fixed
+- Empty command bar no longer marks the first command as chosen; Down selects it, and the letters you type light up in the row.
+
 ## 7.63 — 2026-10-06
 
 ### Added
