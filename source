@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.69'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2276,8 +2276,34 @@ function formatCmdRich(text, query)
 			extra[#extra + 1] = part
 		end
 	end
-	local html = "<font color=\"#B8B4CC\">·</font> <font color=\"#F4F4F8\">" .. primary .. "</font>"
 	local q = tostring(query or ""):lower()
+	local function markMatch(chunk, baseColor)
+		if chunk == "" then
+			return ""
+		end
+		if q == "" then
+			return "<font color=\"" .. baseColor .. "\">" .. chunk .. "</font>"
+		end
+		local low = chunk:lower()
+		local at = low:find(q, 1, true)
+		if not at then
+			return "<font color=\"" .. baseColor .. "\">" .. chunk .. "</font>"
+		end
+		local stopAt = at + #q - 1
+		local pre = chunk:sub(1, at - 1)
+		local mid = chunk:sub(at, stopAt)
+		local post = chunk:sub(stopAt + 1)
+		local out = ""
+		if pre ~= "" then
+			out = out .. "<font color=\"" .. baseColor .. "\">" .. pre .. "</font>"
+		end
+		out = out .. "<font color=\"#FFE08A\">" .. mid .. "</font>"
+		if post ~= "" then
+			out = out .. "<font color=\"" .. baseColor .. "\">" .. post .. "</font>"
+		end
+		return out
+	end
+	local html = "<font color=\"#B8B4CC\">·</font> " .. markMatch(primary, "#F4F4F8")
 	local shown = nil
 	if q ~= "" then
 		local pLow = primary:lower()
@@ -2292,7 +2318,7 @@ function formatCmdRich(text, query)
 		end
 	end
 	if shown then
-		html = html .. "<font color=\"#C4B5FD\"> (" .. shown .. ")</font>"
+		html = html .. " " .. markMatch("(" .. shown .. ")", "#C4B5FD")
 	end
 	if args ~= "" then
 		html = html .. " <font color=\"#C4B5FD\">" .. args .. "</font>"
@@ -12005,7 +12031,11 @@ IndexContents = function(str,bool,cmdbar,Ianim)
         selectedCmdIndex = (#visibleCmdButtons > 0) and 1 or 0
     end
     selectedCmdButton = visibleCmdButtons[selectedCmdIndex]
-    -- Paint selection only when typing a filter, or after keyboard navigation
+    -- Empty bar stays quiet. Down paints the first row; a query paints the match.
+    local typedFilter = ""
+    if type(str) == "string" and str:find("%S") then
+        typedFilter = str:match("^%s*(.-)%s*$") or str
+    end
     cmdSelectionPainted = typedFilter ~= ""
     local noMatch = typedFilter ~= "" and indexnum == 0
     if cmdNoMatchHint then
@@ -27220,7 +27250,7 @@ end))
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.69)")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
