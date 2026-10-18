@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -8207,12 +8207,30 @@ eventEditor = (function()
 				end
 				if ev.enabled == false then en = 0 end
 				local selectedRow = selectedEventName == name
+				local nameRight = 46
+				local nameMaxW = math.max(96, EE_LEFT_W - 94)
+				local nameH = 16
+				local measured = false
+				pcall(function()
+					local bounds = TextService:GetTextSize(name, 12, UI_FONT_MED, Vector2.new(4000, 24))
+					if bounds and bounds.X > 0 then
+						measured = true
+						if bounds.X > (nameMaxW - 2) then
+							nameH = 32
+						end
+					end
+				end)
+				if not measured and #name > 18 then
+					nameH = 32
+				end
+				local catY = (nameH > 20) and (6 + nameH + 4) or 32
+				local rowH = (nameH > 20) and (catY + 26) or 58
 				local row = mk("Frame", {
 					Name = "EEEventCard",
 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
 					BackgroundTransparency = selectedRow and 0.08 or 0.76,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -4, 0, 58),
+					Size = UDim2.new(1, -4, 0, rowH),
 					LayoutOrder = order,
 					ClipsDescendants = true,
 					ZIndex = 43,
@@ -8225,29 +8243,29 @@ eventEditor = (function()
 				rowScale.Name = "EEEventScale"
 				rowScale.Scale = 1
 				rowScale.Parent = row
-				local cardRightSpace = (tot > 0) and 90 or 46
 				local nameColor = selectedRow and Color3.fromRGB(255, 255, 255) or ((ev.enabled == false) and Color3.fromRGB(150, 145, 170) or Color3.fromRGB(245, 245, 247))
 				local catColor = selectedRow and Color3.fromRGB(195, 185, 230) or Color3.fromRGB(145, 140, 170)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 6),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 24),
+					Size = UDim2.new(1, -(nameRight + 14), 0, nameH),
 					Font = UI_FONT_MED,
 					TextSize = 12,
-					TextWrapped = false,
-					TextTruncate = Enum.TextTruncate.AtEnd,
+					TextWrapped = true,
+					TextTruncate = Enum.TextTruncate.None,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = nameColor,
 					Text = name,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 32),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 14),
+					Position = UDim2.new(0, 14, 0, catY),
+					Size = UDim2.new(1, -(14 + ((tot > 0) and 56 or 8)), 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
+					TextTruncate = Enum.TextTruncate.AtEnd,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = catColor,
 					Text = categoryText(cat),
@@ -8256,7 +8274,7 @@ eventEditor = (function()
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -(cardRightSpace + 14), 1, 0),
+					Size = UDim2.new(1, -46, 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -8298,7 +8316,7 @@ eventEditor = (function()
 						if row.Parent then selectEvent(name) end
 					end)
 				end)
-				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0.5, -9), function()
+				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0, 8), function()
 					ensureEventExtras(ev)
 					pushUndo()
 					ev.enabled = not (ev.enabled ~= false)
@@ -8314,17 +8332,17 @@ eventEditor = (function()
 					local badge = mk("TextLabel", {
 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
 						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
+						Position = UDim2.new(1, -50, 0, catY - 2),
 						Size = UDim2.new(0, 42, 0, 18),
 						Font = UI_FONT_MED,
 						TextSize = 10,
 						TextColor3 = en == tot and EE_OK or (en > 0 and EE_ACCENT or EE_MUTED),
 						Text = en == tot and tostring(tot) or (tostring(en) .. "/" .. tostring(tot)),
-						ZIndex = 44,
+						ZIndex = 47,
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 65
+				y += rowH + 6
 			end
 		end
 		if #visible == 0 then

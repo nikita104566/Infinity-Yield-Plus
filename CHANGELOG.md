@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-10-18
+
+Studio event list shows the full name (OnCharacterRemoving is no longer cut to OnCharact…); the workflow count sits on the category line.
+
 ## 7.63 — 2026-10-06
 
 ### Added
