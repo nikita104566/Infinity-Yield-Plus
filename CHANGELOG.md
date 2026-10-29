@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.70 — 2026-10-29
+
+### Improved
+- Reference (the info button): each player keyword keeps its own column, and the description wraps instead of being cut off, in English and Russian.
+
 ## 7.63 — 2026-10-06
 
 ### Added

@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.70'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -9394,14 +9394,54 @@ reference = (function()
             if intro then intro.Text = T("refSpecialIntro") end
             local cases = sections[1]:FindFirstChild("Cases")
             if cases then
+                local avail = cases.AbsoluteSize.X
+                if avail < 80 then avail = 468 end
+                local totalH = 0
+                local rowCount = 0
                 for _, caseFrame in ipairs(cases:GetChildren()) do
                     if caseFrame.Name == "Case" then
                         local cname = caseFrame:FindFirstChild("CaseName")
                         local cdesc = caseFrame:FindFirstChild("CaseDesc")
-                        if cname and cdesc and caseMap[cname.Text] then
-                            cdesc.Text = T(caseMap[cname.Text])
+                        if cname and cdesc then
+                            if caseMap[cname.Text] then
+                                cdesc.Text = T(caseMap[cname.Text])
+                            end
+                            cname.TextWrapped = false
+                            cname.TextTruncate = Enum.TextTruncate.AtEnd
+                            cname.TextYAlignment = Enum.TextYAlignment.Top
+                            local nameW = 96
+                            local okName, nameBounds = pcall(function()
+                                return TextService:GetTextSize(tostring(cname.Text), cname.TextSize, cname.Font, Vector2.new(400, 24))
+                            end)
+                            if okName and nameBounds then
+                                nameW = math.clamp(math.ceil(nameBounds.X) + 10, 28, 168)
+                            end
+                            cname.Position = UDim2.new(0, 0, 0, 0)
+                            cname.Size = UDim2.new(0, nameW, 1, 0)
+                            cdesc.TextWrapped = true
+                            cdesc.TextTruncate = Enum.TextTruncate.None
+                            cdesc.TextXAlignment = Enum.TextXAlignment.Left
+                            cdesc.TextYAlignment = Enum.TextYAlignment.Top
+                            cdesc.Position = UDim2.new(0, nameW, 0, 0)
+                            cdesc.Size = UDim2.new(1, -nameW, 1, 0)
+                            local rowH = 18
+                            local descW = math.max(80, avail - nameW - 4)
+                            local okDesc, descBounds = pcall(function()
+                                return TextService:GetTextSize(tostring(cdesc.Text), cdesc.TextSize, cdesc.Font, Vector2.new(descW, 160))
+                            end)
+                            if okDesc and descBounds then
+                                rowH = math.clamp(math.ceil(descBounds.Y) + 4, 18, 72)
+                            end
+                            if cdesc.Text == "" then rowH = 18 end
+                            caseFrame.Size = UDim2.new(1, 0, 0, rowH)
+                            totalH += rowH
+                            rowCount += 1
                         end
                     end
+                end
+                if rowCount > 0 then
+                    cases.Size = UDim2.new(1, -16, 0, totalH)
+                    sections[1].Size = UDim2.new(1, 0, 0, 55 + totalH + 10)
                 end
             end
         end
@@ -9467,6 +9507,16 @@ reference = (function()
                     end
                 end
             end
+        end
+        local canvasY = 0
+        for _, sec in ipairs(sections) do
+            local h = sec.Size.Y.Offset
+            if h < 1 then h = sec.AbsoluteSize.Y end
+            canvasY += h
+        end
+        local refList = referenceMain.Content and referenceMain.Content:FindFirstChild("List")
+        if canvasY > 40 and refList then
+            refList.CanvasSize = UDim2.new(0, 0, 0, canvasY + 16)
         end
     end
 
