@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.70 — 2026-11-03
+
+### Improved
+- The description card stays still and its star line is a real button: click it to pin or unpin that command. Right-click on the row still works. Player suggestions have no pin button.
+
 ## 7.63 — 2026-10-06
 
 ### Added
