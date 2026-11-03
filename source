@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.70'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -611,8 +611,8 @@ UI_L = {
 		allCommands = "Commands",
 		addFavorite = "Add to favorites",
 		removeFavorite = "Remove from favorites",
-		favHintAdd = "★  Right-click to favorite",
-		favHintRemove = "★  Favorited · right-click to remove",
+		favHintAdd = "★  Click to favorite",
+		favHintRemove = "★  Favorited · click to remove",
 		refTitle = "Reference",
 		refSpecialHeader = "Special Player Cases",
 		refSpecialIntro = "These keywords can be used to quickly select groups of players in commands:",
@@ -896,8 +896,8 @@ UI_L = {
 		allCommands = "Команды",
 		addFavorite = "В избранное",
 		removeFavorite = "Убрать из избранного",
-		favHintAdd = "★  ПКМ — в избранное",
-		favHintRemove = "★  В избранном · ПКМ — убрать",
+		favHintAdd = "★  Нажми — в избранное",
+		favHintRemove = "★  В избранном · нажми, чтобы убрать",
 		refTitle = "Справка",
 		refSpecialHeader = "Особые цели игроков",
 		refSpecialIntro = "Эти ключевые слова быстро выбирают группы игроков в командах:",
@@ -2558,6 +2558,31 @@ HelperFavBtn.AutoButtonColor = false
 HelperFavBtn.ZIndex = 28
 HelperFavBtn.Visible = false
 HelperFavBtn.Active = false
+HelperFavBtn.TextTruncate = Enum.TextTruncate.AtEnd
+HelperFavBtn.MouseButton1Click:Connect(function()
+	local title = ""
+	if Tooltip then
+		title = tostring(Tooltip:GetAttribute("CmdTitle") or "")
+	end
+	if title == "" or type(toggleFavoriteCmd) ~= "function" then
+		return
+	end
+	if not pcall(toggleFavoriteCmd, title) then
+		return
+	end
+	if type(isFavoriteCmd) ~= "function" then
+		return
+	end
+	local favOk, fav = pcall(isFavoriteCmd, title)
+	if not favOk then
+		return
+	end
+	HelperFavBtn.Text = fav and T("favHintRemove") or T("favHintAdd")
+	HelperFavBtn.TextColor3 = fav and Color3.fromRGB(255, 214, 102) or Color3.fromRGB(152, 150, 172)
+	HelperFavBtn.BackgroundTransparency = fav and 0 or 0.5
+	HelperFavBtn.Visible = true
+	HelperFavBtn.Active = true
+end)
 uiCorner(HelperFavBtn, 6)
 
 IntroBackground.Name = "IntroBackground"
@@ -11619,7 +11644,7 @@ function placeHelper()
     local th = Tooltip.Size.Y.Offset
     if th < 1 then th = 96 end
 
-    local gap = 6
+    local gap = 8
     local x = IYMouse.X + gap
     local y = IYMouse.Y + gap
 
@@ -11655,6 +11680,7 @@ local helperShownKey = nil
 function hideHelper()
 	if not Tooltip then return end
 	helperShownKey = nil
+	Tooltip.Active = false
 	Tooltip.Visible = false
 	Tooltip.BackgroundTransparency = 0
 	if Title_3 then Title_3.TextTransparency = 0 end
@@ -11674,7 +11700,6 @@ function showHelper(title, desc)
     end
     local key = title .. "\0" .. desc
     if Tooltip.Visible and helperShownKey == key then
-        placeHelper()
         return
     end
     helperShownKey = key
@@ -11692,9 +11717,19 @@ function showHelper(title, desc)
     local titleH = 28
     local gap = 6
     local bottomPad = 12
-    -- Tooltip follows the cursor, so the fav row is a hint only: right-click the row to toggle
+    -- Card stays put so the favorite button can be clicked. Right-click still pins too.
     local favHint = nil
-    if HelperFavBtn and type(isFavoriteCmd) == "function" then
+    local playerRow = false
+    if type(playerSuggestButtons) == "table" then
+        for i = 1, #playerSuggestButtons do
+            local sb = playerSuggestButtons[i]
+            if sb and sb.Visible and sb:GetAttribute("SuggestKind") == "player" and tostring(sb:GetAttribute("Title") or "") == title then
+                playerRow = true
+                break
+            end
+        end
+    end
+    if not playerRow and HelperFavBtn and type(isFavoriteCmd) == "function" then
         local ok, fav = pcall(isFavoriteCmd, title)
         if ok then
             favHint = fav and true or false
@@ -11710,7 +11745,7 @@ function showHelper(title, desc)
         HelperAccent.Position = UDim2.new(0, 12, 0, titleH - 1)
     end
     if HelperFavBtn then
-        HelperFavBtn.Active = false
+        HelperFavBtn.Active = favHint ~= nil
         HelperFavBtn.Visible = favHint ~= nil
         if favHint ~= nil then
             HelperFavBtn.Text = favHint and T("favHintRemove") or T("favHintAdd")
@@ -11724,6 +11759,7 @@ function showHelper(title, desc)
     if Title_3 then Title_3.TextTransparency = 0 end
     if Description then Description.TextTransparency = 0 end
     Tooltip.Visible = true
+    Tooltip.Active = true
     placeHelper()
 end
 
@@ -13562,17 +13598,26 @@ function checkTT()
         return
     end
 
+    local mx, my = IYMouse.X, IYMouse.Y
+    if Tooltip.Visible then
+        local tp = Tooltip.AbsolutePosition
+        local ts = Tooltip.AbsoluteSize
+        local pad = 16
+        if mx >= tp.X - pad and mx <= tp.X + ts.X + pad and my >= tp.Y - pad and my <= tp.Y + ts.Y + pad then
+            return
+        end
+    end
+
     -- Right gutter / scrollbar: allow scrolling without opening the helper
     local listPos = CMDsF.AbsolutePosition
     local listSize = CMDsF.AbsoluteSize
     local gutter = math.max(SCROLL_GUTTER, (CMDsF.ScrollBarThickness or 6) + 10)
-    if IYMouse.X >= (listPos.X + listSize.X - gutter) and IYMouse.X <= (listPos.X + listSize.X + 2)
-        and IYMouse.Y >= listPos.Y and IYMouse.Y <= (listPos.Y + listSize.Y) then
+    if mx >= (listPos.X + listSize.X - gutter) and mx <= (listPos.X + listSize.X + 2)
+        and my >= listPos.Y and my <= (listPos.Y + listSize.Y) then
         hideHelper()
         return
     end
 
-    local mx, my = IYMouse.X, IYMouse.Y
     -- Nothing outside the list has a description, so skip the row scans entirely
     if mx < listPos.X or mx > listPos.X + listSize.X
         or my < listPos.Y or my > listPos.Y + listSize.Y then
@@ -27215,7 +27260,7 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.70"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
@@ -27296,7 +27341,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.70"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27392,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.70")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,

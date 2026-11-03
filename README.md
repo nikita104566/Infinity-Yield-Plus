@@ -7,7 +7,7 @@
   Admin commands for Roblox — modern UI, themes, keybinds, RU/EN
 </p>
 
-[![Version](https://img.shields.io/badge/version-7.63-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
+[![Version](https://img.shields.io/badge/version-7.70-blue.svg)](https://github.com/nikita104566/Infinity-Yield-Plus)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Loadstring
@@ -18,7 +18,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 
 Open the panel with your prefix (default `;`).
 
-All v7.63 hotfixes and utilities (history persistence, diagnostics, custom crosshair, UI polish) are natively baked directly into `source` with zero external loader overhead.
+All v7.70 hotfixes and utilities are baked into `source`. The description card pins a favorite when you click it.
 
 ### Standalone Tactical Crosshair
 
@@ -31,7 +31,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/nikita104566/Infinity
 ## Features
 
 - Command panel with search, autocomplete, and a **Favorites** section
-- Add or remove favorites from the helper popup or with right-click; they stay pinned in add order
+- Click the star on the description card, or right-click a row, to pin a favorite
 - Command history persistence across reloads and rejoins (`lastcommand`, ↑ / ↓)
 - Consecutive duplicates and meta-commands automatically filtered from history
 - `showhistory` / `clearhistory` / `copyhistory` / `starlast` / `repeatlast` — complete history toolkit
