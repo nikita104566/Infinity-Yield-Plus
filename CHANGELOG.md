@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.71 — 2026-11-04
+
+The corner notice grows with the text (up to eight lines), so `;hist`, `;info` and `;env` stay readable instead of being cut off.
+
 ## 7.63 — 2026-10-06
 
 ### Added

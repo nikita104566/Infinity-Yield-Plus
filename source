@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.71'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -10135,10 +10135,39 @@ function notify(text,text2,length)
             Title_2.Text = 'Notification'
             Text_2.Text = text
         end
-        local bodyLen = #(Text_2.Text or "")
-        local notifyH = math.clamp(48 + math.ceil(bodyLen / 36) * 14, 64, 96)
+        local body = tostring(Text_2.Text or "")
+        local textSize = tonumber(Text_2.TextSize) or 13
+        if textSize < 1 then textSize = 13 end
+        local bodyH = textSize + 2
+        local measured = false
+        pcall(function()
+            local bounds = TextService:GetTextSize(body, textSize, Text_2.Font, Vector2.new(226, 10000))
+            if bounds and bounds.Y and bounds.Y > 0 then
+                bodyH = bounds.Y
+                measured = true
+            end
+        end)
+        if not measured then
+            local lines = 1
+            local from = 1
+            while true do
+                local nl = string.find(body, "\n", from, true)
+                if not nl then break end
+                lines = lines + 1
+                from = nl + 1
+            end
+            if lines > 8 then lines = 8 end
+            bodyH = lines * (textSize + 3)
+        end
+        local maxBody = 8 * (textSize + 4)
+        if bodyH > maxBody then bodyH = maxBody end
+        if bodyH < textSize then bodyH = textSize end
+        local notifyH = math.floor(36 + bodyH)
+        if notifyH < 64 then notifyH = 64 end
+        if notifyH > 196 then notifyH = 196 end
+        Text_2.TextTruncate = Enum.TextTruncate.AtEnd
         Notification.Size = UDim2.new(0, 250, 0, notifyH)
-        Text_2.Size = UDim2.new(1, -24, 0, notifyH - 34)
+        Text_2.Size = UDim2.new(1, -24, 0, notifyH - 36)
         Notification:TweenPosition(UDim2.new(1, Notification.Position.X.Offset, 1, -notifyH), "InOut", "Quart", 0.5, true, nil)
         closeNotification = CloseButton.MouseButton1Click:Connect(function()
             Notification:TweenPosition(UDim2.new(1, Notification.Position.X.Offset, 1, 0), "InOut", "Quart", 0.5, true, nil)
@@ -26819,7 +26848,7 @@ IYR_TRACK(task.spawn(function()
     end
 end))
 
--- Native v7.63 Baked Hotfixes & Utility Commands
+-- Native baked hotfixes and utility commands (see currentVersion)
 ;(function()
 	local function clipText(text)
 		if type(everyClipboard) == "function" then
@@ -27215,12 +27244,12 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.71"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v" .. tostring(currentVersion) .. ")")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
@@ -27296,7 +27325,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.71"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27376,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.71")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
