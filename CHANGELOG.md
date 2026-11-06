@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-06
+
+### Fixed
+- Empty command bar no longer highlights the first row, so Up recalls the previous command on the first press and a typed filter highlights the best match.
+
 ## 7.63 — 2026-10-06
 
 ### Added
