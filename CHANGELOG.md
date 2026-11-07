@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.64 — 2026-11-07
+
+### Improved
+- Automation Studio shows the full event name in the left list (OnCharacterRemoving wraps onto a second line instead of ending in OnCharact...).
+
+
 ## 7.63 — 2026-10-06
 
 ### Added

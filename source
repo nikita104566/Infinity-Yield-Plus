@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -8207,12 +8207,32 @@ eventEditor = (function()
 				end
 				if ev.enabled == false then en = 0 end
 				local selectedRow = selectedEventName == name
+				local cardRightSpace = (tot > 0) and 90 or 46
+				local nameW = EE_LEFT_W - 52 - cardRightSpace
+				if nameW < 64 then nameW = 64 end
+				local nameH = 24
+				local nameMeasured = false
+				pcall(function()
+					local bounds = TextService:GetTextSize(name, 12, UI_FONT_MED, Vector2.new(nameW, 64))
+					nameMeasured = true
+					if bounds and bounds.Y > 18 then
+						nameH = 34
+					end
+				end)
+				if not nameMeasured then
+					local nlen = utf8.len(name)
+					if (nlen or #name) >= 18 then
+						nameH = 34
+					end
+				end
+				local rowH = nameH > 24 and 70 or 58
+				local catY = nameH > 24 and 42 or 32
 				local row = mk("Frame", {
 					Name = "EEEventCard",
 					BackgroundColor3 = selectedRow and EE_SELECTED or EE_SURFACE,
 					BackgroundTransparency = selectedRow and 0.08 or 0.76,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -4, 0, 58),
+					Size = UDim2.new(1, -4, 0, rowH),
 					LayoutOrder = order,
 					ClipsDescendants = true,
 					ZIndex = 43,
@@ -8225,26 +8245,25 @@ eventEditor = (function()
 				rowScale.Name = "EEEventScale"
 				rowScale.Scale = 1
 				rowScale.Parent = row
-				local cardRightSpace = (tot > 0) and 90 or 46
 				local nameColor = selectedRow and Color3.fromRGB(255, 255, 255) or ((ev.enabled == false) and Color3.fromRGB(150, 145, 170) or Color3.fromRGB(245, 245, 247))
 				local catColor = selectedRow and Color3.fromRGB(195, 185, 230) or Color3.fromRGB(145, 140, 170)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 6),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 24),
+					Size = UDim2.new(1, -(cardRightSpace + 14), 0, nameH),
 					Font = UI_FONT_MED,
 					TextSize = 12,
-					TextWrapped = false,
-					TextTruncate = Enum.TextTruncate.AtEnd,
+					TextWrapped = nameH > 24,
+					TextTruncate = nameH > 24 and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Center,
+					TextYAlignment = nameH > 24 and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center,
 					TextColor3 = nameColor,
 					Text = name,
 					ZIndex = 44,
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 32),
+					Position = UDim2.new(0, 14, 0, catY),
 					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
@@ -8324,7 +8343,7 @@ eventEditor = (function()
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 65
+				y += rowH + 7
 			end
 		end
 		if #visible == 0 then
