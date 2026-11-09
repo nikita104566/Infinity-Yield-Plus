@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-09
+
+### Improved
+- Typing a short alias and a space (`to `, `view `, `fr `) keeps that command in the list and, when it needs a player, opens the player picker instead of an empty list.
+
 ## 7.63 — 2026-10-06
 
 ### Added
