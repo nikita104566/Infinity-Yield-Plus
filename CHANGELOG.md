@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-13
+
+### Improved
+- Hovering a command shows the full name, aliases, and arguments instead of cutting them off before `[`.
+
 ## 7.63 — 2026-10-06
 
 ### Added
