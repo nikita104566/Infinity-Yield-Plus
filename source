@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2510,7 +2510,8 @@ Title_3.Text = ""
 Title_3.TextColor3 = Color3.fromRGB(244, 244, 248)
 Title_3.TextTransparency = 0
 Title_3.ZIndex = 26
-Title_3.TextTruncate = Enum.TextTruncate.AtEnd
+Title_3.TextTruncate = Enum.TextTruncate.None
+Title_3.TextWrapped = true
 uiPad(Title_3, 12, 8, 12, 0)
 Title_3.TextXAlignment = Enum.TextXAlignment.Left
 Title_3.TextYAlignment = Enum.TextYAlignment.Top
@@ -11678,21 +11679,23 @@ function showHelper(title, desc)
         return
     end
     helperShownKey = key
-    local shortTitle = title:match("^[^%[]+") or title
-    shortTitle = shortTitle:gsub("%s+$", "")
-    if #shortTitle > 44 then
-        shortTitle = shortTitle:sub(1, 42) .. "…"
+    -- Full signature (aliases + [args]). The 300px row still ellipsizes the tail.
+    local fullTitle = title:gsub("^%s+", ""):gsub("%s+$", "")
+    if fullTitle == "" then
+        hideHelper()
+        return
     end
-    Title_3.Text = shortTitle
+    local tipW = 268
+    Title_3.TextWrapped = true
+    Title_3.TextTruncate = Enum.TextTruncate.None
+    Title_3.Text = fullTitle
     Description.Text = desc
     Tooltip:SetAttribute("CmdTitle", title)
     Tooltip:SetAttribute("CmdDesc", desc)
 
     local padX = 24
-    local titleH = 28
     local gap = 6
     local bottomPad = 12
-    -- Tooltip follows the cursor, so the fav row is a hint only: right-click the row to toggle
     local favHint = nil
     if HelperFavBtn and type(isFavoriteCmd) == "function" then
         local ok, fav = pcall(isFavoriteCmd, title)
@@ -11701,9 +11704,14 @@ function showHelper(title, desc)
             bottomPad = 40
         end
     end
-    local maxDescW = HELPER_W - padX
-    local bounds = TextService:GetTextSize(desc, Description.TextSize, Description.Font, Vector2.new(maxDescW, 200))
-    local descH = math.clamp(math.ceil(bounds.Y) + 2, 16, 72)
+    local innerW = math.max(80, tipW - padX)
+    Tooltip.Size = UDim2.new(0, tipW, 0, Tooltip.Size.Y.Offset)
+    local titleBounds = TextService:GetTextSize(fullTitle, Title_3.TextSize, Title_3.Font, Vector2.new(innerW, 400))
+    local titleTextH = math.clamp(math.ceil(titleBounds.Y), 16, 96)
+    local titleH = titleTextH + 10
+    Title_3.Size = UDim2.new(1, 0, 0, titleH)
+    local bounds = TextService:GetTextSize(desc, Description.TextSize, Description.Font, Vector2.new(innerW, 280))
+    local descH = math.clamp(math.ceil(bounds.Y) + 2, 16, 96)
     Description.Size = UDim2.new(1, -padX, 0, descH)
     Description.Position = UDim2.new(0, 12, 0, titleH + gap)
     if HelperAccent then
@@ -11719,7 +11727,7 @@ function showHelper(title, desc)
             HelperFavBtn.Position = UDim2.new(0, 12, 0, titleH + gap + descH + 6)
         end
     end
-    Tooltip.Size = UDim2.new(0, HELPER_W, 0, titleH + gap + descH + bottomPad)
+    Tooltip.Size = UDim2.new(0, tipW, 0, titleH + gap + descH + bottomPad)
     Tooltip.BackgroundTransparency = 0
     if Title_3 then Title_3.TextTransparency = 0 end
     if Description then Description.TextTransparency = 0 end
@@ -27215,7 +27223,7 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.64"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
@@ -27296,7 +27304,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.64"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27355,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.64")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
