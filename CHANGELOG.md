@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-11-15
+
+- The prefix chip in Settings is light on the dark row, wide enough for a short prefix, and an empty chip goes back to `;`.
+
 ## 7.63 — 2026-10-06
 
 ### Added

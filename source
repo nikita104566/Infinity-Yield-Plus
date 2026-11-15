@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2061,10 +2061,13 @@ PrefixBox.Size = UDim2.new(0, 22, 0, 22)
 PrefixBox.Font = Enum.Font.SourceSansBold
 PrefixBox.TextSize = 14
 PrefixBox.Text = ''
-PrefixBox.TextColor3 = Color3.new(0, 0, 0)
+PrefixBox.TextColor3 = Color3.new(1, 1, 1)
+PrefixBox.TextXAlignment = Enum.TextXAlignment.Center
+PrefixBox.ClearTextOnFocus = false
+PrefixBox.ClipsDescendants = true
 PrefixBox.ZIndex = 24
 table.insert(shade3,PrefixBox)
-table.insert(text2,PrefixBox)
+table.insert(text1,PrefixBox)
 
 function makeSettingsButton(name,iconID,off,glyph)
     local button = Instance.new("TextButton")
@@ -9845,6 +9848,10 @@ function Time()
 end
 
 PrefixBox.Text = prefix
+if (PrefixBox.Text or ""):gsub("%s", "") == "" then
+    prefix = ";"
+    PrefixBox.Text = prefix
+end
 local SettingsOpen = false
 local isHidden = false
 settingsTweenToken = 0
@@ -9917,8 +9924,8 @@ do
         local icon = item:FindFirstChild("Icon")
         if icon then icon.Position = UDim2.new(0, 8, 0.5, -8) end
     end
-    PrefixBox.Size = UDim2.new(0, 30, 0, 28)
-    PrefixBox.Position = UDim2.new(1, -36, 0.5, -14)
+    PrefixBox.Size = UDim2.new(0, 18 + (math.clamp(utf8.len(PrefixBox.Text or "") or 1, 1, 3) * 12), 0, 28)
+    PrefixBox.Position = UDim2.new(1, -(26 + (math.clamp(utf8.len(PrefixBox.Text or "") or 1, 1, 3) * 12)), 0.5, -14)
     Button.Size = UDim2.new(0, 30, 0, 28)
     Button.Position = UDim2.new(1, -36, 0.5, -14)
     On.Position = UDim2.new(0.5, -8, 0.5, -8)
@@ -11379,9 +11386,23 @@ Delete_3.MouseButton1Click:Connect(function()
 end)
 
 PrefixBox:GetPropertyChangedSignal("Text"):Connect(function()
-    prefix = PrefixBox.Text
+    local raw = PrefixBox.Text or ""
+    prefix = raw
     Cmdbar.PlaceholderText = T("cmdBarHint")
+    local n = utf8.len(raw)
+    if not n or n < 1 then n = 1 end
+    if n > 3 then n = 3 end
+    local w = 18 + n * 12
+    PrefixBox.Size = UDim2.new(0, w, 0, 28)
+    PrefixBox.Position = UDim2.new(1, -(w + 8), 0.5, -14)
     updatesaves()
+end)
+
+PrefixBox.FocusLost:Connect(function()
+    local raw = PrefixBox.Text or ""
+    if raw:gsub("%s", "") == "" then
+        PrefixBox.Text = ";"
+    end
 end)
 
 function CamViewport()
