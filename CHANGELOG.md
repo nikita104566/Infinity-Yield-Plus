@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-16
+
+### Improved
+- The command bar lists a command when the typed word is in its description, in English or Russian (teleport shows goto).
+
 ## 7.63 — 2026-10-06
 
 ### Added

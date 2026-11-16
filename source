@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -11602,6 +11602,66 @@ function commandScore(displayName, query)
     return 40
 end
 
+function foldText(s)
+	s = tostring(s or ""):lower()
+	local out = {}
+	local n = 0
+	local i = 1
+	local len = #s
+	while i <= len do
+		local b = string.byte(s, i)
+		local b2 = string.byte(s, i + 1)
+		if b == 208 and b2 then
+			if b2 == 129 then
+				n += 1
+				out[n] = "\209\145"
+			elseif b2 >= 144 and b2 <= 159 then
+				n += 1
+				out[n] = string.char(208, b2 + 32)
+			elseif b2 >= 160 and b2 <= 175 then
+				n += 1
+				out[n] = string.char(209, b2 - 32)
+			else
+				n += 1
+				out[n] = string.char(b, b2)
+			end
+			i += 2
+		elseif b >= 194 and b <= 223 and b2 and b2 >= 128 then
+			n += 1
+			out[n] = string.char(b, b2)
+			i += 2
+		else
+			n += 1
+			out[n] = string.char(b)
+			i += 1
+		end
+	end
+	return table.concat(out)
+end
+
+function descMatchesQuery(title, rawDesc, query)
+	local q = foldText(query)
+	local qlen = utf8.len(q) or #q
+	if q == "" or qlen < 4 then return false end
+	local function hit(text)
+		text = tostring(text or "")
+		if text == "" then return false end
+		if type(T) == "function" and text == T("noDesc") then return false end
+		return foldText(text):find(q, 1, true) ~= nil
+	end
+	if hit(rawDesc) then return true end
+	if type(getLocalizedDesc) == "function" then
+		local loc = getLocalizedDesc(title, rawDesc)
+		if loc ~= rawDesc and hit(loc) then return true end
+	end
+	if CMD_DESC_RU then
+		local key = cmdPrimaryKey(title)
+		local ru = CMD_DESC_RU[key]
+		if ru and ru ~= rawDesc and hit(ru) then return true end
+	end
+	return false
+end
+
 function hidePlayerSuggest()
     for _, btn in ipairs(playerSuggestButtons) do
         btn.Visible = false
@@ -11882,9 +11942,13 @@ IndexContents = function(str,bool,cmdbar,Ianim)
                 local first = cmdNameParts(v.Text).first
                 if first == cmdQueryLower(cmdQuery) then
                     score = 800
-                    end
-                else
+                end
+            else
                 score = commandScore(v.Text, str)
+                local q = cmdQueryLower(str)
+                if score < 200 and descMatchesQuery(v:GetAttribute("Title") or v.Text, v:GetAttribute("Desc") or "", q) then
+                    score = math.max(score, 160)
+                end
             end
             if score > 0 and v.Text ~= "" then
                 ranked[#ranked + 1] = {btn = v, score = score}
@@ -27215,12 +27279,12 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.64"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.64)")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
@@ -27296,7 +27360,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.64"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27411,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.64")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
