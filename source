@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -5882,13 +5882,16 @@ eventEditor = (function()
 		Size = UDim2.fromOffset(80, 30),
 		Font = UI_FONT_MED,
 		TextSize = 11,
-		TextXAlignment = Enum.TextXAlignment.Center,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		ClipsDescendants = true,
 		TextColor3 = EE_MUTED,
 		Text = "0",
 		ZIndex = 44,
 	}, top:FindFirstChild("EEHeaderActions"))
 	uiCorner(countLabel, 8)
 	uiStroke(countLabel, EE_BORDER, 1, 0.45)
+	uiPad(countLabel, 18, 0, 8, 0)
 	table.insert(shade2, countLabel)
 	uiCorner(mk("Frame", {
 		Name = "EEStatusDot",
@@ -5910,6 +5913,10 @@ eventEditor = (function()
 	closeBtn.ZIndex = 44
 	pauseBtn.Font = UI_FONT_MED
 	histBtn.Font = UI_FONT_MED
+	pauseBtn.TextTruncate = Enum.TextTruncate.AtEnd
+	histBtn.TextTruncate = Enum.TextTruncate.AtEnd
+	pauseBtn.ClipsDescendants = true
+	histBtn.ClipsDescendants = true
 	closeBtn.TextSize = 18
 	pauseBtn:SetAttribute("EEHeaderControl", true)
 	histBtn:SetAttribute("EEHeaderControl", true)
@@ -6762,6 +6769,17 @@ eventEditor = (function()
 		local headerStroke = countLabel:FindFirstChildOfClass("UIStroke")
 		if headerStroke then headerStroke.Color = EE_BORDER headerStroke.Transparency = 0.45 end
 		title.Text = T("autoStudio")
+		countLabel:SetAttribute("EEFitW", math.clamp(math.ceil(TextService:GetTextSize(countLabel.Text, countLabel.TextSize, countLabel.Font, Vector2.new(400, 30)).X) + 30, 78, 150))
+		pauseBtn:SetAttribute("EEFitW", math.clamp(math.ceil(TextService:GetTextSize(pauseBtn.Text, pauseBtn.TextSize, pauseBtn.Font, Vector2.new(400, 30)).X) + 20, 58, 132))
+		histBtn:SetAttribute("EEFitW", math.clamp(math.ceil(TextService:GetTextSize(histBtn.Text, histBtn.TextSize, histBtn.Font, Vector2.new(400, 30)).X) + 20, 64, 112))
+		countLabel.Size = UDim2.fromOffset(countLabel:GetAttribute("EEFitW"), 30)
+		pauseBtn.Size = UDim2.fromOffset(pauseBtn:GetAttribute("EEFitW"), 30)
+		pauseBtn.Position = UDim2.fromOffset(countLabel:GetAttribute("EEFitW") + 8, 16)
+		histBtn.Size = UDim2.fromOffset(histBtn:GetAttribute("EEFitW"), 30)
+		histBtn.Position = UDim2.fromOffset(countLabel:GetAttribute("EEFitW") + pauseBtn:GetAttribute("EEFitW") + 16, 16)
+		closeBtn.Position = UDim2.fromOffset(countLabel:GetAttribute("EEFitW") + pauseBtn:GetAttribute("EEFitW") + histBtn:GetAttribute("EEFitW") + 24, 16)
+		top:FindFirstChild("EEHeaderActions").Size = UDim2.fromOffset(countLabel:GetAttribute("EEFitW") + pauseBtn:GetAttribute("EEFitW") + histBtn:GetAttribute("EEFitW") + 66, 62)
+		top:FindFirstChild("EEHeaderActions").Position = UDim2.new(1, -(countLabel:GetAttribute("EEFitW") + pauseBtn:GetAttribute("EEFitW") + histBtn:GetAttribute("EEFitW") + 78), 0, 0)
 	end
 
 	local function buildVarHelp(ev, name)
@@ -8716,6 +8734,7 @@ eventEditor = (function()
 		pauseBtn:SetAttribute("EEActiveColor", Color3.fromRGB(105, 57, 64))
 		pauseBtn.BackgroundColor3 = masterPaused and Color3.fromRGB(105, 57, 64) or EE_SURFACE
 		pauseBtn.TextColor3 = masterPaused and Color3.fromRGB(255, 211, 216) or Color3.fromRGB(245, 245, 247)
+		updateCountLabel()
 		if masterPaused then cancelPendingFor(nil) end
 		notify(T("autoStudio"), masterPaused and T("autoPaused") or T("autoResumed"))
 	end)

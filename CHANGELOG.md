@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-11-19
+
+Studio header grows with the label, so the flow count and Pause / Продолжить no longer cover History.
+
 ## 7.63 — 2026-10-06
 
 ### Added
