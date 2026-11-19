@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-19
+
+### Fixed
+- An empty command bar no longer highlights the first command, so Down selects that row and Tab does not fill it in.
+
 ## 7.63 — 2026-10-06
 
 ### Added
