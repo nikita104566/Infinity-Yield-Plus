@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-20
+
+### Improved
+- Automation Studio shows the full event name: `OnCharacterRemoving` wraps onto a second line instead of being cut off. Short names stay one line.
+
 ## 7.63 — 2026-10-06
 
 ### Added

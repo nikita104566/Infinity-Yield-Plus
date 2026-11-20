@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -8225,29 +8225,44 @@ eventEditor = (function()
 				rowScale.Name = "EEEventScale"
 				rowScale.Scale = 1
 				rowScale.Parent = row
-				local cardRightSpace = (tot > 0) and 90 or 46
+				local switchReserve = 50
+				local nameMaxW = math.max(96, EE_LEFT_W - 118)
+				local namePx = utf8.len(tostring(name)) * 8
+				local measuredOk, measured = pcall(function()
+					return TextService:GetTextSize(name, 12, UI_FONT_MED, Vector2.new(10000, 24))
+				end)
+				if measuredOk and typeof(measured) == "Vector2" then
+					namePx = measured.X
+				end
+				local twoLine = namePx > (nameMaxW - 8) or utf8.len(tostring(name)) >= 18
+				local nameH = twoLine and 34 or 18
+				local catY = twoLine and 44 or 30
+				local rowH = twoLine and 72 or 56
+				row.Size = UDim2.new(1, -4, 0, rowH)
 				local nameColor = selectedRow and Color3.fromRGB(255, 255, 255) or ((ev.enabled == false) and Color3.fromRGB(150, 145, 170) or Color3.fromRGB(245, 245, 247))
 				local catColor = selectedRow and Color3.fromRGB(195, 185, 230) or Color3.fromRGB(145, 140, 170)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
 					Position = UDim2.new(0, 14, 0, 6),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 24),
+					Size = UDim2.new(1, -(14 + switchReserve), 0, nameH),
 					Font = UI_FONT_MED,
 					TextSize = 12,
-					TextWrapped = false,
-					TextTruncate = Enum.TextTruncate.AtEnd,
+					TextWrapped = twoLine,
+					TextTruncate = Enum.TextTruncate.None,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Top,
 					TextColor3 = nameColor,
 					Text = name,
 					ZIndex = 44,
 				}, row)
+				local catW = (tot > 0) and 78 or 28
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 32),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 14),
+					Position = UDim2.new(0, 14, 0, catY),
+					Size = UDim2.new(1, -catW, 0, 14),
 					Font = UI_FONT,
 					TextSize = 10,
+					TextTruncate = Enum.TextTruncate.AtEnd,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextColor3 = catColor,
 					Text = categoryText(cat),
@@ -8256,7 +8271,7 @@ eventEditor = (function()
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -(cardRightSpace + 14), 1, 0),
+					Size = UDim2.new(1, -switchReserve, 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -8298,7 +8313,8 @@ eventEditor = (function()
 						if row.Parent then selectEvent(name) end
 					end)
 				end)
-				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0.5, -9), function()
+				local switchTop = 8
+				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0, switchTop), function()
 					ensureEventExtras(ev)
 					pushUndo()
 					ev.enabled = not (ev.enabled ~= false)
@@ -8314,7 +8330,7 @@ eventEditor = (function()
 					local badge = mk("TextLabel", {
 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
 						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
+						Position = UDim2.new(1, -56, 0, catY),
 						Size = UDim2.new(0, 42, 0, 18),
 						Font = UI_FONT_MED,
 						TextSize = 10,
@@ -8324,7 +8340,7 @@ eventEditor = (function()
 					}, row)
 					uiCorner(badge, 8)
 				end
-				y += 65
+				y += rowH + 5
 			end
 		end
 		if #visible == 0 then
@@ -27215,7 +27231,7 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.64"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
@@ -27296,7 +27312,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.64"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27363,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.64")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
