@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-11-22
+
+Ctrl+K palette scrolls past the first eight matches, and a failed search leaves one empty line instead of a stack.
+
 ## 7.63 — 2026-10-06
 
 ### Added

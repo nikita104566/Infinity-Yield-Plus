@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -797,6 +797,14 @@ UI_L = {
 		favEmptyHint = "Right-click a command to pin it here",
 		favEmptyHintMobile = "Long-press a command to pin it here",
 		cmdNoMatch = "No matching commands\nClear the bar to see the full list",
+		palTitle = "Command Palette",
+		palSearch = "Search commands or type arguments...",
+		palRecent = "Favorites and recent",
+		palResults = "Results: %d",
+		palShown = "Showing %d of %d",
+		palEmpty = "No matching commands",
+		palMore = "Type more to narrow the list",
+		palFooter = "Up/Down select    Enter run    Esc close",
 		eeNoCmdMatch = "No matching commands",
 		lastCmdEmpty = "History",
 		lastCmdEmptyText = "No previous command yet",
@@ -1082,6 +1090,14 @@ UI_L = {
 		favEmptyHint = "ПКМ по команде — закрепить здесь",
 		favEmptyHintMobile = "Удерживайте команду, чтобы закрепить",
 		cmdNoMatch = "Нет таких команд\nОчисти поле — снова весь список",
+		palTitle = "Палитра команд",
+		palSearch = "Имя, описание или аргументы...",
+		palRecent = "Избранное и недавние",
+		palResults = "Найдено: %d",
+		palShown = "Показано %d из %d",
+		palEmpty = "Нет таких команд",
+		palMore = "Уточни запрос, чтобы сузить список",
+		palFooter = "Вверх/вниз выбор    Enter запуск    Esc закрыть",
 		eeNoCmdMatch = "Нет таких команд",
 		lastCmdEmpty = "История",
 		lastCmdEmptyText = "Пока нет предыдущей команды",
@@ -1361,6 +1377,9 @@ function applyUiLanguage()
 	end
 	if cmdAllHeader then cmdAllHeader.Text = T("allCommands") end
 	if cmdNoMatchHint then cmdNoMatchHint.Text = T("cmdNoMatch") end
+	if scoreCache and scoreCache.palette and type(scoreCache.palette.ApplyLang) == "function" then
+		scoreCache.palette.ApplyLang()
+	end
 	if PopupText_2 then PopupText_2.Text = T("keybindEditorTitle") end
 	if Directions then Directions.Text = T("keybindHint") end
 	if Cmdbar_2 then Cmdbar_2.PlaceholderText = T("keybindPickCmd") end
@@ -14662,7 +14681,7 @@ if scoreCache then
         title.TextSize = 15
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.TextColor3 = Color3.fromRGB(248, 248, 252)
-        title.Text = "Command Palette"
+        title.Text = T("palTitle")
         title.ZIndex = 92
         title.Parent = panel
 
@@ -14691,7 +14710,7 @@ if scoreCache then
         search.TextSize = 14
        search.TextColor3 = Color3.fromRGB(248, 248, 252)
         search.PlaceholderColor3 = Color3.fromRGB(144, 139, 163)
-        search.PlaceholderText = "Search commands or type arguments..."
+        search.PlaceholderText = T("palSearch")
         search.Text = ""
         search.TextXAlignment = Enum.TextXAlignment.Left
         search.ZIndex = 92
@@ -14717,7 +14736,7 @@ if scoreCache then
         section.TextSize = 11
         section.TextXAlignment = Enum.TextXAlignment.Left
         section.TextColor3 = Color3.fromRGB(153, 145, 177)
-        section.Text = "FAVORITES & RECENT"
+        section.Text = T("palRecent")
         section.ZIndex = 92
         section.Parent = panel
 
@@ -14750,7 +14769,8 @@ if scoreCache then
         footer.TextSize = 11
         footer.TextXAlignment = Enum.TextXAlignment.Left
         footer.TextColor3 = Color3.fromRGB(134, 129, 153)
-        footer.Text = "↑↓ navigate   Enter run   Esc close   Right-click rows in Cmdbar to favorite"
+        footer.Text = T("palFooter")
+        footer.TextTruncate = Enum.TextTruncate.AtEnd
         footer.ZIndex = 92
         footer.Parent = panel
 
@@ -14880,7 +14900,7 @@ if scoreCache then
             task.delay(0.025, function()
                 if token ~= state.refreshToken or not root.Visible then return end
                 for _, child in ipairs(holder:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
+                    if child:IsA("GuiObject") and not child:IsA("UIListLayout") then child:Destroy() end
                 end
                 state.rows = {}
                 state.items = {}
@@ -14891,8 +14911,12 @@ if scoreCache then
                     local name = tostring(info.NAME or "")
                     local key = primary(name)
                     if key ~= "" then
-                        local desc = tostring(info.DESC or "")
-                        local hay = (name .. " " .. desc):lower()
+                        local descEn = tostring(info.DESC or "")
+                        local desc = descEn
+                        if type(getLocalizedDesc) == "function" then
+                            desc = getLocalizedDesc(name, descEn)
+                        end
+                        local hay = (name .. " " .. descEn .. " " .. desc):lower()
                         local fav = isFav(name)
                         local recent = recentRank(name)
                         local score = nil
@@ -14918,28 +14942,52 @@ if scoreCache then
                     if a.score == b.score then return a.name:lower() < b.name:lower() end
                     return a.score > b.score
                 end)
-                local limit = math.min(8, #candidates)
+                local limit = math.min(36, #candidates)
                 for i = 1, limit do state.items[i] = candidates[i] end
                 state.selected = limit > 0 and 1 or 0
-                section.Text = queryHead == "" and "FAVORITES & RECENT" or string.format("RESULTS · %d", #candidates)
+                if #candidates > limit then
+                    section.Text = string.format(T("palShown"), limit, #candidates)
+                elseif queryHead == "" then
+                    section.Text = T("palRecent")
+                else
+                    section.Text = string.format(T("palResults"), #candidates)
+                end
+                local rowsH = 80
                 if limit == 0 then
                     local empty = Instance.new("TextLabel")
                     empty.Name = "Empty"
                     empty.BackgroundTransparency = 1
-                    empty.Size = UDim2.new(1, 0, 0, 80)
+                    empty.Size = UDim2.new(1, 0, 0, 72)
                     empty.Font = UI_FONT
                     empty.TextSize = 13
+                    empty.TextXAlignment = Enum.TextXAlignment.Left
+                    empty.TextYAlignment = Enum.TextYAlignment.Top
+                    empty.TextWrapped = true
                     empty.TextColor3 = Color3.fromRGB(151, 146, 169)
-                    empty.Text = "No matching commands"
+                    empty.Text = T("palEmpty")
                     empty.ZIndex = 93
                     empty.Parent = holder
                 else
-                    local oldEmpty = holder:FindFirstChild("Empty")
-                    if oldEmpty then oldEmpty:Destroy() end
                     for i, item in ipairs(state.items) do makeRow(item, i) end
+                    rowsH = limit * 59
+                    if #candidates > limit then
+                        local more = Instance.new("TextLabel")
+                        more.Name = "More"
+                        more.BackgroundTransparency = 1
+                        more.Size = UDim2.new(1, 0, 0, 28)
+                        more.Font = UI_FONT
+                        more.TextSize = 12
+                        more.TextXAlignment = Enum.TextXAlignment.Left
+                        more.TextColor3 = Color3.fromRGB(151, 146, 169)
+                        more.Text = T("palMore")
+                        more.LayoutOrder = limit + 1
+                        more.ZIndex = 93
+                        more.Parent = holder
+                        rowsH = rowsH + 32
+                    end
                 end
-                holder.Size = UDim2.new(1, -6, 0, math.max(80, limit * 59))
-                list.CanvasSize = UDim2.new(0, 0, 0, math.max(80, limit * 59))
+                holder.Size = UDim2.new(1, -6, 0, rowsH)
+                list.CanvasSize = UDim2.new(0, 0, 0, rowsH)
                 list.CanvasPosition = Vector2.zero
                 styleRows()
             end)
@@ -14956,6 +15004,16 @@ if scoreCache then
         function api.Close()
             root.Visible = false
             pcall(function() search:ReleaseFocus() end)
+        end
+        function api.ApplyLang()
+            title.Text = T("palTitle")
+            search.PlaceholderText = T("palSearch")
+            footer.Text = T("palFooter")
+            if root.Visible then
+                refresh()
+            else
+                section.Text = T("palRecent")
+            end
         end
         function api.Toggle()
             if root.Visible then api.Close() else api.Open() end
@@ -26819,7 +26877,7 @@ IYR_TRACK(task.spawn(function()
     end
 end))
 
--- Native v7.63 Baked Hotfixes & Utility Commands
+-- Native v7.64 Baked Hotfixes & Utility Commands
 ;(function()
 	local function clipText(text)
 		if type(everyClipboard) == "function" then
@@ -27215,12 +27273,12 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.64"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.64)")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
@@ -27296,7 +27354,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.64"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27405,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.64")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
