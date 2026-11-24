@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -8225,13 +8225,13 @@ eventEditor = (function()
 				rowScale.Name = "EEEventScale"
 				rowScale.Scale = 1
 				rowScale.Parent = row
-				local cardRightSpace = (tot > 0) and 90 or 46
+				local catReserve = (tot > 0) and 104 or 58
 				local nameColor = selectedRow and Color3.fromRGB(255, 255, 255) or ((ev.enabled == false) and Color3.fromRGB(150, 145, 170) or Color3.fromRGB(245, 245, 247))
 				local catColor = selectedRow and Color3.fromRGB(195, 185, 230) or Color3.fromRGB(145, 140, 170)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 6),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 24),
+					Position = UDim2.new(0, 10, 0, 4),
+					Size = UDim2.new(1, -16, 0, 22),
 					Font = UI_FONT_MED,
 					TextSize = 12,
 					TextWrapped = false,
@@ -8244,11 +8244,13 @@ eventEditor = (function()
 				}, row)
 				mk("TextLabel", {
 					BackgroundTransparency = 1,
-					Position = UDim2.new(0, 14, 0, 32),
-					Size = UDim2.new(1, -(cardRightSpace + 14), 0, 14),
+					Position = UDim2.new(0, 10, 1, -24),
+					Size = UDim2.new(1, -catReserve, 0, 16),
 					Font = UI_FONT,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					TextTruncate = Enum.TextTruncate.AtEnd,
 					TextColor3 = catColor,
 					Text = categoryText(cat),
 					ZIndex = 44,
@@ -8256,7 +8258,7 @@ eventEditor = (function()
 				local hit = mk("TextButton", {
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					Size = UDim2.new(1, -(cardRightSpace + 14), 1, 0),
+					Size = UDim2.new(1, 0, 1, 0),
 					Text = "",
 					AutoButtonColor = false,
 					ZIndex = 45,
@@ -8298,7 +8300,7 @@ eventEditor = (function()
 						if row.Parent then selectEvent(name) end
 					end)
 				end)
-				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 0.5, -9), function()
+				makeSwitch(row, ev.enabled ~= false, UDim2.new(1, -42, 1, -26), function()
 					ensureEventExtras(ev)
 					pushUndo()
 					ev.enabled = not (ev.enabled ~= false)
@@ -8314,7 +8316,7 @@ eventEditor = (function()
 					local badge = mk("TextLabel", {
 						BackgroundColor3 = en == tot and Color3.fromRGB(31, 58, 50) or (en > 0 and Color3.fromRGB(54, 44, 79) or Color3.fromRGB(31, 31, 40)),
 						BorderSizePixel = 0,
-						Position = UDim2.new(1, -92, 0.5, -9),
+						Position = UDim2.new(1, -88, 1, -26),
 						Size = UDim2.new(0, 42, 0, 18),
 						Font = UI_FONT_MED,
 						TextSize = 10,
@@ -26819,7 +26821,7 @@ IYR_TRACK(task.spawn(function()
     end
 end))
 
--- Native v7.63 Baked Hotfixes & Utility Commands
+-- Native v7.64 Baked Hotfixes & Utility Commands
 ;(function()
 	local function clipText(text)
 		if type(everyClipboard) == "function" then
@@ -27215,12 +27217,12 @@ end))
 		local pingS = type(ping) == "number" and string.format("%.0f ms", ping) or "n/a"
 		local fpsS = type(fps) == "number" and string.format("%.0f", fps) or "n/a"
 		local nPlrs = tostring(#game:GetService("Players"):GetPlayers())
-		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.63"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
+		local msg = string.format("v%s\nPlace %s · %s players\nPing %s · FPS %s", tostring(currentVersion or "7.64"), tostring(game.PlaceId or "?"), nPlrs, pingS, fpsS)
 		notify(T("sesTitle"), msg)
 	end)
 
 	registerBakedCmd('hotfixes', {'hf', 'patches'}, 'Shows loaded hotfixes status', 'Показывает статус встроенных хотфиксов', function()
-		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.63)")
+		notify(T("hfTitle"), "754+ 755+ 756+ 757+ 758+ 759+ 760+ 761+ 762+ (baked v7.64)")
 	end)
 
 	registerBakedCmd('whoami', {'myinfo', 'iypme'}, 'Shows your username, display name, and UserId', 'Показывает имя, никнейм и UserId', function()
@@ -27296,7 +27298,7 @@ end))
 			mem = string.format("%.1f MB", game:GetService("Stats"):GetTotalMemoryUsageMb())
 		end)
 		local body = table.concat({
-			tostring(currentVersion or "7.63"),
+			tostring(currentVersion or "7.64"),
 			name .. " " .. uid,
 			"place " .. pId,
 			"job " .. jId,
@@ -27347,7 +27349,7 @@ end))
 		local clipState = (type(setclipboard) == "function" or type(toclipboard) == "function" or type(everyClipboard) == "function") and "clip+" or "clip-"
 		local fs = (type(writefile) == "function" and type(readfile) == "function") and "fs+" or "fs-"
 		local hook = (type(hookfunction) == "function" or type(hookfunc) == "function") and "hook+" or "hook-"
-		local ver = tostring(currentVersion or "7.63")
+		local ver = tostring(currentVersion or "7.64")
 		notify(T("envTitle"), table.concat({
 			ver,
 			exec,
