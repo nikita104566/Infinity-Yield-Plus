@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-11-24
+
+- Automation Studio shows the full event name on the left (`OnCharacterRemoving`); the count and switch sit on the category line so they no longer cover it.
+
 ## 7.63 — 2026-10-06
 
 ### Added
