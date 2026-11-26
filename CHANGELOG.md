@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.64 — 2026-11-26
+
+### Improved
+- Command search matches the English and Russian description, and the row shows a short snippet of the matching text when the name itself does not contain the query.
+
 ## 7.63 — 2026-10-06
 
 ### Added
