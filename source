@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -2314,6 +2314,13 @@ function applyCmdRowText(btn, text)
 				q = q:match("^(%S+)") or ""
 			end
 			label.Text = formatCmdRich(text, q)
+			if q ~= "" and #q >= 3 and commandScore(text, q) < 300 then
+				local snip = descMatchSnippet(btn, q)
+				if snip ~= "" then
+					snip = snip:gsub("&", "&"):gsub("<", "<"):gsub(">", ">")
+					label.Text = label.Text .. " <font color=\"#8E8AA3\">" .. snip .. "</font>"
+				end
+			end
 		end
 	end
 end
@@ -11602,6 +11609,87 @@ function commandScore(displayName, query)
     return 40
 end
 
+-- Description hits rank under a real name match so "fly" stays above
+-- commands that only mention flight in the help text.
+function descMatchScore(btn, queryLower)
+    if not btn or type(queryLower) ~= "string" or #queryLower < 3 then
+        return 0
+    end
+    local blob = btn:GetAttribute("SearchBlob")
+    if type(blob) ~= "string" then
+        local title = btn:GetAttribute("Title") or btn.Text
+        local raw = tostring(btn:GetAttribute("Desc") or "")
+        local ru = ""
+        if CMD_DESC_RU then
+            ru = tostring(CMD_DESC_RU[cmdPrimaryKey(title)] or "")
+        end
+        blob = (raw .. "\n" .. ru):lower()
+        btn:SetAttribute("SearchBlob", blob)
+    end
+    if blob ~= "" and blob:find(queryLower, 1, true) then
+        return 180
+    end
+    return 0
+end
+
+function utf8Snap(s, i, dir)
+    if i < 1 then i = 1 end
+    if i > #s then return #s end
+    if dir < 0 then
+        while i > 1 do
+            local b = s:byte(i)
+            if not b or b < 128 or b >= 192 then break end
+            i -= 1
+        end
+        return i
+    end
+    while i < #s do
+        local nb = s:byte(i + 1)
+        if nb and nb >= 128 and nb < 192 then
+            i += 1
+        else
+            break
+        end
+    end
+    return i
+end
+
+function descMatchSnippet(btn, query)
+    if not btn or type(query) ~= "string" or #query < 3 then
+        return ""
+    end
+    local q = query:lower()
+    local title = btn:GetAttribute("Title") or btn.Text or ""
+    local raw = tostring(btn:GetAttribute("Desc") or "")
+    local ru = ""
+    if CMD_DESC_RU then
+        local got = CMD_DESC_RU[cmdPrimaryKey(title)]
+        if type(got) == "string" then ru = got end
+    end
+    local texts = {}
+    if uiLang == "ru" then
+        if ru ~= "" then texts[#texts + 1] = ru end
+        if raw ~= "" and raw ~= ru then texts[#texts + 1] = raw end
+    else
+        if raw ~= "" then texts[#texts + 1] = raw end
+        if ru ~= "" and ru ~= raw then texts[#texts + 1] = ru end
+    end
+    for i = 1, #texts do
+        local text = texts[i]
+        local at = text:lower():find(q, 1, true)
+        if at then
+            local from = utf8Snap(text, math.max(1, at - 10), -1)
+            local to = utf8Snap(text, math.min(#text, at + #q + 22), 1)
+            local slice = text:sub(from, to)
+            slice = slice:gsub("^%s+", ""):gsub("%s+$", "")
+            if from > 1 then slice = "…" .. slice end
+            if to < #text then slice = slice .. "…" end
+            return slice
+        end
+    end
+    return ""
+end
+
 function hidePlayerSuggest()
     for _, btn in ipairs(playerSuggestButtons) do
         btn.Visible = false
@@ -11885,6 +11973,10 @@ IndexContents = function(str,bool,cmdbar,Ianim)
                     end
                 else
                 score = commandScore(v.Text, str)
+                if score < 300 then
+                    local ds = descMatchScore(v, cmdQueryLower(str))
+                    if ds > score then score = ds end
+                end
             end
             if score > 0 and v.Text ~= "" then
                 ranked[#ranked + 1] = {btn = v, score = score}
