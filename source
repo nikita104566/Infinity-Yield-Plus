@@ -537,7 +537,7 @@ if makefolder and isfolder and writefile and isfile and readfile then
     end)
 end
 
-currentVersion = '7.63'
+currentVersion = '7.64'
 BRAND_NAME = 'Infinity Yield Plus'
 
 PANEL_W = 300
@@ -9481,7 +9481,7 @@ currentShade1 = Color3.fromRGB(14, 14, 18)
 currentShade2 = Color3.fromRGB(18, 18, 24)
 currentShade3 = Color3.fromRGB(48, 44, 66)
 currentText1 = Color3.new(1, 1, 1)
-currentText2 = Color3.new(0, 0, 0)
+currentText2 = Color3.new(1, 1, 1)
 currentScroll = Color3.fromRGB(90, 84, 120)
 
 defaultGuiScale = IsOnMobile and 0.9 or 1
@@ -10335,6 +10335,51 @@ function syncThemeChrome()
 end
 
 function updateColors(color,ctype)
+    local function channel(x)
+        if x <= 0.04045 then
+            return x / 12.92
+        end
+        return ((x + 0.055) / 1.055) ^ 2.4
+    end
+    local function lum(c)
+        return 0.2126 * channel(c.R) + 0.7152 * channel(c.G) + 0.0722 * channel(c.B)
+    end
+    local function contrast(a, b)
+        local L1 = lum(a)
+        local L2 = lum(b)
+        local hi = L1
+        local lo = L2
+        if L2 > L1 then
+            hi = L2
+            lo = L1
+        end
+        return (hi + 0.05) / (lo + 0.05)
+    end
+    local function paintText2()
+        local bg = currentShade3
+        local preferred = currentText2
+        if typeof(bg) ~= "Color3" then
+            bg = Color3.fromRGB(48, 44, 66)
+        end
+        if typeof(preferred) ~= "Color3" then
+            preferred = Color3.new(1, 1, 1)
+        end
+        local ink = preferred
+        if contrast(preferred, bg) < 3 then
+            local white = Color3.new(1, 1, 1)
+            local black = Color3.new(0, 0, 0)
+            if contrast(white, bg) >= contrast(black, bg) then
+                ink = white
+            else
+                ink = black
+            end
+        end
+        for _, v in pairs(text2) do
+            if v and v.Parent then
+                v.TextColor3 = ink
+            end
+        end
+    end
     if ctype == shade1 then
         for i,v in pairs(shade1) do
 			if v and v.Parent then
@@ -10356,6 +10401,7 @@ function updateColors(color,ctype)
 			end
         end
         currentShade3 = color
+        paintText2()
     elseif ctype == text1 then
         for i,v in pairs(text1) do
 			if v and v.Parent then
@@ -10367,12 +10413,8 @@ function updateColors(color,ctype)
         end
         currentText1 = color
     elseif ctype == text2 then
-        for i,v in pairs(text2) do
-			if v and v.Parent then
-            v.TextColor3 = color
-			end
-        end
         currentText2 = color
+        paintText2()
     elseif ctype == scroll then
         for i,v in pairs(scroll) do
 			if v and v.Parent then
@@ -10398,7 +10440,7 @@ local DEFAULT_THEME = {
 	shade2 = Color3.fromRGB(18, 18, 24),
 	shade3 = Color3.fromRGB(48, 44, 66),
 	text1 = Color3.new(1, 1, 1),
-	text2 = Color3.new(0, 0, 0),
+	text2 = Color3.new(1, 1, 1),
 	scroll = Color3.fromRGB(90, 84, 120),
 }
 
