@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.64 — 2026-11-28
+
+- Prefix, Goto, and Delete on the dark settings buttons stay light enough to read, including on a saved dark theme.
+
 ## 7.63 — 2026-10-06
 
 ### Added
